@@ -788,9 +788,10 @@ section { scroll-margin-top: 84px; }
       gX += (tX - gX) * 0.95;
       gY += (tY - gY) * 0.95;
       glow.style.transform = 'translate(' + gX + 'px,' + gY + 'px)';
+      if (Math.abs(gX - tX) < 0.4 && Math.abs(gY - tY) < 0.4) { raf = null; return; } // idle → stop
       raf = requestAnimationFrame(tick);
     }
-    window.addEventListener('mousemove', function (e) { tX = e.clientX; tY = e.clientY; if (!raf) tick(); }, { passive: true });
+    window.addEventListener('mousemove', function (e) { tX = e.clientX; tY = e.clientY; if (!raf) raf = requestAnimationFrame(tick); }, { passive: true });
   }
 
   /* reveal on scroll */
@@ -827,7 +828,7 @@ section { scroll-margin-top: 84px; }
   function initP(canvas, pattern) {
     var ctx = canvas.getContext('2d');
     var section = canvas.parentElement;
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     var cols = getPCols();
     var parts = [];
     var w = 0, h = 0;
@@ -852,8 +853,8 @@ section { scroll-margin-top: 84px; }
       canvas.height = Math.max(1, Math.round(h * dpr));
       canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var n = Math.max(18, Math.min(110, Math.round(w * h / 20000)));
-      if (pattern !== 'orbit') n = Math.max(18, Math.min(220, n * 2));
+      var n = Math.max(12, Math.min(55, Math.round(w * h / 32000)));
+      if (pattern !== 'orbit') n = Math.max(12, Math.min(110, n * 2));
       if (parts.length !== n) { parts = []; for (var i = 0; i < n; i++) parts.push(make()); }
     }
 
@@ -918,7 +919,17 @@ section { scroll-margin-top: 84px; }
       ctx.globalAlpha = 1;
     }
 
-    function loop() { draw(); requestAnimationFrame(loop); }
+    // Visibility-gated loop (~30fps): only runs while the section is on screen
+    var rafId = null, frame = 0;
+    function start() {
+      if (rafId) return;
+      (function tick() {
+        rafId = requestAnimationFrame(tick);
+        frame++;
+        if (frame % 2 === 0) draw(); // render every 2nd frame
+      })();
+    }
+    function stop() { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
 
     section.addEventListener('mousemove', function (e) {
       var r = canvas.getBoundingClientRect();
@@ -927,7 +938,12 @@ section { scroll-margin-top: 84px; }
     section.addEventListener('mouseleave', function () { mX = -9999; mY = -9999; });
 
     size();
-    if (reduceMotion) { draw(); } else { loop(); }
+    if (reduceMotion) { draw(); }
+    else if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) {
+        es.forEach(function (en) { if (en.isIntersecting) start(); else stop(); });
+      }, { rootMargin: '80px' }).observe(section);
+    } else { start(); }
     window.addEventListener('resize', function () { size(); });
     instances.push({ refresh: function () { cols = getPCols(); } });
   }
