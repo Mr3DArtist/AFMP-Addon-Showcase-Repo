@@ -1477,6 +1477,100 @@ html:not(.dark) .price-card:hover,html:not(.dark) .workflow-card:hover,html:not(
 }
 html:not(.dark) .m3-wrap{outline-color:rgba(0,0,0,.35)}
 html:not(.dark) .m3-wrap:hover{outline-color:transparent}
+
+/* Workflow background card */
+.wf-wrap{
+  position:relative;
+  border:1px solid var(--border-strong);
+  border-radius:22px;
+  background:var(--card-bg);
+  padding:.55rem;
+  -webkit-backdrop-filter:blur(30px) saturate(1.8);
+  backdrop-filter:blur(30px) saturate(1.8);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.30),inset 0 -1px 0 rgba(255,255,255,.06);
+  outline:1px solid rgba(255,255,255,.5);
+  outline-offset:0;
+  transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease,
+    outline-offset .7s cubic-bezier(.19,1,.22,1),outline-color .7s cubic-bezier(.19,1,.22,1);
+}
+.wf-wrap:hover{outline-color:transparent;outline-offset:12px;transform:translateY(-3px)}
+html:not(.dark) .wf-wrap{outline-color:rgba(0,0,0,.35)}
+html:not(.dark) .wf-wrap:hover{outline-color:transparent}
+.quickfog-outer{border-radius:22px}
+
+/* Compare cards — same glass design as workflow cards */
+.compare-card,
+.compare-card.old,
+.compare-card.new{
+  position:relative;
+  border:1px solid var(--border-strong);
+  border-radius:22px;
+  background-color:var(--card-bg);
+  background-image:
+    linear-gradient(115deg,transparent 20%,rgba(255,255,255,.16) 40%,rgba(255,255,255,.04) 55%,transparent 70%),
+    radial-gradient(130% 95% at 50% -18%,rgba(255,255,255,.20),rgba(255,255,255,.04) 55%),
+    linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 60%);
+  background-size:200% 100%,auto,auto;
+  background-position:120% 0,0 0,0 0;
+  -webkit-backdrop-filter:blur(30px) saturate(1.8);
+  backdrop-filter:blur(30px) saturate(1.8);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.30),
+    inset 0 -1px 0 rgba(255,255,255,.06);
+  color:inherit;
+  transition:background-position .5s ease;
+}
+.compare-card:hover,
+.compare-card.old:hover,
+.compare-card.new:hover{background-position:-20% 0,0 0,0 0}
+.compare-card .vs-badge,
+.compare-card.old .vs-badge,
+.compare-card.new .vs-badge{
+  background:color-mix(in srgb,var(--color-tertiary) 12%,transparent);
+  color:var(--color-tertiary);
+  border:1px solid var(--border-strong);
+}
+.compare-card .step-num,
+.compare-card.old .step-num{background:color-mix(in srgb,var(--color-tertiary) 18%,transparent);color:var(--color-tertiary)}
+.wf-wrap{width:fit-content;max-width:100%;margin-inline:auto}
+.wf-wrap .workflow-grid{gap:.55rem!important}
+.wf-wrap .workflow-card{margin:0}
+.workflow-card{display:flex;flex-direction:column;gap:.5rem;border-radius:22px;padding:1.5rem}
+.workflow-num{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:1.15rem;font-weight:800;font-family:'Sora',system-ui,sans-serif;background:color-mix(in srgb,var(--color-tertiary) 16%,transparent);color:var(--color-tertiary);margin-bottom:.3rem}
+.workflow-card .compare-steps{margin:.4rem 0 0}
+.workflow-card .time-chip{margin-top:auto;align-self:flex-start}
+.sub-divider{height:2px;max-width:720px;margin:2.6rem auto;border:0;background:var(--color-tertiary);opacity:.9;box-shadow:0 0 12px var(--glow-tertiary)}
+
+/* Hide Full Catalog section */
+.catalog-section{display:none!important}
+
+/* Purchase warning — edge to edge */
+.purchase-warning{max-width:100%;margin:2.4rem 0 2.6rem}
+.purchase-warning{
+  background:linear-gradient(color-mix(in srgb,#7c2d12 60%,var(--card-bg)),color-mix(in srgb,#7c2d12 65%,var(--card-bg))) padding-box,
+    linear-gradient(135deg,#7c2d12,#9a3412 45%,#7f1d1d) border-box;
+  color:#fef3c7;
+}
+.purchase-warning p{color:#ffffff}
+.purchase-warning .pw-title{color:#fff7ed}
+
+/* Spacing above the first divider (removed quick-nav) */
+#gallery{margin-top:44px}
+
+/* Tighten gap above the hero clip */
+.hero{padding-top:0}
+.hero .hero-media{margin-top:0}
+.hero .hero-media video{margin:0}
+.hero-note{
+  display:inline-block;
+  margin-top:1.4rem;
+  padding:.5rem 1.2rem;
+  border:1px solid color-mix(in srgb,var(--color-tertiary) 30%,transparent);
+  border-radius:999px;
+  -webkit-backdrop-filter:blur(14px) saturate(1.4);
+  backdrop-filter:blur(14px) saturate(1.4);
+  background:color-mix(in srgb,var(--card-bg) 40%,transparent);
+}
 .price-card,.workflow-card,.support-card,.catalog-card{
   position:relative;
   background-color:var(--card-bg);
@@ -1521,14 +1615,14 @@ html:not(.dark) .m3-wrap:hover{outline-color:transparent}
         <span class="brand-mark">
           <img src="https://mr3d.carrd.co/assets/images/image05.png?v=377d2914" alt="Auto Facial MoCap Pro logo" style="width:auto;height:auto;max-width:44px;max-height:44px;object-fit:contain;display:block;" />
         </span>
-        Auto Facial <span style="color:var(--color-tertiary)">MoCap Pro</span>
+        <span>Auto Facial <span style="color:var(--color-tertiary)">MoCap Pro</span></span>
       </a>
     </div>
 
     <div class="header-version">
       <a class="version-badge" href="index.html#changelog" target="_blank" rel="noopener" title="Open changelog">
         <span class="latest-tag"><span class="latest-dot"></span><span>Latest</span></span>
-        <span class="vb-version">v2.4.1</span>
+        <span class="vb-version">v1.0.0 Beta</span>
       </a>
       <a class="vb-changelog" href="index.html#changelog" target="_blank" rel="noopener">Click for Changelog</a>
     </div>
@@ -1546,14 +1640,6 @@ html:not(.dark) .m3-wrap:hover{outline-color:transparent}
 </header>
 
 <main id="top">
-
-<nav class="quick-nav container" aria-label="Quick navigation">
-  <a href="#features">Features</a>
-  <a href="#showcase">Showcase</a>
-  <a href="#specs">Tech Specs</a>
-  <a href="#pricing">Pricing</a>
-  <a href="#specs" class="quick-warm">FAQ <span class="must-read">Must Read</span></a>
-</nav>
 
 <!-- ============================================================ -->
 <!-- GALLERY — product showcase strip, right below the top bar     -->
@@ -1642,29 +1728,6 @@ html:not(.dark) .m3-wrap:hover{outline-color:transparent}
   <!-- Antigravity-style particle pattern background -->
   <canvas class="section-particles" data-pattern="orbit" aria-hidden="true"></canvas>
   <div class="container">
-    <div class="hero-tags">
-      <span class="tag"><span class="dot"></span>Blender 4.2 – 5.1 Compatible</span>
-      <span class="tag"><span class="dot alt"></span>Rigify &amp; ARP Supported</span>
-      <span class="tag"><span class="dot"></span>v2.0 Released</span>
-      <span class="tag"><span class="dot alt"></span>No Manual Cleanup</span>
-    </div>
-
-    <h1>Facial motion capture,<br /><span class="gradient-text">straight to your rig.</span></h1>
-    <p class="hero-sub">
-      Auto Facial MoCap Pro turns any webcam, phone or video clip into clean, production-ready
-      facial animation. Record once — it auto-maps every movement onto Rigify, ARP or your custom
-      face rig in minutes.
-    </p>
-
-    <div class="hero-cta">
-      <a class="btn btn-primary" href="#pricing">
-        Get Auto Facial MoCap Pro
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </a>
-      <a class="btn btn-ghost" href="#showcase">Explore Showcase</a>
-    </div>
-    <p class="hero-note">Blender Market • Instant download • No subscription</p>
-
     <div class="hero-media" role="img" aria-label="Auto Facial MoCap Pro demo preview">
       <!-- MEDIA PLACEHOLDER: drop your hero clip into assets/videos/hero-demo.mp4 -->
       <video autoplay muted loop playsinline src="assets/videos/hero-demo.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
@@ -1674,30 +1737,20 @@ html:not(.dark) .m3-wrap:hover{outline-color:transparent}
       </button>
       <span class="pill">Demo — live webcam tracking to rig</span>
     </div>
-  </div>
-</section>
 
-<!-- ============================================================ -->
-<!-- 3. QUICK-SPECS META BAR -->
-<!-- ============================================================ -->
-<section class="container" aria-label="Key stats">
-  <div class="specs-bar">
-    <div class="spec-item">
-      <div class="spec-value">480+</div>
-      <div class="spec-label">Auto-Mapped Drivers</div>
+    <h1 style="padding:2.6rem 0 1rem;">Facial motion capture,<br /><span class="gradient-text">straight to your rig.</span></h1>
+    <p class="hero-sub">
+      Auto Facial-MoCap Pro Allows you to Apply Facial MoCap from videos Recorded with any webcam, phone, on to your (52 ArKit Shapekeys) Animation Ready Character!
+    </p>
+
+    <div class="hero-cta">
+      <a class="btn btn-primary" href="#pricing">
+        Get Auto Facial MoCap Pro
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a class="btn btn-ghost" href="#showcase">Explore Showcase</a>
     </div>
-    <div class="spec-item">
-      <div class="spec-value">10 min</div>
-      <div class="spec-label">Setup to First Capture</div>
-    </div>
-    <div class="spec-item">
-      <div class="spec-value">4.9/5</div>
-      <div class="spec-label">User Rating (860+)</div>
-    </div>
-    <div class="spec-item">
-      <div class="spec-value">6.8k</div>
-      <div class="spec-label">Discord Members</div>
-    </div>
+    <p class="hero-note">Easy Installation • Easy for Beginners</p>
   </div>
 </section>
 
@@ -1705,7 +1758,7 @@ html:not(.dark) .m3-wrap:hover{outline-color:transparent}
 <!-- WORKFLOW STEPS — 2-click process -->
 <!-- ============================================================ -->
 <section class="section workflow-section" id="workflow" style="padding-top:0;">
-  <span class="seam-label">Workflow</span>
+  <span class="seam-label">Workflow &amp; Features</span>
   <div class="container">
     <div class="section-head reveal" style="text-align:center;">
       <span class="section-kicker" style="justify-content:center;">Auto Facial MoCap Pro</span>
@@ -1713,148 +1766,201 @@ html:not(.dark) .m3-wrap:hover{outline-color:transparent}
       <p class="section-sub" style="margin-inline:auto;">From raw footage to rig animation in just two clicks.</p>
     </div>
 
-    <div class="workflow-grid">
-      <div class="workflow-card reveal">
-        <div class="workflow-num">1</div>
-        <h3>Import or Record Video</h3>
-        <p>Import any video that has a face in it, or record with your phone directly from inside Blender.</p>
-      </div>
+    <div class="wf-wrap">
+      <div class="workflow-grid">
+        <div class="workflow-card reveal">
+          <div class="workflow-num">1</div>
+          <h3>Import or Record Video</h3>
+          <p>Import any video that has a face in it, or record with your phone directly from inside Blender.</p>
+        </div>
 
-      <div class="workflow-card reveal">
-        <div class="workflow-num">2</div>
-        <h3>Apply Facial-MoCap</h3>
-        <p>Select your character's face, click Apply MoCap — make sure your character has 52 ARKit shapekeys.</p>
+        <div class="workflow-card reveal">
+          <div class="workflow-num">2</div>
+          <h3>Apply Facial-MoCap</h3>
+          <p>Select your character's face, click Apply MoCap — make sure your character has 52 ARKit shapekeys.</p>
+        </div>
       </div>
     </div>
-  </div>
-</section>
 
-<!-- ============================================================ -->
-<!-- 4. ABOUT THE TOOL — ALTERNATING FEATURE ROWS -->
-<!-- ============================================================ -->
-<section class="section" id="features">
-  <span class="seam-label">About</span>
-  <canvas class="section-particles" data-pattern="drift" aria-hidden="true"></canvas>
-  <div class="container">
-    <div class="section-head reveal">
-      <span class="section-kicker">About the tool</span>
+    <div class="quickfog-outer" style="margin-top:2.4rem;padding:.6rem;">
+      <div class="compare-grid" style="margin:0;">
+        <!-- Old way -->
+        <div class="compare-card old reveal">
+          <span class="vs-badge">The old way</span>
+          <h3>Manual tracking &amp; cleanup</h3>
+          <p class="meta">Point trackers by hand, then scrub every frame.</p>
+          <ul class="compare-steps">
+            <li><span class="step-num">1</span>Manually place &amp; re-place 2D trackers</li>
+            <li><span class="step-num">2</span>Hand-map each tracker to a bone or shape key</li>
+            <li><span class="step-num">3</span>Clean drift, spikes and jitter frame by frame</li>
+            <li><span class="step-num">4</span>Re-time blinks and eye movement by eye</li>
+          </ul>
+          <span class="time-chip">~ 4 hours</span>
+        </div>
+
+        <!-- With add-on -->
+        <div class="compare-card new reveal">
+          <span class="vs-badge">With Auto Facial MoCap Pro</span>
+          <h3>Record, map, bake</h3>
+          <p class="meta">Clean drivers on your rig from the first take.</p>
+          <ul class="compare-steps">
+            <li><span class="step-num">1</span>Record the clip (webcam, phone or video file)</li>
+            <li><span class="step-num">2</span>Click <strong>Auto-Map</strong> onto your Rigify / ARP rig</li>
+            <li><span class="step-num">3</span>Apply smoothing &amp; blink detection, then bake</li>
+          </ul>
+          <span class="time-chip">~ 12 minutes</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-divider" aria-hidden="true"></div>
+
+    <div class="section-head reveal" style="margin-top:2.4rem;">
+      <span class="section-kicker">Features</span>
       <h2 class="section-title">Capture a performance,<br />not a cleanup job.</h2>
       <p class="section-sub">Seven stages that take you from raw video to final rig animation — with the heavy lifting done automatically.</p>
     </div>
 
-    <!-- Row 1: Text left, media right -->
-    <div class="feature-row reveal">
-      <div class="feature-text">
-        <h3 class="feature-title">One-click rig mapping for any face rig</h3>
-        <p class="feature-copy">
-          Auto Facial MoCap Pro detects the landmarks it needs, then maps them onto your rig
-          automatically — eyebrows, eyelids, jaw, lips, cheeks and head rotation — without touching
-          your existing bone constraints.
-        </p>
-      </div>
-      <div class="feature-media" role="img" aria-label="Rig mapping preview">
-        <video autoplay muted loop playsinline src="assets/videos/rig-map.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
-        <span class="media-tag">Rig Mapping</span>
-        <span class="media-reel"><span class="pulse"></span>Preview clip</span>
-      </div>
-    </div>
-
-    <!-- Row 2: Media left, text right (zig-zag) -->
-    <div class="feature-row reveal">
-      <div class="feature-text">
-        <h3 class="feature-title">Track from webcam, video or recorded clips</h3>
-        <p class="feature-copy">
-          Capture live from your webcam, batch-process video files, or import footage shot on a phone.
-          The tracker runs offline and works in any lighting once the face is clearly visible.
-        </p>
-      </div>
-      <div class="feature-media" role="img" aria-label="Tracking preview">
-        <video autoplay muted loop playsinline src="assets/videos/tracking.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
-        <span class="media-tag">Tracking</span>
-        <span class="media-reel"><span class="pulse"></span>Preview clip</span>
+    <!-- Row 1: Text + clip inside one main card -->
+    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+      <div class="feature-row reveal" style="padding:0;">
+        <div class="feature-text">
+          <div class="quickfog-outer" style="padding:1.2rem;height:100%;text-align:center;">
+            <h3 class="feature-title">Easy to Use Addon UI</h3>
+            <p class="feature-copy">
+              Auto Facial MoCap Pro detects the landmarks it needs, then maps them onto your rig
+              automatically — eyebrows, eyelids, jaw, lips, cheeks and head rotation — without touching
+              your existing bone constraints.
+            </p>
+          </div>
+        </div>
+        <div class="feature-media" role="img" aria-label="Rig mapping preview" style="margin:0;">
+          <video autoplay muted loop playsinline src="assets/videos/rig-map.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <span class="media-tag">Rig Mapping</span>
+          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
+        </div>
       </div>
     </div>
 
-    <!-- Row 3: Text left, media right -->
-    <div class="feature-row reveal">
-      <div class="feature-text">
-        <h3 class="feature-title">Production-ready filters &amp; auto-cleanup</h3>
-        <p class="feature-copy">
-          Adaptive smoothing removes micro-jitter, blink detection rebuilds natural eyelid cycles, and
-          built-in limits keep jaw, eyes and head rotation inside believable ranges. Bake to keyframes
-          or NLA strips when you're happy.
-        </p>
-      </div>
-      <div class="feature-media" role="img" aria-label="Clean-up preview">
-        <video autoplay muted loop playsinline src="assets/videos/cleanup.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
-        <span class="media-tag">Clean-Up &amp; Bake</span>
-        <span class="media-reel"><span class="pulse"></span>Preview clip</span>
-      </div>
-    </div>
-
-    <!-- Row 4: Text left, media right -->
-    <div class="feature-row reveal">
-      <div class="feature-text">
-        <h3 class="feature-title">Bake clean drivers &amp; keyframes in one pass</h3>
-        <p class="feature-copy">
-          Turn any take into final animation with one click. Auto Facial MoCap Pro bakes tracked
-          motion to shape keys, bone drivers, NLA strips or plain keyframes — keeping your timeline
-          tidy and your takes non-destructive.
-        </p>
-      </div>
-      <div class="feature-media" role="img" aria-label="Driver baking preview">
-        <video autoplay muted loop playsinline src="assets/videos/driver-baking.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
-        <span class="media-tag">Driver Baking</span>
-        <span class="media-reel"><span class="pulse"></span>Preview clip</span>
+    <!-- Row 2: Text + clip inside one main card -->
+    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+      <div class="feature-row reveal" style="padding:0;">
+        <div class="feature-text">
+          <div class="quickfog-outer" style="padding:1.2rem;height:100%;text-align:center;">
+            <h3 class="feature-title">Track from webcam, video or recorded clips</h3>
+            <p class="feature-copy">
+              You can Record Clips Right from inside the addon from your Phone either via Wi-Fi Or Via USD tethering, or Use the footage you already shot on a phone/webcam. The addon model runs offline and gives great results if the face is clearly visible. or the Lighting is Good
+            </p>
+          </div>
+        </div>
+        <div class="feature-media" role="img" aria-label="Tracking preview" style="margin:0;">
+          <video autoplay muted loop playsinline src="assets/videos/tracking.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <span class="media-tag">Tracking</span>
+          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
+        </div>
       </div>
     </div>
 
-    <!-- Row 5: Media left, text right (zig-zag) -->
-    <div class="feature-row reveal">
-      <div class="feature-text">
-        <h3 class="feature-title">Real-time viewport feedback while you record</h3>
-        <p class="feature-copy">
-          Watch the rig move as you record. A low-latency viewport preview shows every blink and
-          brow raise live, so you can correct a performance before you even stop recording.
-        </p>
-      </div>
-      <div class="feature-media" role="img" aria-label="Live preview">
-        <video autoplay muted loop playsinline src="assets/videos/live-preview.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
-        <span class="media-tag">Live Preview</span>
-        <span class="media-reel"><span class="pulse"></span>Preview clip</span>
-      </div>
-    </div>
-
-    <!-- Row 6: Text left, media right -->
-    <div class="feature-row reveal">
-      <div class="feature-text">
-        <h3 class="feature-title">Export motion to any pipeline</h3>
-        <p class="feature-copy">
-          Ship your takes anywhere. Export clean FBX, JSON or CSV motion data for use in other DCCs,
-          game engines or VFX tools — with per-bone curves preserved.
-        </p>
-      </div>
-      <div class="feature-media" role="img" aria-label="Export preview">
-        <video autoplay muted loop playsinline src="assets/videos/export.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
-        <span class="media-tag">Export</span>
-        <span class="media-reel"><span class="pulse"></span>Preview clip</span>
+    <!-- Row 3 -->
+    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+      <div class="feature-row reveal" style="padding:0;">
+        <div class="feature-text">
+          <div class="quickfog-outer" style="padding:1.2rem;height:100%;text-align:center;">
+            <h3 class="feature-title">Production-ready filters &amp; auto-cleanup</h3>
+            <p class="feature-copy">
+              Adaptive smoothing removes micro-jitter, blink detection rebuilds natural eyelid cycles, and
+              built-in limits keep jaw, eyes and head rotation inside believable ranges. Bake to keyframes
+              or NLA strips when you're happy.
+            </p>
+          </div>
+        </div>
+        <div class="feature-media" role="img" aria-label="Clean-up preview" style="margin:0;">
+          <video autoplay muted loop playsinline src="assets/videos/cleanup.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <span class="media-tag">Clean-Up &amp; Bake</span>
+          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
+        </div>
       </div>
     </div>
 
-    <!-- Row 7: Media left, text right (zig-zag) -->
-    <div class="feature-row reveal">
-      <div class="feature-text">
-        <h3 class="feature-title">Expression presets for every shot</h3>
-        <p class="feature-copy">
-          Dial in a look fast. Packaged expression presets and custom shape-key templates cover
-          everything from subtle dialogue to exaggerated stylized takes — save your own and recall
-          them in one click.
-        </p>
+    <!-- Row 4 -->
+    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+      <div class="feature-row reveal" style="padding:0;">
+        <div class="feature-text">
+          <div class="quickfog-outer" style="padding:1.2rem;height:100%;text-align:center;">
+            <h3 class="feature-title">Bake clean drivers &amp; keyframes in one pass</h3>
+            <p class="feature-copy">
+              Turn any take into final animation with one click. Auto Facial MoCap Pro bakes tracked
+              motion to shape keys, bone drivers, NLA strips or plain keyframes — keeping your timeline
+              tidy and your takes non-destructive.
+            </p>
+          </div>
+        </div>
+        <div class="feature-media" role="img" aria-label="Driver baking preview" style="margin:0;">
+          <video autoplay muted loop playsinline src="assets/videos/driver-baking.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <span class="media-tag">Driver Baking</span>
+          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
+        </div>
       </div>
-      <div class="feature-media" role="img" aria-label="Expression presets preview">
-        <video autoplay muted loop playsinline src="assets/videos/presets.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
-        <span class="media-tag">Presets</span>
-        <span class="media-reel"><span class="pulse"></span>Preview clip</span>
+    </div>
+
+    <!-- Row 5 -->
+    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+      <div class="feature-row reveal" style="padding:0;">
+        <div class="feature-text">
+          <div class="quickfog-outer" style="padding:1.2rem;height:100%;text-align:center;">
+            <h3 class="feature-title">Real-time viewport feedback while you record</h3>
+            <p class="feature-copy">
+              Watch the rig move as you record. A low-latency viewport preview shows every blink and
+              brow raise live, so you can correct a performance before you even stop recording.
+            </p>
+          </div>
+        </div>
+        <div class="feature-media" role="img" aria-label="Live preview" style="margin:0;">
+          <video autoplay muted loop playsinline src="assets/videos/live-preview.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <span class="media-tag">Live Preview</span>
+          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 6 -->
+    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+      <div class="feature-row reveal" style="padding:0;">
+        <div class="feature-text">
+          <div class="quickfog-outer" style="padding:1.2rem;height:100%;text-align:center;">
+            <h3 class="feature-title">Export motion to any pipeline</h3>
+            <p class="feature-copy">
+              Ship your takes anywhere. Export clean FBX, JSON or CSV motion data for use in other DCCs,
+              game engines or VFX tools — with per-bone curves preserved.
+            </p>
+          </div>
+        </div>
+        <div class="feature-media" role="img" aria-label="Export preview" style="margin:0;">
+          <video autoplay muted loop playsinline src="assets/videos/export.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <span class="media-tag">Export</span>
+          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 7 -->
+    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+      <div class="feature-row reveal" style="padding:0;">
+        <div class="feature-text">
+          <div class="quickfog-outer" style="padding:1.2rem;height:100%;text-align:center;">
+            <h3 class="feature-title">Expression presets for every shot</h3>
+            <p class="feature-copy">
+              Dial in a look fast. Packaged expression presets and custom shape-key templates cover
+              everything from subtle dialogue to exaggerated stylized takes — save your own and recall
+              them in one click.
+            </p>
+          </div>
+        </div>
+        <div class="feature-media" role="img" aria-label="Expression presets preview" style="margin:0;">
+          <video autoplay muted loop playsinline src="assets/videos/presets.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <span class="media-tag">Presets</span>
+          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
+        </div>
       </div>
     </div>
   </div>
@@ -1924,51 +2030,7 @@ html:not(.dark) .m3-wrap:hover{outline-color:transparent}
 </section>
 
 <!-- ============================================================ -->
-<!-- 6. WORKFLOW COMPARISON — Old Way vs With Auto Facial MoCap Pro -->
-<!-- ============================================================ -->
-<section class="section" id="compare" style="padding-top:0;">
-  <span class="seam-label">Compare</span>
-  <canvas class="section-particles" data-pattern="flow" aria-hidden="true"></canvas>
-  <div class="container">
-    <div class="section-head reveal">
-      <span class="section-kicker">The difference</span>
-      <h2 class="section-title">Same performance. Hours less cleanup.</h2>
-      <p class="section-sub">A realistic comparison of capturing a 30-second dialogue clip and getting it onto a Rigify face.</p>
-    </div>
-
-    <div class="compare-grid">
-      <!-- Old way -->
-      <div class="compare-card old reveal">
-        <span class="vs-badge">The old way</span>
-        <h3>Manual tracking &amp; cleanup</h3>
-        <p class="meta">Point trackers by hand, then scrub every frame.</p>
-        <ul class="compare-steps">
-          <li><span class="step-num">1</span>Manually place &amp; re-place 2D trackers</li>
-          <li><span class="step-num">2</span>Hand-map each tracker to a bone or shape key</li>
-          <li><span class="step-num">3</span>Clean drift, spikes and jitter frame by frame</li>
-          <li><span class="step-num">4</span>Re-time blinks and eye movement by eye</li>
-        </ul>
-        <span class="time-chip">~ 4 hours</span>
-      </div>
-
-      <!-- With add-on -->
-      <div class="compare-card new reveal">
-        <span class="vs-badge">With Auto Facial MoCap Pro</span>
-        <h3>Record, map, bake</h3>
-        <p class="meta">Clean drivers on your rig from the first take.</p>
-        <ul class="compare-steps">
-          <li><span class="step-num">1</span>Record the clip (webcam, phone or video file)</li>
-          <li><span class="step-num">2</span>Click <strong>Auto-Map</strong> onto your Rigify / ARP rig</li>
-          <li><span class="step-num">3</span>Apply smoothing &amp; blink detection, then bake</li>
-        </ul>
-        <span class="time-chip">~ 12 minutes</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================ -->
-<!-- 7. TECHNICAL SPECS + FAQ ACCORDION -->
+<!-- TECHNICAL SPECS + FAQ ACCORDION -->
 <!-- ============================================================ -->
 <section class="section" id="specs" style="padding-top:0;">
   <span class="seam-label">Specs &amp; FAQ</span>
@@ -2153,95 +2215,15 @@ html:not(.dark) .m3-wrap:hover{outline-color:transparent}
     <div class="accordion reveal">
       <div class="acc-item open">
         <button class="acc-head" aria-expanded="true">
-          <span>v2.4.1<span class="ver-date">Latest — Aug 12, 2026</span></span>
+          <span>v1.0.0 Beta<span class="ver-date">Latest</span></span>
           <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
         </button>
         <div class="acc-body">
           <div class="acc-inner">
             <ul>
-              <li>Fixed a rare blink-detection re-timing glitch on very fast dialogue takes</li>
-              <li>Improved webcam auto-exposure handling for strong backlight</li>
-              <li>Small performance boost in the live viewport preview</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="acc-item">
-        <button class="acc-head" aria-expanded="false">
-          <span>v2.4.0<span class="ver-date">Jul 28, 2026</span></span>
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="acc-body">
-          <div class="acc-inner">
-            <ul>
-              <li>New expression-preset browser with save/recall</li>
-              <li>Head-rotation isolation filter (remove or keep head movement)</li>
-              <li>Export now includes per-bone CSV curves</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="acc-item">
-        <button class="acc-head" aria-expanded="false">
-          <span>v2.3.0<span class="ver-date">Jul 14, 2026</span></span>
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="acc-body">
-          <div class="acc-inner">
-            <ul>
-              <li>Blender 5.1 compatibility pass</li>
-              <li>Batch video processing queue with progress bar</li>
-              <li>Improved ARP face-rig detection</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="acc-item">
-        <button class="acc-head" aria-expanded="false">
-          <span>v2.2.0<span class="ver-date">Jun 30, 2026</span></span>
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="acc-body">
-          <div class="acc-inner">
-            <ul>
-              <li>Live webcam capture from a phone via virtual camera</li>
-              <li>Adaptive smoothing tuned to reduce micro-jitter</li>
-              <li>New soft limits for jaw and eye rotation</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="acc-item">
-        <button class="acc-head" aria-expanded="false">
-          <span>v2.1.0<span class="ver-date">Jun 12, 2026</span></span>
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="acc-body">
-          <div class="acc-inner">
-            <ul>
-              <li>Meta-Rig driver-chain builder</li>
-              <li>One-click NLA strip baking</li>
-              <li>Faster auto-map for custom rigs</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="acc-item">
-        <button class="acc-head" aria-expanded="false">
-          <span>v2.0.0<span class="ver-date">May 20, 2026</span></span>
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="acc-body">
-          <div class="acc-inner">
-            <ul>
-              <li>Initial release of the redesigned v2 engine</li>
-              <li>Webcam, video-file and phone capture</li>
-              <li>Rigify, ARP, Meta-Rig and custom rig auto-mapping</li>
+              <li>Initial public beta of Auto Facial MoCap Pro</li>
+              <li>Record from webcam / phone inside the addon</li>
+              <li>Auto-map onto Rigify, ARP and custom face rigs</li>
             </ul>
           </div>
         </div>
