@@ -1544,6 +1544,12 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 /* Hide Full Catalog section */
 .catalog-section{display:none!important}
 
+/* Support cards — always in a row */
+.support-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;max-width:none!important}
+@media (max-width:900px){.support-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;max-width:none!important}}
+@media (max-width:700px){.support-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+.support-card{height:100%}
+
 /* Purchase warning — edge to edge */
 .purchase-warning{max-width:100%;margin:2.4rem 0 2.6rem}
 .purchase-warning{
