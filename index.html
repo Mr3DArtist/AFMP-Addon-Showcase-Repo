@@ -1544,11 +1544,60 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 /* Hide Full Catalog section */
 .catalog-section{display:none!important}
 
+/* Specs & FAQ — selectable text */
+#specs,#specs *{user-select:text!important;-webkit-user-select:text!important}
+
+/* Hero with side clips */
+.hero-cards{display:grid;grid-template-columns:minmax(0,.7fr) minmax(0,1.6fr) minmax(0,.7fr);gap:1rem;align-items:center;margin-top:1rem}
+.hero-center{text-align:center;min-width:0}
+.hero-center h1{max-width:none}
+.hero-side{position:relative;overflow:hidden;border:1px solid var(--border-strong);border-radius:18px;padding:0;margin:0;background-image:none!important;background:var(--card-bg)!important}
+.hero-side::after{content:none!important}
+.hero-side video{display:block;width:100%;height:100%;object-fit:cover;aspect-ratio:1/3}
+@media (max-width:900px){.hero-cards{gap:.4rem}}
+@media (max-width:560px){.hero-cards{gap:.25rem}}
+
 /* Support cards — always in a row */
-.support-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;max-width:none!important}
-@media (max-width:900px){.support-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;max-width:none!important}}
+.support-badges{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;margin-bottom:2.4rem}
+.support-badges .support-badge{margin:0}
+@media (max-width:600px){.support-badges{flex-direction:column;align-items:center}}
+.support-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;max-width:none!important;gap:.6rem!important}
+@media (max-width:900px){.support-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;max-width:none!important;gap:.6rem!important}}
 @media (max-width:700px){.support-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 .support-card{height:100%}
+#specs .accordion,#specs .acc-item{background-image:none!important;background:var(--card-bg)!important}
+#specs .acc-item::after{content:none!important}
+#specs .acc-inner,#specs .acc-inner *{text-align:left!important}
+#specs .acc-inner{padding:1rem 1.5rem 1.5rem}
+#specs .acc-inner p{max-width:78ch;line-height:1.7}
+#showcase .quickfog-outer{position:relative;overflow:hidden;background-image:none;background:var(--card-bg)}
+#showcase .support-card{position:relative;overflow:hidden;background-image:none;background:var(--card-bg)}
+#showcase .support-card::after{
+  content:'';position:absolute;top:0;left:0;width:45%;height:100%;pointer-events:none;
+  background:linear-gradient(105deg,transparent 45%,rgba(255,255,255,.9) 45%,rgba(255,255,255,.9) 60%,transparent 60%);
+  transform:translateX(-170%) skewX(-20deg);animation:btnShine 3s linear infinite;
+}
+#changelog .acc-item{position:relative;overflow:hidden;background-image:none;background:var(--card-bg)}
+#changelog .acc-item::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(105deg,transparent 45%,rgba(255,255,255,.9) 45%,rgba(255,255,255,.9) 60%,transparent 60%);
+  transform:translateX(-170%) skewX(-20deg);animation:btnShine 3s linear infinite;
+}
+#workflow .workflow-card,
+#workflow .compare-card{position:relative;overflow:hidden;background-image:none;background:var(--card-bg)}
+#workflow .workflow-card::after,
+#workflow .compare-card::after{
+  content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(105deg,transparent 45%,rgba(255,255,255,.9) 45%,rgba(255,255,255,.9) 60%,transparent 60%);
+  transform:translateX(-170%) skewX(-20deg);animation:btnShine 3s linear infinite;
+}
+/* Feature cards — no sheen */
+#workflow .quickfog-outer:has(.feature-row),
+#workflow .feature-row .quickfog-outer{background-image:none;background:var(--card-bg)}
+#workflow .feature-row .quickfog-outer::after{content:none}
+/* Compare main card — no sheen */
+#workflow .quickfog-outer:has(.compare-card){background-image:none;background:var(--card-bg);position:relative}
+#workflow .quickfog-outer:has(.compare-card)::after{content:none}
 
 /* Purchase warning — edge to edge */
 .purchase-warning{max-width:100%;margin:2.4rem 0 2.6rem}
@@ -1595,6 +1644,14 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   transition:background-position .5s ease;
 }
 .price-card:hover,.workflow-card:hover,.support-card:hover,.catalog-card:hover{background-position:-20% 0,0 0,0 0}
+
+/* Hero side clips stay on sides at all widths */
+.hero-cards{display:grid!important;grid-template-columns:minmax(0,.7fr) minmax(0,1.6fr) minmax(0,.7fr)!important}
+@media (max-width:600px){.hero-cards{grid-template-columns:minmax(0,.5fr) minmax(0,1.5fr) minmax(0,.5fr)!important;gap:.3rem!important}}
+.hero-center h1{font-size:clamp(1.7rem,3.6vw,3rem)!important;padding:1rem 0 .6rem!important}
+.hero-center .hero-sub{font-size:clamp(.9rem,1.5vw,1.05rem)!important;margin-top:1rem!important}
+.hero-center .hero-cta{margin-top:1.6rem!important}
+.hero-center .hero-note{font-size:.75rem!important}
 </style>
 </head>
 <body>
@@ -1744,19 +1801,29 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
       <span class="pill">Demo — live webcam tracking to rig</span>
     </div>
 
-    <h1 style="padding:2.6rem 0 1rem;">Facial motion capture,<br /><span class="gradient-text">straight to your rig.</span></h1>
-    <p class="hero-sub">
-      Auto Facial-MoCap Pro Allows you to Apply Facial MoCap from videos Recorded with any webcam, phone, on to your (52 ArKit Shapekeys) Animation Ready Character!
-    </p>
+    <div class="hero-cards">
+      <div class="quickfog-outer hero-side reveal">
+        <video autoplay muted loop playsinline src="assets/videos/rig-map.mp4" aria-label="Rig mapping clip"></video>
+      </div>
+      <div class="hero-center">
+        <h1 style="padding:1.2rem 0 1rem;">Facial motion capture,<br /><span class="gradient-text">straight to your rig.</span></h1>
+        <p class="hero-sub">
+          Auto Facial-MoCap Pro Allows you to Apply Facial MoCap from videos Recorded with any webcam, phone, on to your (52 ArKit Shapekeys) Animation Ready Character!
+        </p>
 
-    <div class="hero-cta">
-      <a class="btn btn-primary" href="#pricing">
-        Get Auto Facial MoCap Pro
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </a>
-      <a class="btn btn-ghost" href="#showcase">Explore Showcase</a>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#pricing">
+            Get Auto Facial MoCap Pro
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="btn btn-ghost" href="#showcase">Explore Showcase</a>
+        </div>
+        <p class="hero-note">Easy Installation • Easy for Beginners</p>
+      </div>
+      <div class="quickfog-outer hero-side reveal">
+        <video autoplay muted loop playsinline src="assets/videos/tracking.mp4" aria-label="Tracking clip"></video>
+      </div>
     </div>
-    <p class="hero-note">Easy Installation • Easy for Beginners</p>
   </div>
 </section>
 
@@ -1985,17 +2052,18 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
       <p class="section-sub" style="margin-inline:auto;">Whether you hit a bug or just need a nudge in the right direction, our team and community are here for you.</p>
     </div>
 
-    <div class="support-badge reveal">
-      <span class="pulse"></span>Avg. Response &lt; 18h
+    <div class="support-badges">
+      <span class="support-badge reveal"><span class="pulse"></span>Avg. Response &lt; 14h</span>
+      <span class="support-badge reveal"><span class="pulse"></span>Fastest Response &lt; 5m</span>
     </div>
 
-    <div class="support-grid reveal">
+    <div class="quickfog-outer" style="padding:.6rem;">
+      <div class="support-grid reveal">
       <a class="support-card" href="#" target="_blank" rel="noopener">
         <div class="support-card-top">
           <span class="support-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6L22 7"/></svg>
           </span>
-          <span class="support-tag">&lt; 24h</span>
         </div>
         <h3>Email Support</h3>
         <p>Direct line to the dev team for bugs and questions.</p>
@@ -2009,7 +2077,6 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           <span class="support-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.4 0-2.7-.3-3.8-.9L4 21l1.8-4.6A8.5 8.5 0 1 1 21 11.5Z"/></svg>
           </span>
-          <span class="support-tag">Instant</span>
         </div>
         <h3>Discord Community</h3>
         <p>Even faster response time with the community and team.</p>
@@ -2023,7 +2090,6 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           <span class="support-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>
           </span>
-          <span class="support-tag">Self-Serve</span>
         </div>
         <h3>Documentation</h3>
         <p>Full reference guides, tutorials and troubleshooting.</p>
@@ -2031,6 +2097,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </span>
       </a>
+      </div>
     </div>
   </div>
 </section>
@@ -2058,12 +2125,10 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         <div class="acc-body">
           <div class="acc-inner">
             <table class="spec-table">
-              <tr><td>Version</td><td>2.0.1 (latest)</td></tr>
-              <tr><td>Blender compatibility</td><td>4.2 LTS – 5.1</td></tr>
-              <tr><td>Supported rigs</td><td>Rigify, ARP, Meta-Rig, custom rigs</td></tr>
-              <tr><td>Video formats</td><td>MP4, MOV, AVI, MKV (offline), webcam / phone live</td></tr>
-              <tr><td>Tracking</td><td>Runs locally &amp; offline — no cloud upload</td></tr>
-              <tr><td>Update policy</td><td>Free lifetime updates</td></tr>
+              <tr><td>Blender compatibility</td><td>5 &amp; Above</td></tr>
+              <tr><td>Supported Character</td><td>52 ARkit ShapeKeys</td></tr>
+              <tr><td>Mocap</td><td>Runs locally &amp; offline — no cloud upload</td></tr>
+              <tr><td>Update policy</td><td>Support Period</td></tr>
             </table>
           </div>
         </div>
@@ -2078,11 +2143,11 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         <div class="acc-body">
           <div class="acc-inner">
             <ul>
-              <li>OS: Windows 10+, macOS 12+, Linux (glibc 2.28+)</li>
-              <li>CPU: Quad-core 2.5 GHz or better</li>
-              <li>Camera: 720p webcam or higher recommended for clean tracking</li>
-              <li>RAM: 8 GB minimum (16 GB recommended for long clips)</li>
-              <li>Disk: 200 MB free space for add-on assets</li>
+              <li>OS: Windows 11</li>
+              <li>CPU: 64-bit dual core 2 GHz with SSE2 support</li>
+              <li>RAM: 4 GB minimum</li>
+              <li>Disk: 1 GB free space</li>
+              <li>GPU: 2 GB VRAM, OpenGL 4.3+</li>
             </ul>
           </div>
         </div>
@@ -2101,23 +2166,14 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 
       <div class="acc-item">
         <button class="acc-head" aria-expanded="false">
-          <span>Which rigs are supported?</span>
+          <span>Which characters are supported?</span>
           <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
         </button>
         <div class="acc-body">
-          <div class="acc-inner">Rigify, Auto Rig Pro, Meta-Rig and most custom face rigs. If your rig uses a standard naming scheme, the auto-mapper will find it; otherwise the point-and-click custom mapper handles anything in under a minute.</div>
+          <div class="acc-inner">While No Rigged Characters are supported only Characters with ARkit Shapekeys are but if your character has Facial rig you can use Faceit Addon for creating ARkit Shapekeys (Creating Shapekeys Take 10 to 15 mins) or with any other addon or your choose then you can start Generating MoCap in Seconds</div>
         </div>
       </div>
 
-      <div class="acc-item">
-        <button class="acc-head" aria-expanded="false">
-          <span>Can I use it in commercial client work?</span>
-          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <div class="acc-body">
-          <div class="acc-inner">Yes. Personal and Pro licenses both allow commercial use. The Studio tier additionally covers multi-seat teams, shared preset libraries and an onboarding session. See the license tiers below for exact terms.</div>
-        </div>
-      </div>
     </div>
 
     <div class="purchase-warning reveal">
@@ -2147,7 +2203,8 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 
     <div class="pricing-grid">
       <!-- Personal -->
-      <a class="price-card reveal" href="#pricing" aria-label="Buy Personal">
+      <div class="price-card featured reveal">
+        <span class="pop-badge">Most popular</span>
         <span class="plan">Personal</span>
         <h3>Seat (1)</h3>
         <div class="price"><sup>$</sup>129</div>
@@ -2156,12 +2213,11 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Seat (1)</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Customer Support (12 Months)</li>
         </ul>
-        <span class="btn btn-ghost">Get Personal</span>
-      </a>
+        <span class="btn btn-primary">Get Personal</span>
+      </div>
 
-      <!-- Commercial (featured) -->
-      <a class="price-card featured reveal" href="#pricing" aria-label="Buy Commercial">
-        <span class="pop-badge">Most popular</span>
+      <!-- Commercial -->
+      <div class="price-card reveal">
         <span class="plan">Commercial</span>
         <h3>Seat (1)</h3>
         <div class="price"><sup>$</sup>169</div>
@@ -2170,11 +2226,11 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Seat (1)</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Customer Support (12 Months)</li>
         </ul>
-        <span class="btn btn-primary">Get Commercial</span>
-      </a>
+        <span class="btn btn-ghost">Get Commercial</span>
+      </div>
 
       <!-- Enterprise -->
-      <a class="price-card reveal" href="#pricing" aria-label="Contact Sales">
+      <div class="price-card reveal">
         <span class="plan">Enterprise</span>
         <h3>Seats (Above 5)</h3>
         <div class="price small">Contact Us</div>
@@ -2185,7 +2241,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Customer Support (12 Months)</li>
         </ul>
         <span class="btn btn-ghost">Contact Sales</span>
-      </a>
+      </div>
     </div>
     <p class="license-note">All licenses are perpetual, with free updates for the lifetime of the product. VAT applies where required.</p>
 
