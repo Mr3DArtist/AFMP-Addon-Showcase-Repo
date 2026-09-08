@@ -1648,10 +1648,15 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 /* Hero side clips stay on sides at all widths */
 .hero-cards{display:grid!important;grid-template-columns:minmax(0,.7fr) minmax(0,1.6fr) minmax(0,.7fr)!important}
 @media (max-width:600px){.hero-cards{grid-template-columns:minmax(0,.5fr) minmax(0,1.5fr) minmax(0,.5fr)!important;gap:.3rem!important}}
-.hero-center h1{font-size:clamp(1.7rem,3.6vw,3rem)!important;padding:1rem 0 .6rem!important}
-.hero-center .hero-sub{font-size:clamp(.9rem,1.5vw,1.05rem)!important;margin-top:1rem!important}
-.hero-center .hero-cta{margin-top:1.6rem!important}
+.hero-copy-card{background-image:none!important;background:var(--card-bg)!important;padding:1.2rem 1.4rem!important;text-align:center!important;width:100%!important}
+.hero-copy-card::after{content:none!important}
+.hero-center h1{font-size:clamp(1.6rem,3.2vw,2.7rem)!important;padding:0 0 .5rem!important}
+.hero-center .hero-sub{font-size:clamp(.8rem,1.3vw,.95rem)!important;margin:0 auto!important;max-width:52ch!important}
 .hero-center .hero-note{font-size:.75rem!important}
+.hero-cards{align-items:stretch!important}
+.hero-center{display:flex!important;flex-direction:column!important;justify-content:flex-start!important;height:100%!important}
+.hero-center .hero-cta{margin-top:auto!important;padding-bottom:.4rem!important;align-self:center!important}
+.hero-center .hero-note{padding-bottom:.4rem!important;align-self:center!important;width:fit-content!important}
 </style>
 </head>
 <body>
@@ -1806,10 +1811,12 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         <video autoplay muted loop playsinline src="assets/videos/rig-map.mp4" aria-label="Rig mapping clip"></video>
       </div>
       <div class="hero-center">
-        <h1 style="padding:1.2rem 0 1rem;">Facial motion capture,<br /><span class="gradient-text">straight to your rig.</span></h1>
-        <p class="hero-sub">
-          Auto Facial-MoCap Pro Allows you to Apply Facial MoCap from videos Recorded with any webcam, phone, on to your (52 ArKit Shapekeys) Animation Ready Character!
-        </p>
+        <div class="quickfog-outer hero-copy-card">
+          <h1>Facial motion capture,<br /><span class="gradient-text">straight to your rig.</span></h1>
+          <p class="hero-sub">
+            Auto Facial-MoCap Pro Allows you to Apply Facial MoCap from videos Recorded with any webcam, phone, on to your (52 AR-Kit Shapekeys) Animation Ready Character!
+          </p>
+        </div>
 
         <div class="hero-cta">
           <a class="btn btn-primary" href="#pricing">
