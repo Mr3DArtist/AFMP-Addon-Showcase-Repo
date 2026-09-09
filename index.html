@@ -1645,6 +1645,12 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 }
 .price-card:hover,.workflow-card:hover,.support-card:hover,.catalog-card:hover{background-position:-20% 0,0 0,0 0}
 
+/* Feature row with text left, clip right */
+.feature-row.side-row{display:grid!important;grid-template-columns:minmax(0,30%) minmax(0,70%)!important;gap:.55rem!important;align-items:stretch!important}
+.feature-row.side-row .feature-title{font-size:clamp(.95rem,1.6vw,1.25rem)!important;text-align:center!important}
+.feature-row.side-row .feature-copy{font-size:clamp(.8rem,1.1vw,.95rem)!important;text-align:center!important}
+@media (max-width:760px){.feature-row.side-row{grid-template-columns:minmax(0,30%) minmax(0,70%)!important}}
+
 /* Hero side clips stay on sides at all widths */
 .hero-cards{display:grid!important;grid-template-columns:minmax(0,.7fr) minmax(0,1.6fr) minmax(0,.7fr)!important}
 @media (max-width:600px){.hero-cards{grid-template-columns:minmax(0,.5fr) minmax(0,1.5fr) minmax(0,.5fr)!important;gap:.3rem!important}}
@@ -1656,7 +1662,9 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 .hero-cards{align-items:stretch!important}
 .hero-center{display:flex!important;flex-direction:column!important;justify-content:flex-start!important;height:100%!important}
 .hero-center .hero-cta{margin-top:auto!important;padding-bottom:.4rem!important;align-self:center!important}
-.hero-center .hero-note{padding-bottom:.4rem!important;align-self:center!important;width:fit-content!important}
+.hero-center .hero-cta .btn{padding:.62rem 1.3rem!important;font-size:.92rem!important;gap:.5rem!important;border-radius:11px!important}
+.hero-center .hero-cta .btn svg{width:13px!important;height:13px!important}
+.hero-center .hero-note{padding-bottom:.4rem!important;margin-top:.35rem!important;align-self:center!important;width:fit-content!important}
 </style>
 </head>
 <body>
@@ -1812,7 +1820,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
       </div>
       <div class="hero-center">
         <div class="quickfog-outer hero-copy-card">
-          <h1>Facial motion capture,<br /><span class="gradient-text">straight to your rig.</span></h1>
+          <h1>Facial Motion Capture<br />Made Super Easy!</h1>
           <p class="hero-sub">
             Auto Facial-MoCap Pro Allows you to Apply Facial MoCap from videos Recorded with any webcam, phone, on to your (52 AR-Kit Shapekeys) Animation Ready Character!
           </p>
@@ -1820,12 +1828,12 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 
         <div class="hero-cta">
           <a class="btn btn-primary" href="#pricing">
-            Get Auto Facial MoCap Pro
+            Get Now
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           </a>
-          <a class="btn btn-ghost" href="#showcase">Explore Showcase</a>
+          <a class="btn btn-ghost" href="#showcase">Documentation</a>
         </div>
-        <p class="hero-note">Easy Installation • Easy for Beginners</p>
+        <p class="hero-note">100% Local • Your Footage Never Leaves Your PC</p>
       </div>
       <div class="quickfog-outer hero-side reveal">
         <video autoplay muted loop playsinline src="assets/videos/tracking.mp4" aria-label="Tracking clip"></video>
@@ -1901,9 +1909,9 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
       <p class="section-sub">Seven stages that take you from raw video to final rig animation — with the heavy lifting done automatically.</p>
     </div>
 
-    <!-- Row 1: Text + clip inside one main card -->
+    <!-- Row 1: Text left + clip right inside one main card -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:1.2rem;height:100%;text-align:center;">
             <h3 class="feature-title">Easy to Use Addon UI</h3>
