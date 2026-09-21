@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Auto Facial MoCap Pro — Facial Motion Capture for Blender</title>
-<meta name="description" content="Auto Facial MoCap Pro turns any webcam or video clip into clean, production-ready facial animation for Blender. Auto-maps to Rigify, ARP and custom face rigs in minutes." />
+<title>Auto Face MoCap Pro, Facial Motion Capture for Blender</title>
+<meta name="description" content="Auto Face MoCap Pro turns any webcam or video clip into clean, production ready facial animation for Blender. Auto maps to Rigify, ARP and custom face rigs in minutes." />
 
 <!-- Fonts (graceful fallback to system stack offline) -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -394,9 +394,12 @@ section { scroll-margin-top: 84px; }
 }
 
 /* ============================================================
-   6. WORKFLOW COMPARISON — Old Way vs With Auto Facial MoCap Pro
+   6. WORKFLOW COMPARISON — Old Way vs With Auto Face MoCap Pro
    ============================================================ */
-.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8rem; align-items: stretch; }
+/* align-items:start, not stretch — stretching made the shorter card pool empty space
+   above its time chip (76px/134px measured in the owner's screenshot). Each card now
+   hugs its own content; the two cards legitimately end at different heights. */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8rem; align-items: start; }
 .compare-card {
   border: 1px solid var(--border); border-radius: 20px; padding: 2.1rem 2rem;
   background: var(--card-bg); display: flex; flex-direction: column;
@@ -474,10 +477,32 @@ section { scroll-margin-top: 84px; }
 .price-card.featured { border-color: var(--color-tertiary); box-shadow: var(--shadow); }
 .pop-badge {
   position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+  z-index: 2;   /* stay above the card's ::after sheen, which is generated last */
   padding: .32rem .95rem; border-radius: 999px; white-space: nowrap;
   background: var(--color-tertiary); color: var(--bg);
   font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
   box-shadow: 0 10px 24px -10px var(--glow-tertiary);
+}
+/* Sheen on the "Most popular" card — same shine the other cards get, but the sweep
+   is a background-position animation instead of a translated ::after, because
+   .price-card must NOT take overflow:hidden: that would clip .pop-badge, which
+   hangs 13px above the top edge. Backgrounds clip to the box (and its radius)
+   on their own, so the band can never escape the card. */
+.price-card.featured::after {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none;
+  background-image: linear-gradient(115deg,
+    transparent 43.5%, rgba(255,255,255,.9) 43.5%,
+    rgba(255,255,255,.9) 58.5%, transparent 58.5%);
+  background-size: 220% 100%;
+  background-repeat: no-repeat;
+  background-position: 140% 0;
+  animation: cardSheen 3s linear infinite;
+}
+@keyframes cardSheen {
+  0%        { background-position: 140% 0; }
+  40%, 100% { background-position: -40% 0; }
 }
 .price-card .plan { font-size: .8rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .price-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; letter-spacing: -.02em; margin: .35rem 0 .9rem; }
@@ -492,6 +517,9 @@ section { scroll-margin-top: 84px; }
 .plan-list li.no { color: var(--muted); opacity: .55; }
 .plan-list li.no .tick { background: color-mix(in srgb, var(--ink) 14%, transparent); color: var(--muted); }
 .price-card .btn { margin-top: auto; justify-content: center; white-space: nowrap; }
+/* Keep the featured card's CTA in front of the sheen — the card's ::after is painted
+   last, so it would otherwise sweep over the button and fade its left half. */
+.price-card.featured .btn { position: relative; z-index: 2; }
 .license-note { text-align: center; margin-top: 1.8rem; font-size: .82rem; color: var(--muted); }
 
 /* Offer-stack upsell box (from the pasted offerStack markup, themed) */
@@ -938,17 +966,13 @@ section { scroll-margin-top: 84px; }
 }
 
 /* ============================================================
-   FEATURE CLIP HOVER EXPANSION — hold 0.5s, clip grows edge-to-edge
-   and the side text moves below; reverts on mouse-out.
+   FEATURE CLIPS — deliberately static.
+   No hover zoom and no hover slide: hovering a clip below the
+   sub-divider moves nothing — not the clip, not the text beside it.
+   The page-wide glass hover (outline ring + 3px lift) still applies.
    ============================================================ */
-/* Feature clip hover zoom (hold 0.5s) */
 .feature-media {
   transition: transform .4s cubic-bezier(.22,.61,.36,1), border-color .4s ease, box-shadow .4s ease;
-}
-.feature-media.media-zoomed {
-  transform: scale(1.03);
-  border-color: var(--color-tertiary);
-  box-shadow: var(--shadow);
 }
 
 /* ============================================================
@@ -1363,13 +1387,14 @@ html:not(.dark) .quickfog-outer:hover,html:not(.dark) .feature-card:hover,html:n
 .reveal{opacity:0;transform:translateY(30px);transition:opacity .8s ease,transform .8s ease}
 .reveal.visible{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
-/* Primary button — Gobos gradient + moving sheen */
+/* Primary button — AFMP deep green + moving sheen */
 .btn-primary{
   position:relative;overflow:hidden;
-  background:linear-gradient(135deg,#22d3ee,#6366f1 45%,#f59e0b) !important;
-  color:#111827 !important;border:1px solid rgba(255,255,255,.2);
-  box-shadow:0 14px 34px -12px color-mix(in srgb,var(--ink) 30%,transparent);
+  background:linear-gradient(135deg,#10b981,#006b15) !important;
+  color:#ffffff !important;border:1px solid rgba(255,255,255,.2);
+  box-shadow:0 14px 34px -12px color-mix(in srgb,#006b15 55%,transparent);
 }
+.btn-primary:hover{box-shadow:0 22px 44px -14px color-mix(in srgb,#10b981 45%,transparent)}
 .btn-primary::after{
   content:'';position:absolute;top:0;left:0;width:45%;height:100%;pointer-events:none;
   background:linear-gradient(105deg,transparent 45%,rgba(255,255,255,.9) 45%,rgba(255,255,255,.9) 60%,transparent 60%);
@@ -1644,12 +1669,27 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   transition:background-position .5s ease;
 }
 .price-card:hover,.workflow-card:hover,.support-card:hover,.catalog-card:hover{background-position:-20% 0,0 0,0 0}
+/* The Most popular card carries its own moving sheen (see .price-card.featured::after),
+   so the glass hover sweep is dropped on that one card only — it keeps the lift, the
+   border highlight and the expanding ring. */
+.price-card.featured:hover{background-position:120% 0,0 0,0 0}
 
-/* Feature row with text left, clip right */
-.feature-row.side-row{display:grid!important;grid-template-columns:minmax(0,30%) minmax(0,70%)!important;gap:.55rem!important;align-items:stretch!important}
+/* Feature row with text left, clip right — fixed layout, no hover slide */
+.feature-row.side-row{display:flex!important;flex-wrap:nowrap;align-items:stretch;gap:.55rem}
+.feature-row.side-row .feature-text{flex:0 1 30%;width:30%;min-width:0;display:flex}
+.feature-row.side-row .feature-text .quickfog-outer{width:100%;display:flex;flex-direction:column;justify-content:center}
 .feature-row.side-row .feature-title{font-size:clamp(.95rem,1.6vw,1.25rem)!important;text-align:center!important}
 .feature-row.side-row .feature-copy{font-size:clamp(.8rem,1.1vw,.95rem)!important;text-align:center!important}
-@media (max-width:760px){.feature-row.side-row{grid-template-columns:minmax(0,30%) minmax(0,70%)!important}}
+.feature-row.side-row .feature-media{flex:0 1 70%;width:70%;min-width:0}
+@media (max-width:760px){.feature-row.side-row .feature-text{flex:0 1 30%;width:30%}.feature-row.side-row .feature-media{flex:0 1 70%;width:70%}}
+
+/* Portrait clip card — the media box takes the SOURCE's own aspect (464x832) so the
+   clip FILLS it: no letterbox band, no crop. Columns are 66/34 to give the clip real
+   presence, so this one row runs TALLER than the 16:9 cards beside it — that is the
+   requested look, not a layout slip. */
+.feature-row.side-row.portrait-row .feature-text{flex:0 1 66%;width:66%}
+.feature-row.side-row.portrait-row .feature-media{flex:0 1 34%;width:34%;aspect-ratio:464/832}
+@media (max-width:760px){.feature-row.side-row.portrait-row .feature-text{flex:0 1 50%;width:50%}.feature-row.side-row.portrait-row .feature-media{flex:0 1 50%;width:50%}}
 
 /* Hero side clips stay on sides at all widths */
 .hero-cards{display:grid!important;grid-template-columns:minmax(0,.7fr) minmax(0,1.6fr) minmax(0,.7fr)!important}
@@ -1687,11 +1727,11 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 <header class="site-header" id="header">
   <div class="container header-inner">
     <div class="brand-group">
-      <a class="brand" href="#top" aria-label="Auto Facial MoCap Pro home">
+      <a class="brand" href="#top" aria-label="Auto Face MoCap Pro home">
         <span class="brand-mark">
-          <img src="https://mr3d.carrd.co/assets/images/image05.png?v=377d2914" alt="Auto Facial MoCap Pro logo" style="width:auto;height:auto;max-width:44px;max-height:44px;object-fit:contain;display:block;" />
+          <img src="https://mr3dpageclips.carrd.co/assets/images/image11.png" alt="Auto Face MoCap Pro logo" style="width:auto;height:auto;max-width:44px;max-height:44px;object-fit:contain;display:block;" />
         </span>
-        <span>Auto Facial <span style="color:var(--color-tertiary)">MoCap Pro</span></span>
+        <span>Auto Face <span style="color:var(--color-tertiary)">MoCap Pro</span></span>
       </a>
     </div>
 
@@ -1720,7 +1760,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 <!-- ============================================================ -->
 <!-- GALLERY — product showcase strip, right below the top bar     -->
 <!-- ============================================================ -->
-<section class="gallery-section" id="gallery" aria-label="More add-ons by Mr3D">
+<section class="gallery-section" id="gallery" aria-label="More add ons by Mr3D">
   <span class="seam-label">More from Mr3D</span>
   <canvas class="section-particles" data-pattern="drift" aria-hidden="true"></canvas>
   <div class="container">
@@ -1739,25 +1779,25 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
       <div class="gallery-viewport" id="gViewport">
         <ul class="gallery-track" id="gTrack">
           <li class="g-card">
-            <a class="g-thumb" href="#" title="Replace with your next add-on link">
+            <a class="g-thumb" href="#" title="Replace with your next add on link">
               <span class="g-frame">
-                <span class="g-ph gp-5" role="img" aria-label="Next add-on placeholder">
+                <span class="g-ph gp-5" role="img" aria-label="Next add on placeholder">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 20 6.5v11L12 22l-8-4.5v-11L12 2Z"/><path d="M12 8.5 16 11v2.5l-4 2.5-4-2.5V11l4-2.5Z"/></svg>
                 </span>
                 <span class="g-ph-tag hot">NEW</span>
               </span>
-              <span class="g-caption"><span class="g-name">Add-on 05</span><span class="g-cta">View &rarr;</span></span>
+              <span class="g-caption"><span class="g-name">Add on 05</span><span class="g-cta">View &rarr;</span></span>
             </a>
           </li>
           <li class="g-card">
             <a class="g-thumb" href="https://superhivemarket.com/products/gobos-master?ref=473" target="_blank" rel="noopener">
               <span class="g-frame">
-                <span class="g-ph gp-1" role="img" aria-label="Auto Facial MoCap Pro">
-                  <img src="https://mr3d.carrd.co/assets/images/image06.jpg?v=aacc3338" alt="Auto Facial MoCap Pro" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                <span class="g-ph gp-1" role="img" aria-label="Auto Face MoCap Pro">
+                  <img src="https://mr3d.carrd.co/assets/images/image06.jpg?v=aacc3338" alt="Auto Face MoCap Pro" style="width:100%;height:100%;object-fit:cover;display:block;" />
                 </span>
                 <span class="g-ph-tag hot">Featured</span>
               </span>
-              <span class="g-caption"><span class="g-name">Auto Facial MoCap Pro</span><span class="g-cta">View &rarr;</span></span>
+              <span class="g-caption"><span class="g-name">Auto Face MoCap Pro</span><span class="g-cta">View &rarr;</span></span>
             </a>
           </li>
           <li class="g-card">
@@ -1804,14 +1844,14 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   <!-- Antigravity-style particle pattern background -->
   <canvas class="section-particles" data-pattern="orbit" aria-hidden="true"></canvas>
   <div class="container">
-    <div class="hero-media" role="img" aria-label="Auto Facial MoCap Pro demo preview">
+    <div class="hero-media" role="img" aria-label="Auto Face MoCap Pro demo preview">
       <!-- MEDIA PLACEHOLDER: drop your hero clip into assets/videos/hero-demo.mp4 -->
       <video autoplay muted loop playsinline src="assets/videos/hero-demo.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
       <div class="grid-lines"></div>
       <button class="play-btn" aria-label="Play demo video">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg>
       </button>
-      <span class="pill">Demo — live webcam tracking to rig</span>
+      <span class="pill">Demo: live webcam tracking to rig</span>
     </div>
 
     <div class="hero-cards">
@@ -1822,7 +1862,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         <div class="quickfog-outer hero-copy-card">
           <h1>Facial Motion Capture<br />Made Super Easy!</h1>
           <p class="hero-sub">
-            Auto Facial-MoCap Pro Allows you to Apply Facial MoCap from videos Recorded with any webcam, phone, on to your (52 AR-Kit Shapekeys) Animation Ready Character!
+            Auto Face MoCap Pro Allows you to Apply Facial MoCap from videos Recorded with any webcam, phone, on to your (52 ARKit Shapekeys) Animation Ready Character!
           </p>
         </div>
 
@@ -1849,8 +1889,8 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   <span class="seam-label">Workflow &amp; Features</span>
   <div class="container">
     <div class="section-head reveal" style="text-align:center;">
-      <span class="section-kicker" style="justify-content:center;">Auto Facial MoCap Pro</span>
-      <h2 class="section-title">2-click workflow</h2>
+      <span class="section-kicker" style="justify-content:center;">Auto Face MoCap Pro</span>
+      <h2 class="section-title">2 click workflow</h2>
       <p class="section-sub" style="margin-inline:auto;">From raw footage to rig animation in just two clicks.</p>
     </div>
 
@@ -1864,8 +1904,8 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 
         <div class="workflow-card reveal">
           <div class="workflow-num">2</div>
-          <h3>Apply Facial-MoCap</h3>
-          <p>Select your character's face, click Apply MoCap — make sure your character has 52 ARKit shapekeys.</p>
+          <h3>Apply Facial MoCap</h3>
+          <p>Select your character's face, click Apply MoCap, make sure your character has 52 ARKit shapekeys.</p>
         </div>
       </div>
     </div>
@@ -1878,22 +1918,22 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           <h3>Manual tracking &amp; cleanup</h3>
           <p class="meta">Point trackers by hand, then scrub every frame.</p>
           <ul class="compare-steps">
-            <li><span class="step-num">1</span>Manually place &amp; re-place 2D trackers</li>
-            <li><span class="step-num">2</span>Hand-map each tracker to a bone or shape key</li>
+            <li><span class="step-num">1</span>Manually place &amp; re place 2D trackers</li>
+            <li><span class="step-num">2</span>Hand map each tracker to a bone or shape key</li>
             <li><span class="step-num">3</span>Clean drift, spikes and jitter frame by frame</li>
-            <li><span class="step-num">4</span>Re-time blinks and eye movement by eye</li>
+            <li><span class="step-num">4</span>Re time blinks and eye movement by eye</li>
           </ul>
           <span class="time-chip">~ 4 hours</span>
         </div>
 
         <!-- With add-on -->
         <div class="compare-card new reveal">
-          <span class="vs-badge">With Auto Facial MoCap Pro</span>
+          <span class="vs-badge">With Auto Face MoCap Pro</span>
           <h3>Record, map, bake</h3>
           <p class="meta">Clean drivers on your rig from the first take.</p>
           <ul class="compare-steps">
             <li><span class="step-num">1</span>Record the clip (webcam, phone or video file)</li>
-            <li><span class="step-num">2</span>Click <strong>Auto-Map</strong> onto your Rigify / ARP rig</li>
+            <li><span class="step-num">2</span><span>Click <strong>Auto Map</strong> onto your Rigify / ARP rig</span></li>
             <li><span class="step-num">3</span>Apply smoothing &amp; blink detection, then bake</li>
           </ul>
           <span class="time-chip">~ 12 minutes</span>
@@ -1906,7 +1946,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
     <div class="section-head reveal" style="margin-top:2.4rem;">
       <span class="section-kicker">Features</span>
       <h2 class="section-title">Capture a performance,<br />not a cleanup job.</h2>
-      <p class="section-sub">Seven stages that take you from raw video to final rig animation — with the heavy lifting done automatically.</p>
+      <p class="section-sub">Eleven stages that take you from raw video to final rig animation, with the heavy lifting done automatically.</p>
     </div>
 
     <!-- Row 1: Text left + clip right inside one main card -->
@@ -1916,70 +1956,154 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Easy to Use Addon UI</h3>
             <p class="feature-copy">
-              Auto Facial MoCap Pro detects the landmarks it needs, then maps them onto your rig
-              automatically — eyebrows, eyelids, jaw, lips, cheeks and head rotation — without touching
+              Auto Face MoCap Pro detects the landmarks it needs, then maps them onto your rig
+              automatically: eyebrows, eyelids, jaw, lips, cheeks and head rotation, without touching
               your existing bone constraints.
             </p>
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Rig mapping preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="assets/videos/rig-map.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video37.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Rig Mapping</span>
           <span class="media-reel"><span class="pulse"></span>Preview clip</span>
         </div>
       </div>
     </div>
 
-    <!-- Row 2: Text + clip inside one main card -->
+    <!-- Row 2: ARKit shape keys -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
-          <div class="quickfog-outer" style="padding:1.2rem;height:100%;text-align:center;">
+          <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
+            <h3 class="feature-title">Built on the 52 ARKit shape keys</h3>
+            <p class="feature-copy">
+              Your character's 52 ARKit blend shapes carry the performance: eyes, brows, jaw, lips,
+              cheeks, nose and tongue. Every key animates live on the mesh as the take plays, so any
+              rig that ships the standard set is ready to go.
+            </p>
+          </div>
+        </div>
+        <div class="feature-media" role="img" aria-label="ARKit shape keys preview" style="margin:0;">
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video41.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <span class="media-tag">ARKit Shape Keys</span>
+          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Side by Side -->
+    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+      <div class="feature-row side-row reveal" style="padding:0;">
+        <div class="feature-text">
+          <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
+            <h3 class="feature-title">Compare the take side by side with your character</h3>
+            <p class="feature-copy">
+              The source footage and your driven character play together in one view. Pause on any
+              frame and zoom in to check a blink, a lip sync or a brow raise against the performance
+              before you bake.
+            </p>
+          </div>
+        </div>
+        <div class="feature-media" role="img" aria-label="Side by side preview" style="margin:0;">
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video38.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <span class="media-tag">Side by Side</span>
+          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 4: Register Character -->
+    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+      <div class="feature-row side-row reveal" style="padding:0;">
+        <div class="feature-text">
+          <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
+            <h3 class="feature-title">Register your character's face rig once</h3>
+            <p class="feature-copy">
+              Point the addon at your character's face bones, give the setup a name, and it is
+              registered as a preset you can recall on any take. A stylised anime rig and a realistic
+              human rig both go through the same flow.
+            </p>
+          </div>
+        </div>
+        <div class="feature-media" role="img" aria-label="Register character preview" style="margin:0;">
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video39.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <span class="media-tag">Register Character</span>
+          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 5: Final Take -->
+    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+      <div class="feature-row side-row portrait-row reveal" style="padding:0;">
+        <div class="feature-text">
+          <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
+            <h3 class="feature-title">The finished performance on your character</h3>
+            <p class="feature-copy">
+              Your take plays back as finished animation on the character. Scrub the timeline to any
+              beat and what you see is what renders, with blink, brows, jaw and lips all arriving on
+              the same pass.
+            </p>
+          </div>
+        </div>
+        <div class="feature-media" role="img" aria-label="Finished performance preview" style="margin:0;">
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video42.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1"></video>
+          <span class="media-tag">Final Take</span>
+          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 6: Text + clip inside one main card -->
+    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+      <div class="feature-row side-row reveal" style="padding:0;">
+        <div class="feature-text">
+          <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Track from webcam, video or recorded clips</h3>
             <p class="feature-copy">
-              You can Record Clips Right from inside the addon from your Phone either via Wi-Fi Or Via USD tethering, or Use the footage you already shot on a phone/webcam. The addon model runs offline and gives great results if the face is clearly visible. or the Lighting is Good
+              You can Record Clips Right from inside the addon from your Phone either via WiFi Or Via USD tethering, or Use the footage you already shot on a phone/webcam. The addon model runs offline and gives great results if the face is clearly visible. or the Lighting is Good
             </p>
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Tracking preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="assets/videos/tracking.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video40.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Tracking</span>
           <span class="media-reel"><span class="pulse"></span>Preview clip</span>
         </div>
       </div>
     </div>
 
-    <!-- Row 3 -->
+    <!-- Row 7 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
-          <div class="quickfog-outer" style="padding:1.2rem;height:100%;text-align:center;">
-            <h3 class="feature-title">Production-ready filters &amp; auto-cleanup</h3>
+          <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
+            <h3 class="feature-title">Production ready filters &amp; auto cleanup</h3>
             <p class="feature-copy">
-              Adaptive smoothing removes micro-jitter, blink detection rebuilds natural eyelid cycles, and
-              built-in limits keep jaw, eyes and head rotation inside believable ranges. Bake to keyframes
+              Adaptive smoothing removes micro jitter, blink detection rebuilds natural eyelid cycles, and
+              built in limits keep jaw, eyes and head rotation inside believable ranges. Bake to keyframes
               or NLA strips when you're happy.
             </p>
           </div>
         </div>
-        <div class="feature-media" role="img" aria-label="Clean-up preview" style="margin:0;">
+        <div class="feature-media" role="img" aria-label="Clean up preview" style="margin:0;">
           <video autoplay muted loop playsinline src="assets/videos/cleanup.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
-          <span class="media-tag">Clean-Up &amp; Bake</span>
+          <span class="media-tag">Clean Up &amp; Bake</span>
           <span class="media-reel"><span class="pulse"></span>Preview clip</span>
         </div>
       </div>
     </div>
 
-    <!-- Row 4 -->
+    <!-- Row 8 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
-          <div class="quickfog-outer" style="padding:1.2rem;height:100%;text-align:center;">
+          <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Bake clean drivers &amp; keyframes in one pass</h3>
             <p class="feature-copy">
-              Turn any take into final animation with one click. Auto Facial MoCap Pro bakes tracked
-              motion to shape keys, bone drivers, NLA strips or plain keyframes — keeping your timeline
-              tidy and your takes non-destructive.
+              Turn any take into final animation with one click. Auto Face MoCap Pro bakes tracked
+              motion to shape keys, bone drivers, NLA strips or plain keyframes, keeping your timeline
+              tidy and your takes non destructive.
             </p>
           </div>
         </div>
@@ -1991,14 +2115,14 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
       </div>
     </div>
 
-    <!-- Row 5 -->
+    <!-- Row 9 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
-          <div class="quickfog-outer" style="padding:1.2rem;height:100%;text-align:center;">
-            <h3 class="feature-title">Real-time viewport feedback while you record</h3>
+          <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
+            <h3 class="feature-title">Real time viewport feedback while you record</h3>
             <p class="feature-copy">
-              Watch the rig move as you record. A low-latency viewport preview shows every blink and
+              Watch the rig move as you record. A low latency viewport preview shows every blink and
               brow raise live, so you can correct a performance before you even stop recording.
             </p>
           </div>
@@ -2011,15 +2135,15 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
       </div>
     </div>
 
-    <!-- Row 6 -->
+    <!-- Row 10 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
-          <div class="quickfog-outer" style="padding:1.2rem;height:100%;text-align:center;">
+          <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Export motion to any pipeline</h3>
             <p class="feature-copy">
               Ship your takes anywhere. Export clean FBX, JSON or CSV motion data for use in other DCCs,
-              game engines or VFX tools — with per-bone curves preserved.
+              game engines or VFX tools, with per bone curves preserved.
             </p>
           </div>
         </div>
@@ -2031,15 +2155,15 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
       </div>
     </div>
 
-    <!-- Row 7 -->
+    <!-- Row 11 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
-          <div class="quickfog-outer" style="padding:1.2rem;height:100%;text-align:center;">
+          <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Expression presets for every shot</h3>
             <p class="feature-copy">
-              Dial in a look fast. Packaged expression presets and custom shape-key templates cover
-              everything from subtle dialogue to exaggerated stylized takes — save your own and recall
+              Dial in a look fast. Packaged expression presets and custom shape key templates cover
+              everything from subtle dialogue to exaggerated stylized takes. Save your own and recall
               them in one click.
             </p>
           </div>
@@ -2142,7 +2266,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
             <table class="spec-table">
               <tr><td>Blender compatibility</td><td>5 &amp; Above</td></tr>
               <tr><td>Supported Character</td><td>52 ARkit ShapeKeys</td></tr>
-              <tr><td>Mocap</td><td>Runs locally &amp; offline — no cloud upload</td></tr>
+              <tr><td>Mocap</td><td>Runs locally &amp; offline, no cloud upload</td></tr>
               <tr><td>Update policy</td><td>Support Period</td></tr>
             </table>
           </div>
@@ -2159,7 +2283,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           <div class="acc-inner">
             <ul>
               <li>OS: Windows 11</li>
-              <li>CPU: 64-bit dual core 2 GHz with SSE2 support</li>
+              <li>CPU: 64 bit dual core 2 GHz with SSE2 support</li>
               <li>RAM: 4 GB minimum</li>
               <li>Disk: 1 GB free space</li>
               <li>GPU: 2 GB VRAM, OpenGL 4.3+</li>
@@ -2175,7 +2299,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
         </button>
         <div class="acc-body">
-          <div class="acc-inner">No. A standard webcam, a phone, or any existing video file works. The add-on runs entirely on your machine, so you can also use pre-recorded footage from shoots, meetups or archival clips without sending data anywhere.</div>
+          <div class="acc-inner">No. A standard webcam, a phone, or any existing video file works. The add on runs entirely on your machine, so you can also use pre recorded footage from shoots, meetups or archival clips without sending data anywhere.</div>
         </div>
       </div>
 
@@ -2224,7 +2348,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         <h3>Seat (1)</h3>
         <div class="price"><sup>$</sup>129</div>
         <ul class="plan-list">
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Auto Facial Pro (FULL)</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Auto Face MoCap Pro (FULL)</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Seat (1)</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Customer Support (12 Months)</li>
         </ul>
@@ -2237,7 +2361,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         <h3>Seat (1)</h3>
         <div class="price"><sup>$</sup>169</div>
         <ul class="plan-list">
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Auto Facial Pro (FULL)</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Auto Face MoCap Pro (FULL)</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Seat (1)</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Customer Support (12 Months)</li>
         </ul>
@@ -2250,7 +2374,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         <h3>Seats (Above 5)</h3>
         <div class="price small">Contact Us</div>
         <ul class="plan-list">
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Auto Facial Pro (FULL)</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Auto Face MoCap Pro (FULL)</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Seats (Above 5)</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Can Request Custom Features</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Customer Support (12 Months)</li>
@@ -2285,7 +2409,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   <div class="container">
     <div class="section-head reveal" style="text-align:center;">
       <span class="section-kicker" style="justify-content:center;">Changelog</span>
-      <h2 class="section-title">What's new in Auto Facial MoCap Pro</h2>
+      <h2 class="section-title">What's new in Auto Face MoCap Pro</h2>
       <p class="section-sub" style="margin-inline:auto;">Click any version to expand its notes.</p>
     </div>
 
@@ -2298,9 +2422,9 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         <div class="acc-body">
           <div class="acc-inner">
             <ul>
-              <li>Initial public beta of Auto Facial MoCap Pro</li>
+              <li>Initial public beta of Auto Face MoCap Pro</li>
               <li>Record from webcam / phone inside the addon</li>
-              <li>Auto-map onto Rigify, ARP and custom face rigs</li>
+              <li>Auto map onto Rigify, ARP and custom face rigs</li>
             </ul>
           </div>
         </div>
@@ -2319,7 +2443,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
     <div class="catalog-head reveal">
       <div>
         <span class="section-kicker">Full catalog</span>
-        <h2 class="g-title">Every add-on, one place</h2>
+        <h2 class="g-title">Every add on, one place</h2>
         <p class="g-sub">24 products &middot; 1200&times;600 previews &middot; click any card to visit the marketplace.</p>
       </div>
       <div class="gallery-controls">
@@ -2342,7 +2466,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 
 <script>
 /* ============================================================
-   AUTO FACIAL MOCAP PRO — LANDING PAGE JS (no dependencies)
+   AUTO FACE MOCAP PRO — LANDING PAGE JS (no dependencies)
    ============================================================ */
 (function () {
   'use strict';
@@ -2585,7 +2709,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   if (playBtn) {
     playBtn.addEventListener('click', function () {
       var pill = document.querySelector('.hero-media .pill');
-      if (pill) pill.textContent = 'MEDIA PLACEHOLDER — attach your MP4 / WebM demo video here';
+      if (pill) pill.textContent = 'MEDIA PLACEHOLDER: attach your MP4 / WebM demo video here';
     });
   }
 
@@ -2595,30 +2719,30 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   // tag:  optional small badge (e.g. 'Featured') · g: gradient class gp-1…gp-6
   // Thumbnails are displayed at 1200×600 (2:1) — swap the gradient for a real <img>.
   var products = [
-    { name: 'Auto Facial MoCap Pro', href: '#pricing', tag: 'Featured', g: 'gp-1' },
+    { name: 'Auto Face MoCap Pro', href: '#pricing', tag: 'Featured', g: 'gp-1' },
     { name: 'True Dark Themes Pack', href: 'https://blendermarket.com/products/true-dark-blender-themes-pack', g: 'gp-2' },
     { name: 'Gobos Master', href: 'https://superhivemarket.com/products/gobos-master', g: 'gp-3' },
     { name: 'Decalify', href: 'https://superhivemarket.com/products/decalify', g: 'gp-4' },
-    { name: 'Add-on 05', href: '#', g: 'gp-5' },
-    { name: 'Add-on 06', href: '#', g: 'gp-6' },
-    { name: 'Add-on 07', href: '#', g: 'gp-1' },
-    { name: 'Add-on 08', href: '#', g: 'gp-2' },
-    { name: 'Add-on 09', href: '#', g: 'gp-3' },
-    { name: 'Add-on 10', href: '#', g: 'gp-4' },
-    { name: 'Add-on 11', href: '#', g: 'gp-5' },
-    { name: 'Add-on 12', href: '#', g: 'gp-6' },
-    { name: 'Add-on 13', href: '#', g: 'gp-1' },
-    { name: 'Add-on 14', href: '#', g: 'gp-2' },
-    { name: 'Add-on 15', href: '#', g: 'gp-3' },
-    { name: 'Add-on 16', href: '#', g: 'gp-4' },
-    { name: 'Add-on 17', href: '#', g: 'gp-5' },
-    { name: 'Add-on 18', href: '#', g: 'gp-6' },
-    { name: 'Add-on 19', href: '#', g: 'gp-1' },
-    { name: 'Add-on 20', href: '#', g: 'gp-2' },
-    { name: 'Add-on 21', href: '#', g: 'gp-3' },
-    { name: 'Add-on 22', href: '#', g: 'gp-4' },
-    { name: 'Add-on 23', href: '#', g: 'gp-5' },
-    { name: 'Add-on 24', href: '#', g: 'gp-6' }
+    { name: 'Add on 05', href: '#', g: 'gp-5' },
+    { name: 'Add on 06', href: '#', g: 'gp-6' },
+    { name: 'Add on 07', href: '#', g: 'gp-1' },
+    { name: 'Add on 08', href: '#', g: 'gp-2' },
+    { name: 'Add on 09', href: '#', g: 'gp-3' },
+    { name: 'Add on 10', href: '#', g: 'gp-4' },
+    { name: 'Add on 11', href: '#', g: 'gp-5' },
+    { name: 'Add on 12', href: '#', g: 'gp-6' },
+    { name: 'Add on 13', href: '#', g: 'gp-1' },
+    { name: 'Add on 14', href: '#', g: 'gp-2' },
+    { name: 'Add on 15', href: '#', g: 'gp-3' },
+    { name: 'Add on 16', href: '#', g: 'gp-4' },
+    { name: 'Add on 17', href: '#', g: 'gp-5' },
+    { name: 'Add on 18', href: '#', g: 'gp-6' },
+    { name: 'Add on 19', href: '#', g: 'gp-1' },
+    { name: 'Add on 20', href: '#', g: 'gp-2' },
+    { name: 'Add on 21', href: '#', g: 'gp-3' },
+    { name: 'Add on 22', href: '#', g: 'gp-4' },
+    { name: 'Add on 23', href: '#', g: 'gp-5' },
+    { name: 'Add on 24', href: '#', g: 'gp-6' }
   ];
 
   var catIcons = [
@@ -2994,19 +3118,11 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
     if (pt) pt.addEventListener('click', function () { instances.forEach(function (x) { x.refresh(); }); });
   })();
 
-  /* ---------- 12. Feature clip hover zoom (hold 0.5s) ---------- */
-  if (window.matchMedia('(hover: hover)').matches) {
-    document.querySelectorAll('.feature-media').forEach(function (media) {
-      var timer = null;
-      media.addEventListener('mouseenter', function () {
-        timer = setTimeout(function () { media.classList.add('media-zoomed'); }, 500);
-      });
-      media.addEventListener('mouseleave', function () {
-        clearTimeout(timer);
-        media.classList.remove('media-zoomed');
-      });
-    });
-  }
+  /* ---------- 12. Feature clips: intentionally no hover behaviour ----------
+     The clips below the sub-divider no longer zoom on hover (the old 0.5s
+     hold → .media-zoomed) and no longer expand to move the text below (the
+     old FLIP script → .side-open). Both were removed on request; the rows
+     stay in their fixed 30/70 layout. Nothing to run here. */
 })();
 </script>
 <script>
@@ -3058,7 +3174,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
       wrap.appendChild(inp);
       inp.focus();
       inp.select();
-      if (feedbackEl) feedbackEl.textContent = 'Selected — press Ctrl+C';
+      if (feedbackEl) feedbackEl.textContent = 'Selected, press Ctrl+C';
       setTimeout(function () {
         if (inp.parentNode) inp.parentNode.removeChild(inp);
         if (feedbackEl) feedbackEl.textContent = 'Copy';
