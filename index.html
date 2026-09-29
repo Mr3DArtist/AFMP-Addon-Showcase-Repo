@@ -18,16 +18,16 @@
    THEME TOKENS — source of truth for every color on the page
    ============================================================ */
 :root {
-  --color-primary:   hsl(133, 50%, 90%);   /* light: page background */
-  --color-secondary: hsl(133, 50%, 10%);   /* light: ink / text      */
-  --color-tertiary:  hsl(193, 80%, 20%);   /* light: teal accent     */
-  --color-accent:    hsl(73, 80%, 20%);    /* light: olive accent    */
+  --color-primary:   hsl(213, 50%, 90%);   /* light: page background */
+  --color-secondary: hsl(213, 50%, 10%);   /* light: ink / text      */
+  --color-tertiary:  hsl(205, 80%, 20%);   /* light: azure accent    */
+  --color-accent:    hsl(190, 80%, 20%);    /* light: cyan accent     */
 }
 .dark {
-  --color-primary:   hsl(133, 50%, 10%);   /* dark: page background  */
-  --color-secondary: hsl(133, 50%, 90%);   /* dark: ink / text       */
-  --color-tertiary:  hsl(193, 80%, 80%);   /* dark: light teal       */
-  --color-accent:    hsl(73, 80%, 80%);    /* dark: light olive      */
+  --color-primary:   hsl(213, 50%, 10%);   /* dark: page background  */
+  --color-secondary: hsl(213, 50%, 90%);   /* dark: ink / text       */
+  --color-tertiary:  hsl(205, 80%, 80%);   /* dark: light azure      */
+  --color-accent:    hsl(190, 80%, 80%);    /* dark: light cyan       */
 }
 
 /* Derived tokens — computed from the four source variables above */
@@ -45,17 +45,17 @@
   --grad-brand:       linear-gradient(120deg, var(--color-tertiary), var(--color-accent));
 }
 
-/* Card surfaces: light mode uses a fresh pale-mint tint (instead of a washed-out
-   gray-white), and dark mode stays in the same dark green/teal family as the
+/* Card surfaces: light mode uses a fresh pale-blue tint (instead of a washed-out
+   gray-white), and dark mode stays in the same dark blue family as the
    page background for a clean, cohesive theme in both modes. */
 :root {
-  --card-bg:        hsl(133, 42%, 97%);
-  --card-bg-strong: hsl(133, 40%, 92%);
+  --card-bg:        hsl(213, 45%, 97%);
+  --card-bg-strong: hsl(213, 45%, 92%);
   --shadow:         0 16px 40px -18px color-mix(in srgb, var(--ink) 22%, transparent);
 }
 .dark {
-  --card-bg:        hsl(133, 42%, 14%);
-  --card-bg-strong: hsl(133, 38%, 17%);
+  --card-bg:        hsl(213, 45%, 14%);
+  --card-bg-strong: hsl(213, 42%, 17%);
 }
 
 /* ============================================================
@@ -83,7 +83,8 @@ body::before {
 img, svg { display: block; max-width: 100%; }
 a { color: inherit; }
 button { font-family: inherit; }
-section { scroll-margin-top: 84px; }
+/* #features is a block INSIDE #workflow (the cards), so it needs the offset itself */
+section, #features { scroll-margin-top: 132px; }
 
 .container { width: min(1180px, 92%); margin-inline: auto; }
 
@@ -215,11 +216,18 @@ section { scroll-margin-top: 84px; }
 /* Hero media box — simulated tracking preview with play overlay.
    MEDIA PLACEHOLDER: swap .hero-media::before with an <video>/<img> (MP4/WebM/GIF). */
 .hero-media {
-  position: relative; margin: 52px auto 0; max-width: 1000px;
-  aspect-ratio: 16 / 8.4; border-radius: 22px; overflow: hidden;
+  /* ⛔ 88px, not 52: the clip switcher's label bubbles float ~64px above this box's
+     top edge (and the dots ~22px), so the old 52px margin left them pressed against
+     the offer band above. This is the room for that cluster. */
+  position: relative; margin: 88px auto 0; max-width: 1000px;
+  aspect-ratio: 16 / 8.4; border-radius: 22px;
+  /* ⛔ NOT overflow:hidden — the glow below is a ::before sitting at -10px, so
+     clipping here confined the halo INSIDE the box and there was no outer glow at
+     all. The corners are rounded on the children instead. */
   border: 1px solid var(--border-strong); background: var(--card-bg);
   box-shadow: var(--shadow);
 }
+.hero-media > video, .hero-media .grid-lines { border-radius: inherit; }
 .hero-media::before {
   content: '';
   position: absolute; inset: 0;
@@ -227,8 +235,8 @@ section { scroll-margin-top: 84px; }
     radial-gradient(46% 60% at 28% 26%, var(--glow-tertiary), transparent 70%),
     radial-gradient(42% 55% at 74% 74%, var(--glow-accent), transparent 72%),
     linear-gradient(140deg,
-      color-mix(in srgb, var(--bg) 55%, #8a9b8f 45%),
-      color-mix(in srgb, var(--bg) 35%, #2a3a30 65%));
+      color-mix(in srgb, var(--bg) 55%, #8a9bb5 45%),
+      color-mix(in srgb, var(--bg) 35%, #2a3a52 65%));
 }
 .hero-media .grid-lines {
   position: absolute; inset: 0; opacity: .4;
@@ -258,6 +266,405 @@ section { scroll-margin-top: 84px; }
   border: 1px solid var(--border-strong); color: var(--ink);
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
 }
+
+/* ---- Clip progress bars — EVERY clip on the page ----
+   The script injects <.clip-bar><span class="clip-bar-fill"> into each video's
+   parent, so every clip on the page gets one. The fill uses the SAME gradient AND
+   the same `glowing` sweep as the hero box's glow (`.hero-media::before`, ~line
+   1621), so bar and halo read as one element. The bar FLOATS: inset from the
+   sides, lifted off the bottom, rounded ends.
+   ⛔ The geometry is set by what is already in each clip, not by taste:
+   (a) the feature clips carry a `.media-reel` "Preview clip" pill pinned at
+       `bottom:15px` and 34px tall, so it OCCUPIES 15–49px — a bar low enough to
+       look right on an empty clip slices straight through that pill. It is lifted
+       clear to 58px instead;
+   (b) at a 16px lift a rounded corner has pulled only ~6px in from the side, so a
+       14px inset stays clear of the corner curl. (A flush `bottom:0` bar cannot
+       work at all: a 4px element can't carry a 16–22px radius, and these boxes
+       are not overflow:hidden, so its square ends would poke out of the corners.)
+   .hero-media overrides both — its box is bigger and carries no pill. */
+.clip-bar {
+  position: absolute; z-index: 3;
+  left: var(--clip-bar-inset, 14px); right: var(--clip-bar-inset, 14px);
+  bottom: var(--clip-bar-lift, 16px); height: var(--clip-bar-h, 4px);
+  cursor: pointer;      /* it is a scrub target now */
+  touch-action: none;   /* a drag on it scrubs instead of scrolling the page */
+}
+/* the feature clips used to carry a "Preview clip" pill at bottom:15px that owned
+   15–49px and forced this bar up to 58px, which read as too high. The pill is gone,
+   so the bar sits at a normal player height — clear of the 18px corner curl (at a
+   14px lift the corner has only pulled ~0.5px in from the side). */
+.feature-media { --clip-bar-lift: 14px; }
+/* ⛔ A 4–5px bar is far too thin to reliably grab, so an invisible ::after widens
+   the hit area vertically without changing how the bar looks. It does swallow
+   clicks in that thin band over the clip — that is the trade for being draggable. */
+.clip-bar::after {
+  content: ''; position: absolute; left: -4px; right: -4px; top: -6px; bottom: -6px;
+  border-radius: inherit;
+}
+.clip-bar::before,
+.clip-bar-fill {
+  position: absolute; left: 0; top: 0; height: 100%; border-radius: 999px;
+}
+.clip-bar::before {
+  content: ''; width: 100%;
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+}
+.clip-bar-fill {
+  width: 0;
+  background: linear-gradient(45deg, #0096ff, #22d3ee, #0096ff, #3b82f6, #0096ff);
+  background-size: 400%;
+  animation: glowing 20s linear infinite;
+  box-shadow: 0 0 12px color-mix(in srgb, #0096ff 70%, transparent);
+  transition: width .15s linear;
+}
+/* the hero's own bar keeps the wider inset and higher lift asked for earlier */
+.hero-media { --clip-bar-inset: 22px; --clip-bar-lift: 16px; --clip-bar-h: 5px; }
+
+/* ---- Clip loading spinner ----
+   One per clip, injected with the bar. Shown while there is not yet enough of the
+   clip to play (a switch to a 5–14MB clip leaves a blank frame otherwise) and
+   hidden the moment it can play.
+   ⛔ It MUST also hide on `error`: the page has clips that can never load (files
+   that do not exist, and HEVC on a browser with no hardware decode), and without
+   that they would spin for ever on a frozen frame. */
+.clip-load {
+  position: absolute; z-index: 4; inset: 0; margin: auto;
+  width: 44px; height: 44px; border-radius: 50%;
+  /* ⛔ It needs its OWN backing: a thin ring at low opacity over a bright, busy
+     frame is invisible in practice (measured — at full opacity it could not be
+     picked out of a screenshot). The dark disc + blur keeps it legible over any
+     frame, and the azure arc stays the moving part. */
+  background: color-mix(in srgb, #011a60 62%, transparent);
+  border: 3px solid color-mix(in srgb, var(--ink) 34%, transparent);
+  border-top-color: #0096ff;
+  -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+  box-shadow: 0 0 16px color-mix(in srgb, #0096ff 45%, transparent),
+              inset 0 0 10px color-mix(in srgb, #000 30%, transparent);
+  animation: clipSpin .8s linear infinite;
+  pointer-events: none;
+  opacity: 0; transition: opacity .2s ease;
+}
+.clip-load.on { opacity: 1; }
+@keyframes clipSpin { to { transform: rotate(360deg) } }
+/* the control fades in on hover or keyboard focus — and stays visible whenever
+   the clip is NOT playing, so a blocked autoplay still shows a button to press */
+.hero-media .play-btn {
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s ease, transform .3s ease, background .3s ease;
+}
+.hero-media:hover .play-btn,
+.hero-media:focus-within .play-btn,
+.hero-media:not(.is-playing) .play-btn { opacity: 1; pointer-events: auto; }
+.hero-media .play-btn .ico-pause { display: none; }
+.hero-media.is-playing .play-btn .ico-play { display: none; }
+.hero-media.is-playing .play-btn .ico-pause { display: block; }
+
+/* ---- Hero clip credit badge (top-right) ----
+   A link to the character's store page. The outline carries the SAME gradient as
+   the box's glow and the progress bar, sweeping on the same `glowing` beat.
+   ⛔ The outline is a ::before with the mask-composite ring trick, NOT a
+   `border + background-clip: padding-box, border-box` pair: the keyframes animate
+   `background-position`, and that applies to EVERY layer, so the two-layer version
+   would slide the badge's own fill out from under it. One layer here, so the sweep
+   is safe. */
+.hero-media .hm-badge {
+  position: absolute; z-index: 4;
+  display: inline-flex; align-items: center; gap: .42rem;
+  padding: .34rem .95rem; border-radius: 999px;
+  font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink); text-decoration: none; white-space: nowrap;
+  background: color-mix(in srgb, var(--bg) 68%, transparent);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.hero-media .hm-badge svg { width: 13px; height: 13px; flex: none; opacity: .9; }
+/* the two top corners plus the top CENTRE: the category tag on the LEFT, the
+   linked credit on the RIGHT, and the static descriptor in the middle. The lift
+   on hover is scoped to the LINK only — a plain tag that rose under the cursor
+   would read as clickable when it is not.
+   ⛔ The centre one is centred with auto margins + width:fit-content, NOT
+   `left:50%` + `translateX(-50%)`: a transform there would be clobbered the day
+   it becomes a link, because .hero-media a.hm-badge:hover sets its own transform. */
+.hero-media .hm-badge-left { top: 16px; left: 22px; }
+.hero-media .hm-badge-right { top: 16px; right: 22px; }
+.hero-media .hm-badge-center {
+  top: 16px; left: 0; right: 0;
+  margin-left: auto; margin-right: auto; width: fit-content;
+}
+.hero-media a.hm-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 18px color-mix(in srgb, #0096ff 55%, transparent);
+}
+/* A credit that carries NO link is not a link — one HERO_SLIDES row (MetaHuman) is
+   a plain label. ⛔ The element stays an <a> (it has to: the swap writes hrefs onto
+   it), so without this it would keep the chain glyph, the pointer and the 2px hover
+   lift of a link and read as clickable while doing nothing. An <a> with no href is
+   already unfocusable and not in the tab order, so this only removes the costume. */
+.hero-media a.hm-badge-right:not([href]) {
+  pointer-events: none; cursor: default;
+  transform: none; box-shadow: none;
+}
+.hero-media a.hm-badge-right:not([href]) svg { display: none; }
+
+/* ---- Hero clip switcher arrows (one clip per character) ----
+   Reuses the page's own .g-arrow pill. They sit OUTSIDE the clip, in the gutter
+   the 1000px clip leaves inside the 1180px container (90px per side).
+   ⛔ That gutter exists only while the container is wider than the clip: below
+   ~1280px the container shrinks to 92% and the clip fills it, so the arrows fall
+   back INSIDE the edges. They must stay reachable — pushing them further out
+   would overflow the page and add a horizontal scrollbar instead.
+   ⛔ Also positioned with `top: calc(50% - 21px)` and NOT `top:50%` +
+   `translateY(-50%)`: .g-arrow:hover sets its own `transform: translateY(-2px)`,
+   which would override the centring transform and drop the arrow by half its own
+   height on hover. */
+.hero-media .hm-nav {
+  position: absolute; z-index: 5; top: calc(50% - 21px);
+  background: color-mix(in srgb, var(--bg) 68%, transparent);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  /* the arrow carries the same gradient ring as the badges, so the ring replaces
+     .g-arrow's own 1px outline rather than doubling it */
+  border-color: transparent;
+}
+.hero-media .hm-nav::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(45deg, #0096ff, #22d3ee, #0096ff, #3b82f6, #0096ff);
+  background-size: 400%;
+  animation: glowing 20s linear infinite;
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+.hero-media .hm-nav-prev { left: -64px; }
+.hero-media .hm-nav-next { right: -64px; }
+/* ⛔ `hidden` alone does NOT hide these: .g-arrow sets `display: grid`, and an
+   author-level display beats the UA stylesheet's [hidden]{display:none}. Without
+   this rule the arrows would stay visible at both ends. */
+.hero-media .hm-nav[hidden] { display: none; }
+/* ---- Hero clip switcher: label bubbles + dots ----
+   EVERY clip's name is on screen the whole time, as a speech bubble above the dot
+   row, each one's tail a LONG beak that reaches down to ITS OWN dot. The DOTS stay
+   the control, exactly where they were; the bubbles are the legend for them.
+   ⛔⛔ The tails have to be long because the geometry does not line up and must not:
+     the labels are 52-64px wide and cannot overlap, so their centres are ~65px
+     apart, while the dots sit ~17px apart.  Either the dots are dragged out to the
+     labels (tried, rejected) or the tail crosses the difference — this is the
+     second, by owner's instruction: "don't move the dots anywhere instead make the
+     tag/speach ballon point to become long and stay close to the dots". aimTips()
+     measures each dot and sizes the beak to land on it.
+   ⛔ NO OUTLINE on the bubble, and no box-shadow either — the owner asked for one
+     solid object. A rounded box-shadow would trace the rectangle and leave the
+     tail looking pasted on; `filter: drop-shadow()` follows the UNION of the body
+     and its tail instead, which is what makes the pair read as a single shape.
+   ⛔ The ROW is pointer-events:none — it floats over whatever is above the clip box
+     and must never eat a click meant for the page; each bubble then takes its own
+     clicks back with pointer-events:auto (a child can re-enable what the parent
+     refused, and the gaps between the bubbles keep passing clicks through). */
+.hero-media .hm-tips {
+  position: absolute; z-index: 6;
+  bottom: 100%; left: 50%; transform: translateX(-50%);
+  /* ⛔ This is the beak's RUN — the only knob for how far the bubbles float above
+     the dots. Owner's call (2026-09-25): *"the text boxes are too high"* — 58px
+     put the boxes nearly 90px over the clip box and read as detached. 34 leaves an
+     12px run to the dots' top edge, which the horizontal reach (±49px) still makes
+     a long pointer. Raising it lengthens the beak but lifts the boxes; lowering it
+     past ~26px flattens the beak into a sliver. */
+  margin-bottom: 34px;
+  display: flex; align-items: flex-end; justify-content: center; gap: .5rem;
+  pointer-events: none;
+}
+.hero-media .hm-tip {
+  --tail: 0px; --apex: 50%;
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: .32rem .76rem; border-radius: 12px;
+  font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  white-space: nowrap;
+  /* ⛔ OPAQUE, and built to CONTRAST with the theme rather than sit near it. A
+     translucent glass chip let whatever was behind it — the sticky nav, at many
+     scroll offsets — show straight through the letterforms, and it stopped reading
+     as one solid object; but a chip merely *derived from* --bg (ink 20% over bg) is
+     only ~25% away from the page in luminance, which is invisible on the LIGHT
+     theme (measured: the labels vanished).
+     ⛔ So the fill is deliberately at the FAR end of the theme: mostly --ink with
+     just enough --bg to take its tint, and the TEXT is --bg. Both themes then get a
+     high-contrast chip by construction, and in the dark theme it lands on the
+     reference image's own look — light grey bubbles on a dark page.
+       dark : chip ≈ #d2d2d2 (ink hsl(0,0%,96%))  · text ≈ #0a0a0a  → ~14:1
+       light: chip ≈ #3a3a3a (ink hsl(0,0%,9%))   · text ≈ #ffffff  → ~12:1 */
+  color: var(--bg);
+  background: color-mix(in srgb, var(--ink) 85%, var(--bg));
+  filter: drop-shadow(0 6px 14px color-mix(in srgb, #000 45%, transparent));
+  transition: filter .3s ease, color .3s ease, background .3s ease;
+  /* the label is CLICKABLE (it switches the clip) — the row above refuses pointer
+     events, so the bubble takes them back here */
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-user-select: none; user-select: none;
+}
+/* HOVER FEEDBACK = an outline that expands off the bubble's edge.
+   ⛔ NO lift, no transform on hover (owner's call, 2026-09-25: "remove the hover
+     move up effect"). Moving the chip would also move its beak — the beak is a
+     pseudo-element of this box — and drag the tip off the dot it is aimed at. */
+/* ⛔ The ring is the page's brand azure, NOT --ink: the chip is already built from
+   --ink (ink 85% over bg), so an ink-coloured ring is the same lightness as the
+   thing it surrounds and reads as a muddy second edge. #0096ff is the accent the
+   coupon button, the play spinner and every badge ring on the page already use, and
+   it contrasts with the chip in both themes (measured: chip #d2d2d2 in dark, #3a3a3a
+   in light). */
+.hero-media .hm-tip::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  border: 2px solid #0096ff;
+  opacity: 0; pointer-events: none;
+}
+.hero-media .hm-tip:hover::before { animation: tipRing 1.5s ease-out infinite; }
+@keyframes tipRing {
+  0%   { transform: scale(1);    opacity: .85; }
+  70%  { transform: scale(1.16); opacity: 0; }
+  100% { transform: scale(1.16); opacity: 0; }
+}
+/* The beak — a LONG pointer from the bubble's bottom edge down to its own dot, drawn
+   as one clipped triangle inside a box aimTips() sizes and places in px (--tx/--tw/
+   --th) with its three corners as percentages of that box (--b0/--b1/--ax).
+   ⛔ The box is deliberately allowed to hang OUT of the bubble (the outer beaks
+     reach ~20px past the edge) — a clip-path can only SUBTRACT from its own box, so
+     the box has to contain the apex or the beak is cut off at the border.
+   ⛔ Its top edge overlaps the bubble by 1px, so body + beak are one silhouette.
+   ⛔ `background: inherit` — the ACTIVE bubble's travelling gradient runs THROUGH
+     the beak; see tipFlow for why its phase needs --tip-x. */
+.hero-media .hm-tip::after {
+  content: ''; position: absolute; top: 100%;
+  left: var(--tx, 0px);
+  width: var(--tw, 100%);
+  height: var(--th, 14px);
+  margin-top: -1px;
+  background: inherit;
+  clip-path: polygon(var(--b0, 35%) 0, var(--b1, 65%) 0, var(--ax, 50%) 100%);
+}
+/* THE ACTIVE CLIP — the bubble fills with the brand gradient and the gradient
+   travels along it (and through its tail).
+   ⛔ The sweep is px-based — 240px is exactly one tile of `background-size`, so the
+     loop is seamless — and NOT the page's %-based `glowing`. The tail inherits this
+     background, and a percentage resolves against the TAIL's own 15px box: the two
+     would be showing different slices of the gradient and the join would break
+     visibly. In px the tail only has to add its own offset (--tip-x, set by
+     aimTips) to line up to the pixel. */
+.hero-media .hm-tip.active {
+  color: #041430;
+  background-image: linear-gradient(90deg, #0096ff, #22d3ee, #3b82f6, #22d3ee, #0096ff);
+  background-size: 240px 100%;
+  background-repeat: repeat;
+  animation: tipFlow 6s linear infinite;
+  /* the glow is a SECOND drop-shadow, not a box-shadow, so the halo wraps the tail
+     too — one object, lit as one object */
+  filter: drop-shadow(0 6px 14px color-mix(in srgb, #000 45%, transparent))
+          drop-shadow(0 0 16px color-mix(in srgb, #0096ff 65%, transparent));
+}
+.hero-media .hm-tip.active::after {
+  --flow-x: var(--tip-x, 0px);
+  /* the same offset as a STATIC value as well: the animation overrides it while
+     it runs, but with prefers-reduced-motion (animation:none) this is what keeps
+     the tail's slice of the gradient lined up with the body above it. Without it
+     both elements read background-position:0 and the join is off by the tail's
+     own offset — 44px of the wrong colour. */
+  background-position: var(--flow-x, 0px) 0;
+  animation: tipFlow 6s linear infinite;
+}
+@keyframes tipFlow {
+  from { background-position: var(--flow-x, 0px) 0; }
+  to   { background-position: calc(var(--flow-x, 0px) - 240px) 0; }
+}
+/* the dots: one per clip, just above the clip box — the tight little row they have
+   always been. ⛔ They are NOT moved to sit under their labels (the owner rejected
+   that): the distance between a label and its dot is what the long beak is for.
+   ⛔ They may never change width either — the active one only SCALES, because every
+   beak is aimed at its dot's measured centre and a reflow would drag the rows apart
+   mid-flight. */
+.hero-media .hm-dots {
+  position: absolute; z-index: 5;
+  bottom: 100%; left: 50%; transform: translateX(-50%);
+  /* ⛔ 14px — the dots sit where they have always sat. A find-and-replace on
+     "margin-bottom: Npx" hit this rule as well as .hm-tips' and quietly pushed the
+     whole dot row 20px up; the two rows' offsets are independent and must stay so. */
+  margin-bottom: 14px;
+  display: flex; align-items: center; justify-content: center; gap: .55rem;
+}
+.hero-media .hm-dots .g-dot {
+  width: 8px; height: 8px; padding: 0; border: 0;
+  position: relative;
+  /* ⛔ pulled toward --ink, not a tint of --bg: a background-derived dot is a mid
+     grey in the dark theme and nearly invisible on the light one. */
+  background: color-mix(in srgb, var(--ink) 45%, var(--bg));
+  transition: background .3s ease, transform .3s ease, box-shadow .3s ease;
+}
+.hero-media .hm-dots .g-dot.active {
+  background-image: linear-gradient(90deg, #0096ff, #22d3ee, #3b82f6, #22d3ee, #0096ff);
+  background-size: 240px 100%;
+  animation: tipFlow 6s linear infinite;
+  transform: scale(1.5);
+  box-shadow: 0 0 12px color-mix(in srgb, #0096ff 65%, transparent);
+}
+/* ⛔ The hover popup that used to name an INACTIVE clip, and the pill the ACTIVE
+   dot used to expand into, are both gone (2026-09-25): every label is now a bubble
+   that is on screen permanently, so a hover duplicate would print the same word
+   twice. The active dot is indicated by its gradient fill + scale instead. */
+/* ⛔ The outside position needs a gutter: gutter = (min(1180px, 92vw) - 1000)/2,
+   which reaches the 64px it needs at 92vw = 1128 → a 1226px viewport. 1244px is
+   that boundary plus ~10px of slack. Below it the clip fills the container, so the
+   arrows fall back INSIDE the edges — they must stay reachable, and pushing them
+   further out would overflow the page and add a horizontal scrollbar. */
+@media (max-width: 1244px) {
+  .hero-media .hm-nav-prev { left: 16px; }
+  .hero-media .hm-nav-next { right: 16px; }
+}
+.hero-media .hm-badge::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(45deg, #0096ff, #22d3ee, #0096ff, #3b82f6, #0096ff);
+  background-size: 400%;
+  animation: glowing 20s linear infinite;
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+/* ============================================================
+   HERO VIDEO CARD — the demo video card that sits directly under
+   the hero headline/subtitle. data-yt on .yt-frame takes either a
+   full YouTube link or just the video id; while it is EMPTY the card
+   stays a "coming soon" placeholder and nothing is requested from
+   YouTube. The page script swaps in the player on click.
+   ============================================================ */
+.hero-video-card { position: relative; margin-top: 1.1rem; padding: .6rem; }
+.hero-video-card .yt-frame {
+  position: relative; display: block; aspect-ratio: 16 / 9;
+  border-radius: 16px; overflow: hidden;
+  background:
+    radial-gradient(70% 70% at 50% 35%, color-mix(in srgb, var(--color-tertiary) 22%, transparent), transparent 70%),
+    linear-gradient(150deg, color-mix(in srgb, var(--ink) 7%, var(--card-bg)), var(--card-bg));
+  border: 1px solid var(--border-strong);
+}
+.hero-video-card .yt-frame.yt-ready { cursor: pointer; }
+.hero-video-card .yt-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.hero-video-card .yt-label {
+  position: absolute; z-index: 2; top: 12px; left: 50%; transform: translateX(-50%);
+  padding: .35rem .9rem; border-radius: 999px; font-size: .68rem; font-weight: 800;
+  letter-spacing: .14em; text-transform: uppercase; white-space: nowrap;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  border: 1px solid var(--border-strong); color: var(--muted);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.hero-video-card .yt-caption { margin: .7rem 0 0; text-align: center; font-size: .82rem; color: var(--muted); }
+/* with no video id the frame is inert, so the button reads as "waiting"
+   rather than broken */
+.hero-video-card .yt-frame:not(.yt-ready) .play-btn { opacity: .5; cursor: default; }
+.hero-video-card .yt-frame:not(.yt-ready) .play-btn:hover { transform: none; background: color-mix(in srgb, var(--ink) 10%, transparent); }
+@media (max-width: 620px) { .hero-video-card .play-btn { width: 62px; height: 62px; } }
 
 /* ============================================================
    3. QUICK-SPECS META BAR
@@ -320,8 +727,8 @@ section { scroll-margin-top: 84px; }
     radial-gradient(55% 65% at 32% 28%, var(--glow-tertiary), transparent 70%),
     radial-gradient(50% 60% at 72% 72%, var(--glow-accent), transparent 72%),
     linear-gradient(140deg,
-      color-mix(in srgb, var(--bg) 50%, #5f7366 50%),
-      color-mix(in srgb, var(--bg) 30%, #1e2c24 70%));
+      color-mix(in srgb, var(--bg) 50%, #5f7386 50%),
+      color-mix(in srgb, var(--bg) 30%, #1e2c40 70%));
 }
 .feature-media .media-tag {
   position: absolute; z-index: 2; top: 14px; left: 14px;
@@ -373,10 +780,10 @@ section { scroll-margin-top: 84px; }
 /* Each visual is a stylized placeholder — swap for real preview screenshots / renders */
 .card-visual .v-bg { position: absolute; inset: 0; transition: transform .6s cubic-bezier(.22,.61,.36,1); }
 .card:hover .card-visual .v-bg { transform: scale(1.1); }
-.v-1 { background: radial-gradient(60% 60% at 30% 30%, var(--glow-tertiary), transparent 70%), linear-gradient(140deg, #163a33, #0b1f1a); }
-.v-2 { background: radial-gradient(60% 60% at 70% 30%, var(--glow-accent), transparent 70%), linear-gradient(140deg, #3a3a16, #1a1a08); }
-.v-3 { background: radial-gradient(60% 60% at 30% 70%, var(--glow-accent), transparent 70%), linear-gradient(140deg, #143a42, #081c21); }
-.v-4 { background: radial-gradient(60% 60% at 70% 70%, var(--glow-tertiary), transparent 70%), linear-gradient(140deg, #243a16, #0f1c08); }
+.v-1 { background: radial-gradient(60% 60% at 30% 30%, var(--glow-tertiary), transparent 70%), linear-gradient(140deg, #0c2a4a, #07182c); }
+.v-2 { background: radial-gradient(60% 60% at 70% 30%, var(--glow-accent), transparent 70%), linear-gradient(140deg, #102a4c, #08182c); }
+.v-3 { background: radial-gradient(60% 60% at 30% 70%, var(--glow-accent), transparent 70%), linear-gradient(140deg, #0a2b4e, #071a2e); }
+.v-4 { background: radial-gradient(60% 60% at 70% 70%, var(--glow-tertiary), transparent 70%), linear-gradient(140deg, #0e2b4d, #071a2e); }
 .card-visual .v-icon {
   position: absolute; inset: 0; margin: auto; width: 46px; height: 46px;
   display: grid; place-items: center; border-radius: 14px;
@@ -396,10 +803,7 @@ section { scroll-margin-top: 84px; }
 /* ============================================================
    6. WORKFLOW COMPARISON — Old Way vs With Auto Face MoCap Pro
    ============================================================ */
-/* align-items:start, not stretch — stretching made the shorter card pool empty space
-   above its time chip (76px/134px measured in the owner's screenshot). Each card now
-   hugs its own content; the two cards legitimately end at different heights. */
-.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8rem; align-items: start; }
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8rem; align-items: stretch; }
 .compare-card {
   border: 1px solid var(--border); border-radius: 20px; padding: 2.1rem 2rem;
   background: var(--card-bg); display: flex; flex-direction: column;
@@ -442,7 +846,11 @@ section { scroll-margin-top: 84px; }
   font-family: 'Space Grotesk', sans-serif; font-size: 1.02rem; font-weight: 600;
   color: var(--ink); text-align: left; transition: background .2s ease;
 }
-.acc-head:hover { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+/* ⚠ was `background:` (the SHORTHAND) until 2026-09-21. The shorthand resets
+   background-image to none, so hovering an accordion row WIPED its glass gradient —
+   that flash is the "hover sheen" the owner asked to remove from Specs & FAQ.
+   background-color keeps the gradient and only nudges the tint. */
+.acc-head:hover { background-color: color-mix(in srgb, var(--ink) 4%, transparent); }
 .acc-head .icon {
   flex: none; width: 26px; height: 26px; border-radius: 8px;
   display: grid; place-items: center; color: var(--color-tertiary);
@@ -610,6 +1018,14 @@ section { scroll-margin-top: 84px; }
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
   .card-visual .v-bg, .play-btn { transition: none; }
+  /* the hero label bubbles: keep the gradient (it still says which clip is live),
+     stop it travelling */
+  .hero-media .hm-tip.active,
+  .hero-media .hm-tip.active::after,
+  .hero-media .hm-dots .g-dot.active { animation: none; }
+  /* ⛔ ...but hover must still SHOW something: killing the pulse outright would
+     leave a clickable chip with no feedback at all, so the ring is held out. */
+  .hero-media .hm-tip:hover::before { animation: none; opacity: .85; transform: scale(1.12); }
 }
 
 /* ============================================================
@@ -716,11 +1132,30 @@ section { scroll-margin-top: 84px; }
 .g-thumb:hover .g-ph-tag { transform: scale(1.2); }
 .g-ph svg { width: 34px; height: 34px; opacity: .85; }
 .g-ph-tag {
-  position: absolute; left: 4px; bottom: 3px;
-  font-size: .82rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-  padding: .12rem .38rem; border-radius: 12px;
+  /* ⛔⛔ EVERY size here is in `em`, and the em comes from `--badge-em`, which the
+     CARD sets from its own width (`#gallery .g-card`). That is what makes the badge
+     scale with the card: at the 157px desktop card `--badge-em` is 11.2px, so these
+     em values are exactly the old 1.6/5.12/10/1px — but on a phone, where the card
+     falls to ~40px, the badge falls with it instead of staying full size.
+     The `em` below is the badge's OWN font-size, so padding/radius/border/offsets
+     all track it together.
+     ⛔⛔ DO NOT declare `--badge-em` on this rule — a custom property set HERE
+     shadows the value inherited from the card, and the badge silently stops
+     scaling (it did exactly that on the first attempt). The fallback lives in the
+     `var()` instead, so it applies only when the card has not set one — which is
+     the catalog's case. */
+  position: absolute; left: .357em; bottom: .268em;
+  font-size: var(--badge-em, .70rem); font-weight: 700; letter-spacing: .085em; text-transform: uppercase;
+  /* ⛔ Vertical padding is deliberately ASYMMETRIC. Uppercase text uses none of the
+     space the font reserves below the baseline, so with equal padding it always
+     floats high — measured +0.89px here (and +0.92/+0.92/+1.00 on .media-tag,
+     .pop-badge and .so-valid, which are the same case; the mixed-case .latest-tag
+     and .ver-date measure 0.00). .183/.103 splits the difference and re-centres the
+     INK. Kept in em, so the correction stays proportional as the badge scales with
+     the card. */
+  padding: .183em .457em .103em; border-radius: .893em;
   background: color-mix(in srgb, var(--ink) 12%, transparent);
-  border: 1px solid var(--border-strong);
+  border: .089em solid var(--border-strong);
   -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   transform-origin: bottom left;
   transition: transform .55s cubic-bezier(.22,.61,.36,1);
@@ -728,18 +1163,21 @@ section { scroll-margin-top: 84px; }
 /* "Hot" badge — gradient outline tuned for both light & dark modes */
 .g-ph-tag.hot {
   background:
-    linear-gradient(140deg, #0d2b21, #143a2e) padding-box,
-    linear-gradient(135deg, #22d3ee, #34d399, #fde047) border-box;
-  border: 2px solid transparent;
+    linear-gradient(140deg, #0c2440, #0a2440) padding-box,
+    linear-gradient(135deg, #22d3ee, #53e8fd, #9ce8fc) border-box;
+  /* stroke halved from .179em (~2px), owner 2026-09-29: "reduce the badges outline
+     stroke amount". Kept in em so it still scales with the badge, which in turn
+     scales with the card. */
+  border: .09em solid transparent;
   color: #fff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, .35);
 }
-.gp-1 { background: radial-gradient(60% 60% at 30% 30%, var(--glow-tertiary), transparent 70%), linear-gradient(140deg, #163a33, #0b1f1a); }
-.gp-2 { background: radial-gradient(60% 60% at 70% 30%, var(--glow-accent), transparent 70%), linear-gradient(140deg, #3a3a16, #1a1a08); }
-.gp-3 { background: radial-gradient(60% 60% at 30% 70%, var(--glow-accent), transparent 70%), linear-gradient(140deg, #143a42, #081c21); }
-.gp-4 { background: radial-gradient(60% 60% at 70% 70%, var(--glow-tertiary), transparent 70%), linear-gradient(140deg, #243a16, #0f1c08); }
-.gp-5 { background: radial-gradient(60% 60% at 50% 30%, var(--glow-tertiary), transparent 70%), linear-gradient(140deg, #163a42, #081c21); }
-.gp-6 { background: radial-gradient(60% 60% at 50% 70%, var(--glow-accent), transparent 70%), linear-gradient(140deg, #3a2a16, #1a1208); }
+.gp-1 { background: radial-gradient(60% 60% at 30% 30%, var(--glow-tertiary), transparent 70%), linear-gradient(140deg, #0c2a4a, #07182c); }
+.gp-2 { background: radial-gradient(60% 60% at 70% 30%, var(--glow-accent), transparent 70%), linear-gradient(140deg, #102a4c, #08182c); }
+.gp-3 { background: radial-gradient(60% 60% at 30% 70%, var(--glow-accent), transparent 70%), linear-gradient(140deg, #0a2b4e, #071a2e); }
+.gp-4 { background: radial-gradient(60% 60% at 70% 70%, var(--glow-tertiary), transparent 70%), linear-gradient(140deg, #0e2b4d, #071a2e); }
+.gp-5 { background: radial-gradient(60% 60% at 50% 30%, var(--glow-tertiary), transparent 70%), linear-gradient(140deg, #0a2b4e, #071a2e); }
+.gp-6 { background: radial-gradient(60% 60% at 50% 70%, var(--glow-accent), transparent 70%), linear-gradient(140deg, #12305a, #071a2e); }
 
 .g-caption {
   display: none; /* product names below gallery cards hidden */
@@ -911,18 +1349,18 @@ section { scroll-margin-top: 84px; }
   height: 3px;
   border-radius: 999px;
   background:
-    radial-gradient(circle at 50% 50%, var(--color-accent) 0 4px, transparent 5px),
+    radial-gradient(circle at 50% 50%, #0096ff 0 4px, transparent 5px),
     linear-gradient(90deg,
       transparent,
-      var(--color-tertiary) 22%,
-      var(--color-accent) 50%,
-      var(--color-tertiary) 78%,
+      #0096ff 22%,
+      #0096ff 50%,
+      #0096ff 78%,
       transparent);
   background-size: 100% 100%, 220% 100%;
-  background-position: center, 0% 0;
-  box-shadow: 0 0 14px 1px var(--glow-tertiary), 0 0 4px 0 var(--glow-accent);
+  background-position: center, center;
+  box-shadow: 0 0 14px 1px color-mix(in srgb, #0096ff 45%, transparent), 0 0 4px 0 color-mix(in srgb, #0096ff 30%, transparent);
   opacity: .5;
-  animation: seamFlow 7s linear infinite;
+  animation: seamOut 5s ease-out infinite;
 }
 /* Soft 'light horizon' glow above each seam */
 .section::after,
@@ -942,8 +1380,42 @@ section { scroll-margin-top: 84px; }
 .gallery-section, .catalog-section, .section { padding-top: 72px !important; padding-bottom: 72px !important; }
 .site-footer { padding-top: 72px !important; }
 
-@keyframes seamFlow {
-  to { background-position: center, 220% 0; }
+/* ⛔ was `seamFlow` — it slid background-position 0% → 220%, which moves a 220%-wide
+   background LEFTWARD, so the light crossed the bar RIGHT-TO-LEFT (owner spotted it).
+   Replaced by growing the band's SIZE from the centre: the light now radiates outward
+   in both directions. ⚠ requires `background-position: center` on that layer, or the
+   growth is anchored to the left edge instead of the middle. */
+@keyframes seamOut {
+  0%   { background-size: 100% 100%, 0% 100%; opacity: .5; }
+  55%  { opacity: .55; }
+  100% { background-size: 100% 100%, 280% 100%; opacity: .1; }
+}
+
+/* ============================================================
+   SEAM REVEAL — every divider bar opens OUTWARD FROM ITS CENTRE.
+   transform-origin defaults to the centre, so scaleX grows the bar
+   towards both edges at once: the left half travels left, the right
+   half travels right (owner: "animate from center").
+   ⚠ No class = no animation = the bar simply shows, so the dividers
+   are never left invisible if the observer never runs.
+   ============================================================ */
+@keyframes seamOpenCentre {   /* section seams — already translated -50% to centre */
+  from { transform: translateX(-50%) scaleX(0); }
+  to   { transform: translateX(-50%) scaleX(1); }
+}
+@keyframes seamOpen {         /* the standalone .sub-divider — centred by margin */
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.seam-open::before {
+  animation: seamOut 5s ease-out infinite, seamOpenCentre .9s cubic-bezier(.22,.61,.36,1) both;
+}
+.sub-divider.seam-open::before {
+  animation: seamOpen .9s cubic-bezier(.22,.61,.36,1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* keep the existing "no animation" behaviour for these */
+  .seam-open::before, .sub-divider.seam-open::before { animation: none; }
 }
 
 /* Section name label sitting on the divider seam */
@@ -952,14 +1424,14 @@ section { scroll-margin-top: 84px; }
   z-index: 3;
   padding: .42rem 1.7rem;
   font-size: .82rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase;
-  color: var(--color-tertiary);
+  color: #0096ff;
   background: var(--bg);
   border-radius: 999px;
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-tertiary) 16%, transparent),
-    0 0 22px 4px var(--glow-tertiary);
+    0 0 0 1px color-mix(in srgb, #0096ff 22%, transparent),
+    0 0 22px 4px color-mix(in srgb, #0096ff 30%, transparent);
   white-space: nowrap;
-  text-shadow: 0 0 14px var(--glow-tertiary);
+  text-shadow: 0 0 14px color-mix(in srgb, #0096ff 45%, transparent);
 }
 @media (prefers-reduced-motion: reduce) {
   .section::before, .gallery-section::before, .catalog-section::before, .site-footer::before { animation: none; }
@@ -1057,9 +1529,9 @@ section { scroll-margin-top: 84px; }
   padding: 2.6rem 2rem;
   border-radius: 20px;
   text-align: center; position: relative; overflow: hidden;
-  background: linear-gradient(160deg, color-mix(in srgb, var(--color-accent) 7%, var(--card-bg)), color-mix(in srgb, #ef4444 5%, var(--card-bg)));
+  background: linear-gradient(160deg, color-mix(in srgb, var(--color-accent) 7%, var(--card-bg)), color-mix(in srgb, #0096ff 5%, var(--card-bg)));
   border: 1px solid var(--border-strong);
-  box-shadow: 0 12px 32px -16px color-mix(in srgb, #ef4444 45%, transparent);
+  box-shadow: 0 12px 32px -16px color-mix(in srgb, #0096ff 45%, transparent);
 }
 .special-offer .so-shine {
   position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
@@ -1071,7 +1543,7 @@ section { scroll-margin-top: 84px; }
 .so-title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; letter-spacing: -.02em; margin-bottom: 1.2rem; color: var(--ink); }
 .so-prices { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1rem; }
 .so-old { text-decoration: line-through; opacity: .6; font-size: 1.1rem; color: var(--muted); }
-.so-new { font-family: 'Space Grotesk', sans-serif; font-size: clamp(2.3rem, 4vw, 2.7rem); font-weight: 900; color: #ef4444; text-shadow: 0 2px 10px rgba(0, 0, 0, .2); line-height: 1; }
+.so-new { font-family: 'Space Grotesk', sans-serif; font-size: clamp(2.3rem, 4vw, 2.7rem); font-weight: 900; color: #0096ff; text-shadow: 0 2px 14px color-mix(in srgb, #0096ff 40%, transparent); line-height: 1; }
 .so-valid { display: inline-block; background: color-mix(in srgb, var(--ink) 12%, transparent); padding: .35rem 1rem; border-radius: 999px; font-size: .82rem; font-weight: 600; border: 1px solid var(--border-strong); color: var(--ink); }
 
 /* Coupon code */
@@ -1090,18 +1562,221 @@ section { scroll-margin-top: 84px; }
 .coupon-copy { font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--bg); background: var(--color-accent); padding: .32rem .75rem; border-radius: 999px; }
 .coupon-hint { margin-top: .6rem; font-size: .78rem; color: var(--muted); }
 
+/* Coupon inside the Special Offer card — azure, to match that card's accent
+   (the page's only chromatic accent is the #0096ff button azure). */
+.special-offer .coupon-wrap { margin-top: 1.3rem; }
+.special-offer .coupon-btn { border-color: color-mix(in srgb, #0096ff 55%, transparent); }
+.special-offer .coupon-btn:hover { border-color: #0096ff; }
+/* The code is HIDDEN until the visitor clicks Copy, then revealed. It stays in the
+   DOM the whole time so the click can still copy its textContent (same idea as the
+   page's old `.pb-code-text { display:none }`). */
+/* the offer band's coupon behaves EXACTLY like the card's: the code stays hidden
+   until Copy is pressed (the click adds .copied in the page script), and the COPY
+   chip is azure. Same three rules, so the two offers cannot drift apart. */
+.special-offer .coupon-code, .offer-band .coupon-code { display: none; }
+.special-offer .coupon-btn.copied .coupon-code, .offer-band .coupon-btn.copied .coupon-code { display: inline-block; }
+.special-offer .coupon-copy, .offer-band .coupon-copy { background: #0096ff; color: #011a60; }
+.special-offer .coupon-hint { margin-top: .55rem; }
+
+/* Moving sheen on the coupon button — the SAME recipe the buttons use
+   (.btn-primary::after, #showcase .support-card::after): a skewed white band
+   driven by the shared btnShine keyframes, 3s loop. position/overflow are
+   required so the sweeping band is clipped to the pill. */
+.special-offer .coupon-btn { position: relative; overflow: hidden; }
+.special-offer .coupon-btn::after {
+  content: ''; position: absolute; top: 0; left: 0; width: 45%; height: 100%; pointer-events: none;
+  /* band 40%->70%: twice the 45%->60% the buttons use, so the streak reads thicker */
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.9) 40%, rgba(255,255,255,.9) 70%, transparent 70%);
+  transform: translateX(-170%) skewX(-20deg); animation: btnShine 3s linear infinite;
+}
+
+/* …and the same sweep on the azure COPY chip inside it. Safe to clip here because
+   the chip is a flex item of the inline-flex button, so it is blockified and
+   `overflow` applies (it would NOT on a plain inline span). Same 3s beat as the
+   button's own band, so the two sweeps travel together. */
+.special-offer .coupon-copy { position: relative; overflow: hidden; }
+.special-offer .coupon-copy::after {
+  content: ''; position: absolute; top: 0; left: 0; width: 45%; height: 100%; pointer-events: none;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.9) 40%, rgba(255,255,255,.9) 70%, transparent 70%);
+  transform: translateX(-170%) skewX(-20deg); animation: btnShine 3s linear infinite;
+}
+
+/* (a card-opacity override briefly lived here — reverted; the background is
+   clipped instead, see the particle "holes" logic in the canvas script) */
+
+/* ============================================================
+   SPECIAL OFFER BAND — the full-bleed promo strip directly under
+   the "More from Mr3D" gallery. 200px tall on desktop, edge to
+   edge; on narrow screens the row wraps and the band grows, so
+   nothing is ever clipped.
+   It reuses the .special-offer pieces (.so-kicker / .so-title /
+   .so-prices / .so-old / .so-new / .so-valid / .coupon-*), so the
+   card and the band cannot drift apart — only the layout is new.
+   ============================================================ */
+.offer-band {
+  position: relative; overflow: hidden;
+  /* Sized to the page's OWN seam rule: .section::before / .gallery-section::before
+     draw their divider at min(1180px, 92%), so the band sits exactly on that column
+     rather than running edge to edge. */
+  width: min(1180px, 92%); margin: 0 auto 4.5rem;
+  min-height: 200px;
+  display: flex; align-items: center; justify-content: center;
+  /* top padding pulled in from 1.2rem; kept SYMMETRIC so the row sits dead on the
+     band's centreline (an unequal top/bottom pads the content box off-centre) */
+  padding: .5rem clamp(1rem, 3vw, 2.6rem);
+  border-radius: 20px;
+  background: linear-gradient(100deg,
+    color-mix(in srgb, #0096ff 16%, var(--bg)),
+    color-mix(in srgb, var(--color-accent) 9%, var(--bg)) 52%,
+    color-mix(in srgb, #0096ff 16%, var(--bg)));
+  border: 1px solid color-mix(in srgb, #0096ff 34%, transparent);
+  box-shadow: 0 12px 32px -16px color-mix(in srgb, #0096ff 45%, transparent);
+}
+.offer-band .ob-shine {
+  position: absolute; inset: -50%; pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,.10) 0%, transparent 62%);
+}
+.offer-band .ob-inner {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 1180px; margin: 0 auto;
+  /* ⛔⛔ GRID, not a centring flex row. `1fr auto 1fr` puts the coupon column on the
+     band's true centreline while leaving the THIRD cell deliberately empty — which is
+     what "keep the right side empty" needs, and which a centred flex row cannot express
+     (a flex row would pull the coupon off-centre to make room for it). */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  /* ⛔ ONE row. The kicker used to be a grid ROW of its own, which made it occupy
+     vertical space at the top — so `align-items: center` centred the copy in the space
+     BELOW the kicker instead of in the band, leaving it measurably low (75px above the
+     copy vs 47px below). It is absolutely positioned at the band's top instead, so it
+     reserves no height at all and the copy sits genuinely top-to-bottom centred. */
+  grid-template-areas: "copy mid .";
+  align-self: stretch;              /* fill the band's content box, not just shrink-wrap */
+  align-content: center;
+  align-items: center;
+  column-gap: clamp(1rem, 3vw, 2.6rem);
+}
+.offer-band .so-kicker {
+  position: absolute; top: 0; left: 0; right: 0;
+  /* 2x the base .78rem (owner, 2026-09-29). ⛔ `line-height` is pinned deliberately:
+     the kicker is ABSOLUTELY positioned, so it reserves no space and a tall line box
+     reaches straight down into the coupon. At the inherited 1.6 a 1.56rem font gives a
+     ~40px box and it collided; 1.15 keeps the glyphs exactly 2x while the box is ~29px,
+     which preserves the ~10px gap above the coupon column. */
+  /* 1.15rem, not the 2x first asked for and then rejected: 2x measured 24.96px, which
+     made the KICKER LARGER THAN THE TITLE IT SITS ABOVE (`.so-title` clamps to 24px) —
+     an eyebrow must be subordinate to its heading. 18.4px reads as a proper kicker. */
+  font-size: 1.15rem; line-height: 1.15;
+  text-align: center; margin-bottom: 0; color: #0096ff;
+}
+/* Left-aligned horizontally (owner's "Limited Time Discount left center") — the
+   "centred" they then asked for was TOP-AND-BOTTOM, i.e. vertical, which is done on
+   .ob-inner below. A first pass read it as horizontal and centred both lines on a
+   shared centreline; that was reverted. */
+.offer-band .ob-copy { grid-area: copy; min-width: 0; text-align: left; }
+/* the coupon and its expiry travel together in the middle cell */
+/* ⛔⛔ A single-column STRETCH grid, not a centring flex column. `align-items: center`
+   on a flex column shrinks every child to its OWN content, so the coupon outline came
+   out 181px while the "Valid until …" pill was 229px — the stack read as misaligned
+   (owner: "these are not centered properly ... make the coupon outline match the width
+   of the Valid until outline"). With `justify-items: stretch` the column sizes to the
+   WIDEST child and every row fills it, so the two outlines match by construction —
+   and they keep matching if the expiry DATE ever changes length, which a hard-coded
+   width would not. */
+.offer-band .ob-mid { grid-area: mid; display: grid; grid-template-columns: 1fr;
+  justify-items: stretch; gap: .35rem; }
+.offer-band .so-title { font-size: clamp(1.05rem, 1.9vw, 1.5rem); margin-bottom: 0; white-space: nowrap; }
+/* flex-start so the prices sit DIRECTLY UNDER the title, both flush to the left edge
+   of the copy column — the base rule centres them */
+/* flex-start keeps the prices flush under the title's left edge; justify-content (not
+   text-align) decides where this ROW sits, since it is a flex row */
+.offer-band .so-prices { margin-bottom: 0; margin-top: .1rem; justify-content: flex-start; gap: .8rem; }
+.offer-band .so-new { font-size: clamp(1.9rem, 3vw, 2.4rem); }
+/* breathing room around the coupon button. NOTE: .ob-inner is centred, so space
+   added here is partly taken back from the gaps beside it — 1rem of padding buys
+   about +5px of real clearance on each side of the button. */
+/* ⛔ padding 0 — the 1rem used to sit here for breathability in the old centred flex
+   row, but it would now stop the button reaching the column's edges and the outlines
+   would be 32px apart again. */
+.offer-band .coupon-wrap { margin-top: 0; padding: 0; position: relative; }
+/* the hint is lifted OUT OF FLOW so the wrap is exactly as tall as the button —
+   otherwise the button sits above the band's centreline, level with the hint
+   rather than with the title, prices and expiry pill. */
+/* ⛔⛔ The hint is IN FLOW. It used to be lifted out (`position:absolute; top:100%`) so
+   the coupon wrap was exactly as tall as the button — which was fine only while the
+   expiry sat in its own distant flex cell. The grid layout now stacks the coupon, the
+   hint and the expiry in ONE column, and an absolutely-positioned hint reserves no
+   space, so the expiry lands on top of it. In flow the three stack cleanly. */
+/* ⛔ Both this and .so-valid measure ~1px HIGH: the font reserves descent space the
+   glyphs do not use, so a symmetrically padded box sits the text above its centre.
+   ⛔ The amount differs per element and is NOT the same half-measure: here only
+   `padding-top` moves, so it shifts the gap on its own and needs the FULL 1px (.08em).
+   On .so-valid the padding is SWAPPED top<->bottom, so both gaps move and HALF is
+   right. Using .04em here left it still 0.48px high. The hint has no background, so
+   the 1px its box gains is invisible. */
+.offer-band .coupon-hint { position: static; transform: none; margin-top: .35rem; padding-top: .08em; white-space: nowrap; }
+.offer-band .so-valid { white-space: nowrap;
+  padding-top: calc(.35rem + .04em); padding-bottom: calc(.35rem - .04em); }
+
+/* the band's coupon keeps the offer card's azure tint and its moving sheen
+   (same btnShine recipe and 3s beat as .special-offer and .btn-primary) */
+/* vertical padding pulled in (owner: "scale down the coupon from top and bottom") —
+   .85rem at each end was 27px of the button's 56px height. Horizontal left alone so
+   the COUPON/COPY labels keep their breathing room. */
+/* width:100% so the button's outline = the column = the "Valid until" pill's outline.
+   `display:flex` (not the base inline-flex) + justify-content:center keeps COUPON/COPY
+   centred in the now-wider button. */
+.offer-band .coupon-btn { position: relative; overflow: hidden; display: flex; justify-content: center;
+  width: 100%; padding: .35rem 1.4rem; border-color: color-mix(in srgb, #0096ff 55%, transparent); }
+.offer-band .coupon-btn:hover { border-color: #0096ff; }
+/* ⛔ `letter-spacing` adds a space AFTER the last glyph, so a box that is centred by
+   LAYOUT still shows its INK left of centre — by exactly half the letter-spacing.
+   .05em is half of the chip's .1em. The pair moves the ink back without changing the
+   chip's width. */
+.offer-band .coupon-copy { position: relative; overflow: hidden;
+  padding-left: calc(.75rem + .05em); padding-right: calc(.75rem - .05em); }
+.offer-band .coupon-btn::after,
+.offer-band .coupon-copy::after {
+  content: ''; position: absolute; top: 0; left: 0; width: 45%; height: 100%; pointer-events: none;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.9) 40%, rgba(255,255,255,.9) 70%, transparent 70%);
+  transform: translateX(-170%) skewX(-20deg); animation: btnShine 3s linear infinite;
+}
+@media (max-width: 900px) {
+  /* the row wraps here, so the band grows past 200px rather than clipping —
+     the 200px floor still applies.
+     ⛔ Padding pulled in HARD at phone widths (owner: "make the banner work with
+     phone aspect ratio ... by reduceing inside padding"). 1.7rem of vertical padding
+     on a 390px screen is most of a text line, and it is paid TWICE — top and bottom. */
+  .offer-band { padding: .9rem .7rem; }
+  /* the three-column grid collapses to one, centred — the desktop "left column /
+     centre coupon / empty right" split has no room on a phone */
+  .offer-band .ob-inner {
+    grid-template-columns: 1fr;
+    grid-template-areas: "kick" "copy" "mid";
+    justify-items: center;
+    text-align: center;
+    row-gap: .45rem;
+  }
+  /* back IN FLOW on a phone: the column is stacked, so there is nothing to overlap and
+     an absolute kicker would sit on top of the copy */
+  .offer-band .so-kicker { position: static; grid-area: kick; }
+  .offer-band .ob-copy { text-align: center; }
+  .offer-band .so-prices { justify-content: center; }
+  .offer-band .so-title, .offer-band .coupon-hint, .offer-band .so-valid { white-space: normal; }
+}
+
 /* Alpha release promo ticket */
 .promo-banner {
   position: relative;
   max-width: 720px; margin: 0 auto 1.6rem;
   background:
-    linear-gradient(160deg, #adffd2, #86e7b5) padding-box,
-    linear-gradient(135deg, #22d3ee, #34d399 40%, #006b15 70%, #fde047) border-box;
+    linear-gradient(160deg, #9ce8fc, #53e8fd) padding-box,
+    linear-gradient(135deg, #22d3ee, #53e8fd 40%, #0065e2 70%, #9ce8fc) border-box;
   border: 4px dashed transparent;
   border-radius: 20px;
   padding: 2rem 1.5rem;
   display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;
-  box-shadow: 0 0 26px -4px color-mix(in srgb, #34d399 55%, transparent);
+  box-shadow: 0 0 26px -4px color-mix(in srgb, #53e8fd 55%, transparent);
 }
 .promo-banner .pb-hole {
   position: absolute; top: 50%; transform: translateY(-50%);
@@ -1109,37 +1784,37 @@ section { scroll-margin-top: 84px; }
   border: 3px dashed transparent;
   background:
     linear-gradient(var(--bg), var(--bg)) padding-box,
-    linear-gradient(135deg, #22d3ee, #34d399 40%, #006b15 70%, #fde047) border-box;
+    linear-gradient(135deg, #22d3ee, #53e8fd 40%, #0065e2 70%, #9ce8fc) border-box;
 }
 .promo-banner .pb-hole-l { left: -22px; }
 .promo-banner .pb-hole-r { right: -22px; }
-.pb-kicker { font-size: .95rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .9; color: #064e3b; }
-.pb-title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.9rem, 4vw, 2.5rem); font-weight: 900; line-height: 1.2; color: #064e3b; }
+.pb-kicker { font-size: .95rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .9; color: #011a60; }
+.pb-title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.9rem, 4vw, 2.5rem); font-weight: 900; line-height: 1.2; color: #011a60; }
 .pb-code {
   display: inline-flex; align-items: center;
-  background: #006b15; color: #fff;
+  background: #0065e2; color: #fff;
   padding: 1rem 2.6rem; border-radius: 999px; border: 0; cursor: pointer;
   transition: transform .2s ease, box-shadow .2s ease;
 }
-.pb-code:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -16px color-mix(in srgb, #006b15 60%, transparent); }
+.pb-code:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -16px color-mix(in srgb, #0065e2 60%, transparent); }
 .pb-code-text { display: none; } /* coupon code hidden */
 .pb-copy { font-size: 1.15rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #fff; background: none; padding: 0; }
-.pb-valid { font-size: .74rem; opacity: .75; font-weight: 600; color: #064e3b; }
+.pb-valid { font-size: .74rem; opacity: .75; font-weight: 600; color: #011a60; }
 .pb-prices { display: flex; align-items: center; justify-content: center; gap: 1rem; }
-.pb-old { text-decoration: line-through; opacity: .6; font-size: 1.1rem; color: #064e3b; }
+.pb-old { text-decoration: line-through; opacity: .6; font-size: 1.1rem; color: #011a60; }
 .pb-new { font-family: 'Space Grotesk', sans-serif; font-size: clamp(2rem, 4vw, 2.4rem); font-weight: 900; color: #ef4444; line-height: 1; text-shadow: 0 2px 10px rgba(0, 0, 0, .15); }
 /* Dark mode: dark green fill + light text + bright gradient button */
 .dark .promo-banner {
   background:
-    linear-gradient(160deg, #1c4026, #15331b 60%, #0f2616) padding-box,
-    linear-gradient(135deg, #22d3ee, #34d399 40%, #7dffa0 70%, #fde047) border-box;
+    linear-gradient(160deg, #0e2444, #0a1e3a 60%, #08182e) padding-box,
+    linear-gradient(135deg, #22d3ee, #53e8fd 40%, #9ce8fc 70%, #9ce8fc) border-box;
 }
-.dark .pb-kicker { color: #d9f2de; }
-.dark .pb-title { color: #eafcf2; }
+.dark .pb-kicker { color: #d6e9fb; }
+.dark .pb-title { color: #e8f4ff; }
 .dark .pb-valid { color: rgba(255, 255, 255, .78); }
 .dark .pb-old { color: rgba(255, 255, 255, .6); }
-.dark .pb-code { background: linear-gradient(135deg, #22d3ee, #34d399); color: #06281a; }
-.dark .pb-copy { color: #06281a; }
+.dark .pb-code { background: linear-gradient(135deg, #22d3ee, #53e8fd); color: #011a60; }
+.dark .pb-copy { color: #011a60; }
 .action-btn {
   display: inline-flex; align-items: center; gap: .45rem;
   padding: .3rem .75rem;
@@ -1180,9 +1855,18 @@ section { scroll-margin-top: 84px; }
 /* ============================================================
    QUICK NAV BUTTONS (above & below the gallery)
    ============================================================ */
+/* Scroll points — pills pinned under the sticky header (header measures 65px tall).
+   No surface of its own: the bar carries no background, blur or border, so the pills
+   float and each one keeps its own card surface. */
 .quick-nav {
-  display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center;
-  padding: 1.1rem 0 72px;
+  position: sticky; top: 65px; z-index: 90;
+  display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center;
+  padding: .5rem .9rem;
+}
+.quick-nav a.active {
+  border-color: var(--color-tertiary);
+  background: color-mix(in srgb, var(--color-tertiary) 18%, var(--card-bg));
+  font-weight: 700;
 }
 .quick-nav a {
   padding: .55rem 1.1rem;
@@ -1222,16 +1906,16 @@ section { scroll-margin-top: 84px; }
   background:linear-gradient(color-mix(in srgb,var(--bg) 92%,transparent),color-mix(in srgb,var(--bg) 92%,transparent)) padding-box,
   conic-gradient(from var(--badge-angle),#737373,#d4d4d8,#fafafa,#d4d4d8,#737373) border-box;
   border:2px solid transparent;border-radius:999px;
-  box-shadow:0 4px 12px -6px color-mix(in srgb,var(--ink) 25%,transparent),0 0 20px -4px rgba(35,165,90,.6);
+  box-shadow:0 4px 12px -6px color-mix(in srgb,var(--ink) 25%,transparent),0 0 20px -4px rgba(0,150,255,.6);
   white-space:nowrap;text-decoration:none;color:inherit;
   transition:transform .2s ease,border-color .2s ease,box-shadow .3s ease;
   animation:badgeSpin 4s linear infinite;
 }
-.version-badge:hover{transform:translateY(-1px);border-color:transparent;box-shadow:0 4px 12px -6px color-mix(in srgb,var(--ink) 25%,transparent),0 0 26px -2px rgba(35,165,90,.8)}
+.version-badge:hover{transform:translateY(-1px);border-color:transparent;box-shadow:0 4px 12px -6px color-mix(in srgb,var(--ink) 25%,transparent),0 0 26px -2px rgba(0,150,255,.8)}
 .version-badge .latest-tag{margin-left:-5px}
-.latest-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(35,165,90,.2);padding:2px 7px;border-radius:20px;font-weight:600;color:rgb(35,165,90);white-space:nowrap;font-size:.68rem}
-.latest-dot{width:6px;height:6px;border-radius:50%;background:rgb(35,165,90);animation:latestBlink 1.2s ease-in-out infinite}
-@keyframes latestBlink{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(35,165,90,.6)}50%{opacity:.4;box-shadow:0 0 0 6px rgba(35,165,90,0)}}
+.latest-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(0,150,255,.2);padding:2px 7px;border-radius:20px;font-weight:600;color:rgb(0,150,255);white-space:nowrap;font-size:.68rem}
+.latest-dot{width:6px;height:6px;border-radius:50%;background:rgb(0,150,255);animation:latestBlink 1.2s ease-in-out infinite}
+@keyframes latestBlink{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,150,255,.6)}50%{opacity:.4;box-shadow:0 0 0 6px rgba(0,150,255,0)}}
 .vb-version{font-family:'Space Grotesk',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.02em;color:var(--ink)}
 @keyframes badgeSpin{to{--badge-angle:360deg}}
 @property --badge-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
@@ -1264,7 +1948,10 @@ html:not(.dark) .site-header .brand-mark img{filter:invert(1)}
 #gallery .g-ph-tag.hot{
   background:linear-gradient(140deg,#171717,#3f3f46) padding-box,
   conic-gradient(from var(--badge-angle),#737373,#d4d4d8,#fafafa,#d4d4d8,#737373) border-box;
-  border:2px solid transparent; color:#fff;
+  /* ⛔ was a hard-coded `2px`, which meant the gallery's ring was the ONE part of the
+     badge that did NOT scale with the card. Now .09em like the base — half the stroke
+     and it tracks the badge (owner, 2026-09-29). */
+  border:.09em solid transparent; color:#fff;
 }
 @property --badge-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
 #gallery .g-ph-tag{animation:badgeSpin 4s linear infinite}
@@ -1334,6 +2021,10 @@ h1,h2,h3,h4,.site-header .brand,.section-title,.g-title,.g-name,.acc-head,.vb-ve
   transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease,background-position .5s ease;
 }
 .quickfog-outer:hover,.feature-card:hover,.c-card:hover,.compare-card:hover,.accordion:hover,.feature-media:hover{background-position:-20% 0,0 0,0 0}
+/* Opt-out: the hero demo card keeps a STILL gloss — the sheen sweep is off here.
+   (2 classes + the pseudo-class so it wins over the rule above, and it sits
+   directly under it so the opt-out stays next to what it opts out of.) */
+.hero-video-card.quickfog-outer:hover{background-position:120% 0,0 0,0 0}
 .btn,.btn-ghost,.theme-toggle,.g-arrow,.menu-btn,.action-btn,.faq-btn,.version-badge,.step-num{
   background-color:var(--card-bg);
   -webkit-backdrop-filter:blur(20px) saturate(1.6);
@@ -1346,29 +2037,33 @@ html:not(.dark) .btn,html:not(.dark) .theme-toggle,html:not(.dark) .g-arrow,html
    HOVER EFFECTS — Gobos Master (expanding outline rings + lift)
    ============================================================ */
 .quickfog-outer,.feature-card,.compare-card,.accordion,.img-frame,.g-frame,.c-card,.rating-card,.time-chip,.feature-media,.hero-media,.spec-item{
-  outline:1px solid rgba(255,255,255,.5);
+  /* transparent at rest: the ring is painted only by @keyframes ringOut on hover */
+  outline:1px solid transparent;
   outline-offset:0;
   transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease,outline-offset .7s cubic-bezier(.19,1,.22,1),outline-color .7s cubic-bezier(.19,1,.22,1);
 }
 .quickfog-outer:hover,.feature-card:hover,.compare-card:hover,.accordion:hover,.img-frame:hover,.g-frame:hover,.c-card:hover,.rating-card:hover,.feature-media:hover,.spec-item:hover{
+  animation: ringOut 1s cubic-bezier(.19,1,.22,1) var(--ring-repeat);
   outline-color:transparent;
   outline-offset:12px;
   transform:translateY(-3px);
 }
 .btn,.btn-ghost,.faq-btn,.version-badge,.theme-toggle,.g-arrow,.menu-btn,.action-btn,.tag{
-  outline:1px solid rgba(255,255,255,.5);
+  /* transparent at rest: the ring is painted only by @keyframes ringOut on hover */
+  outline:1px solid transparent;
   outline-offset:0;
   transition:transform .2s ease,border-color .2s ease,box-shadow .5s ease,outline-offset .7s cubic-bezier(.19,1,.22,1),outline-color .7s cubic-bezier(.19,1,.22,1);
 }
 .btn:hover,.btn-ghost:hover,.faq-btn:hover,.version-badge:hover,.theme-toggle:hover,.g-arrow:hover:not(:disabled),.menu-btn:hover,.action-btn:hover{
   box-shadow:inset 0 0 20px color-mix(in srgb,var(--ink) 50%,transparent),0 0 20px color-mix(in srgb,var(--ink) 16%,transparent);
+  animation: ringOut 1s cubic-bezier(.19,1,.22,1) var(--ring-repeat);
   outline-color:transparent;
   outline-offset:12px;
   transform:translateY(-1px);
 }
 .btn:active,.btn-ghost:active{transform:translateY(0) scale(.98)}
 /* light theme rings */
-html:not(.dark) .quickfog-outer,html:not(.dark) .feature-card,html:not(.dark) .compare-card,html:not(.dark) .accordion,html:not(.dark) .img-frame,html:not(.dark) .g-frame,html:not(.dark) .c-card,html:not(.dark) .rating-card,html:not(.dark) .time-chip,html:not(.dark) .feature-media,html:not(.dark) .hero-media,html:not(.dark) .spec-item,html:not(.dark) .btn,html:not(.dark) .btn-ghost,html:not(.dark) .faq-btn,html:not(.dark) .version-badge,html:not(.dark) .theme-toggle,html:not(.dark) .g-arrow,html:not(.dark) .menu-btn,html:not(.dark) .action-btn,html:not(.dark) .tag{outline-color:rgba(0,0,0,.35)}
+html:not(.dark) .quickfog-outer,html:not(.dark) .feature-card,html:not(.dark) .compare-card,html:not(.dark) .accordion,html:not(.dark) .img-frame,html:not(.dark) .g-frame,html:not(.dark) .c-card,html:not(.dark) .rating-card,html:not(.dark) .time-chip,html:not(.dark) .feature-media,html:not(.dark) .hero-media,html:not(.dark) .spec-item,html:not(.dark) .btn,html:not(.dark) .btn-ghost,html:not(.dark) .faq-btn,html:not(.dark) .version-badge,html:not(.dark) .theme-toggle,html:not(.dark) .g-arrow,html:not(.dark) .menu-btn,html:not(.dark) .action-btn,html:not(.dark) .tag{outline-color:transparent}
 html:not(.dark) .quickfog-outer:hover,html:not(.dark) .feature-card:hover,html:not(.dark) .compare-card:hover,html:not(.dark) .accordion:hover,html:not(.dark) .img-frame:hover,html:not(.dark) .g-frame:hover,html:not(.dark) .c-card:hover,html:not(.dark) .rating-card:hover,html:not(.dark) .feature-media:hover,html:not(.dark) .spec-item:hover,html:not(.dark) .btn:hover,html:not(.dark) .btn-ghost:hover,html:not(.dark) .faq-btn:hover,html:not(.dark) .version-badge:hover,html:not(.dark) .theme-toggle:hover,html:not(.dark) .g-arrow:hover:not(:disabled),html:not(.dark) .menu-btn:hover,html:not(.dark) .action-btn:hover{outline-color:transparent}
 
 /* ============================================================
@@ -1387,14 +2082,14 @@ html:not(.dark) .quickfog-outer:hover,html:not(.dark) .feature-card:hover,html:n
 .reveal{opacity:0;transform:translateY(30px);transition:opacity .8s ease,transform .8s ease}
 .reveal.visible{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
-/* Primary button — AFMP deep green + moving sheen */
+/* Primary button — AFMP deep azure + moving sheen */
 .btn-primary{
   position:relative;overflow:hidden;
-  background:linear-gradient(135deg,#10b981,#006b15) !important;
+  background:linear-gradient(135deg,#0096ff,#0065e2) !important;
   color:#ffffff !important;border:1px solid rgba(255,255,255,.2);
-  box-shadow:0 14px 34px -12px color-mix(in srgb,#006b15 55%,transparent);
+  box-shadow:0 14px 34px -12px color-mix(in srgb,#0065e2 55%,transparent);
 }
-.btn-primary:hover{box-shadow:0 22px 44px -14px color-mix(in srgb,#10b981 45%,transparent)}
+.btn-primary:hover{box-shadow:0 22px 44px -14px color-mix(in srgb,#0096ff 45%,transparent)}
 .btn-primary::after{
   content:'';position:absolute;top:0;left:0;width:45%;height:100%;pointer-events:none;
   background:linear-gradient(105deg,transparent 45%,rgba(255,255,255,.9) 45%,rgba(255,255,255,.9) 60%,transparent 60%);
@@ -1411,10 +2106,15 @@ html:not(.dark) .quickfog-outer:hover,html:not(.dark) .feature-card:hover,html:n
 .dark .btn-glow::before{opacity:1}
 @keyframes glowing{0%{background-position:0 0}50%{background-position:400% 0}100%{background-position:0 0}}
 .btn-glow .btn{width:100%}
-/* Hero media rainbow glow */
+/* Hero media glow — azure + blue only (was a full rainbow).
+   ⛔ the button azure (#0096ff) is repeated every other stop ON PURPOSE: with
+   background-size:400% only a quarter of the gradient is on screen at a time, so
+   a gradient that merely STARTED and ENDED azure showed cyan/blue almost always
+   and the brand azure was off-screen for most of the sweep.
+   First and last stop are the same, so the sweep still loops seamlessly. */
 .hero-media::before{
   content:'';position:absolute;top:-10px;left:-10px;width:calc(100% + 20px);height:calc(100% + 20px);border-radius:inherit;
-  background:linear-gradient(45deg,#ff0000,#ff7300,#fffb00,#48ff00,#00ffd5,#002bff,#7a00ff,#ff00c8,#ff0000);
+  background:linear-gradient(45deg,#0096ff,#22d3ee,#0096ff,#3b82f6,#0096ff);
   background-size:400%;filter:blur(18px);z-index:-1;opacity:.4;animation:glowing 20s linear infinite;pointer-events:none;
 }
 .dark .hero-media::before{opacity:.6}
@@ -1430,29 +2130,39 @@ body::after{
    gallery/comparison) get the same expanding ring + lift
    ============================================================ */
 .price-card,.workflow-card,.support-card,.c-card,.compare-card,.rating-card,.g-card .g-frame,.accordion,.feature-card,.img-frame,.time-chip{
-  outline:1px solid rgba(255,255,255,.5);
+  /* transparent at rest: the ring is painted only by @keyframes ringOut on hover */
+  outline:1px solid transparent;
   outline-offset:0;
   transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease,
     outline-offset .7s cubic-bezier(.19,1,.22,1),outline-color .7s cubic-bezier(.19,1,.22,1);
 }
 .price-card:hover,.workflow-card:hover,.support-card:hover,.c-card:hover,.compare-card:hover,.rating-card:hover,.g-card:hover .g-frame,.accordion:hover,.feature-card:hover,.img-frame:hover,.time-chip:hover{
+  animation: ringOut 1s cubic-bezier(.19,1,.22,1) var(--ring-repeat);
   outline-color:transparent;
   outline-offset:12px;
   transform:translateY(-3px);
 }
-html:not(.dark) .price-card,html:not(.dark) .workflow-card,html:not(.dark) .support-card,html:not(.dark) .compare-card,html:not(.dark) .time-chip,html:not(.dark) .accordion{outline-color:rgba(0,0,0,.35)}
+html:not(.dark) .price-card,html:not(.dark) .workflow-card,html:not(.dark) .support-card,html:not(.dark) .compare-card,html:not(.dark) .time-chip,html:not(.dark) .accordion{outline-color:transparent}
 html:not(.dark) .price-card:hover,html:not(.dark) .workflow-card:hover,html:not(.dark) .support-card:hover,html:not(.dark) .compare-card:hover,html:not(.dark) .time-chip:hover,html:not(.dark) .accordion:hover,html:not(.dark) .g-card:hover .g-frame{outline-color:transparent}
 
 /* More from Mr3D — static grid, no arrows/dots */
 #gallery .gallery-head,
 #gallery .gallery-controls,
 #gallery .gallery-dots{display:none!important}
-#gallery .gallery-viewport{overflow:visible!important}
-#gallery .gallery-track{
+/* ⛔⛔ ONE place for the strip's spacing. The card-width formula below DERIVES
+   from these, so changing a value here resizes the cards to keep the strip
+   exactly as wide as the offer banner — there is no second magic number to
+   forget. (They used to be inlined into that formula as `- 67.6px`.) */
+#gallery{
+  --strip-pad: .35rem;      /* .m3-wrap's own inset, around the cards */
+  --strip-gap: .45rem;      /* between cards                          */
+  --strip-track-pad: 0px;   /* the track's own padding                */
+}
+#gallery .gallery-viewport{overflow:visible!important}#gallery .gallery-track{
   display:grid!important;
-  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
   gap:.9rem!important;
-  padding:2px;
+  padding:var(--strip-track-pad);
   justify-items:center;
 }
 #gallery .g-card{
@@ -1462,45 +2172,74 @@ html:not(.dark) .price-card:hover,html:not(.dark) .workflow-card:hover,html:not(
   opacity:1;transform:none;
 }
 #gallery .g-card.g-in{transition:none}
-@media (max-width:1000px){#gallery .gallery-track{grid-template-columns:repeat(5,minmax(0,1fr))!important}}
-@media (max-width:700px){#gallery .gallery-track{grid-template-columns:repeat(5,minmax(0,1fr))!important}}
-@media (max-width:440px){#gallery .gallery-track{grid-template-columns:repeat(5,minmax(0,1fr))!important}}
+@media (max-width:1000px){#gallery .gallery-track{grid-template-columns:repeat(6,minmax(0,1fr))!important}}
+@media (max-width:700px){#gallery .gallery-track{grid-template-columns:repeat(6,minmax(0,1fr))!important}}
+@media (max-width:440px){#gallery .gallery-track{grid-template-columns:repeat(6,minmax(0,1fr))!important}}
 
 /* One row, tight spacing — whitespace only at the ends */
 #gallery .gallery-track{
   display:flex!important;
   flex-wrap:nowrap!important;
-  justify-content:center!important;
-  gap:.55rem!important;
+  /* flex-start, not center: the wrap now hugs, so there is no slack to centre
+     within. Leaving `center` here would re-introduce the gap inside the strip. */
+  justify-content:flex-start!important;
+  gap:var(--strip-gap)!important;
 }
+/* The basis is a PERCENTAGE of the track, which is legitimate now that the strip
+   is a plain block filling the container (see .m3-wrap). It used to be a length
+   built from `92vw`, and ⛔⛔ **`vw` INCLUDES the scrollbar while the container's
+   `92%` does not** — so on any browser with a visible scrollbar the six cards came
+   out ~1 scrollbar too wide and the last one hung out of the strip. A percentage
+   of the real track cannot disagree with the real track. */
 #gallery .g-card{
-  flex:0 0 calc((100% - 4 * .55rem) / 5 * .7)!important;
+  /* SIX cards + five gaps come to exactly the track's content width; the `1px` is
+     slack so sub-pixel rounding can never push the last card past the strip edge. */
+  flex:0 0 calc((100% - 5 * var(--strip-gap) - 1px) / 6)!important;
   width:auto;
+  /* ⛔ Makes THIS CARD the query container for the badge below. `inline-size`
+     containment is safe here because the card's width comes from flex-basis, not
+     from its contents, and its height still comes from the .g-frame's aspect-ratio. */
+  container-type: inline-size;
+  /* THE BADGE'S em — 5.94% of the CARD's own width, so it tracks the card at every
+     viewport (11.2px on the ~188px desktop card, ~4.2px at a phone width). A
+     percentage of the card is exactly what `cqw` means, and unlike the old
+     `calc(var(--card-w) * …)` it needs no length to exist.
+     ⚠ PURE ratio, deliberately no floor: a floor re-creates the disproportion this
+     exists to remove. Raise 5.94cqw if you want it bigger everywhere. */
+  --badge-em: 5.94cqw;
 }
 
 /* Background card behind product cards with hover ring */
+/* The strip fills its container — the same box the offer banner occupies — so it
+   is banner-width by construction and the cards can be sized as a % of the track. */
 .m3-wrap{
   position:relative;
+  /* Fills the container, which is the SAME box the offer banner below occupies, so
+     the strip is banner-width by construction. ⛔ It was `width:fit-content` with a
+     card width derived from `92vw`; `vw` counts the scrollbar and the container's
+     `92%` does not, so the cards overflowed the strip wherever a scrollbar showed. */
   border:1px solid var(--border-strong);
   border-radius:22px;
   background:var(--card-bg);
-  padding:.55rem;
+  padding:var(--strip-pad);
   -webkit-backdrop-filter:blur(30px) saturate(1.8);
   backdrop-filter:blur(30px) saturate(1.8);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.30),
     inset 0 -1px 0 rgba(255,255,255,.06);
-  outline:1px solid rgba(255,255,255,.5);
+  /* transparent at rest: the ring is painted only by @keyframes ringOut on hover */
+  outline:1px solid transparent;
   outline-offset:0;
   transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease,
     outline-offset .7s cubic-bezier(.19,1,.22,1),outline-color .7s cubic-bezier(.19,1,.22,1);
 }
 .m3-wrap:hover{
+  animation: ringOut 1s cubic-bezier(.19,1,.22,1) var(--ring-repeat);
   outline-color:transparent;
   outline-offset:12px;
   transform:translateY(-3px);
 }
-html:not(.dark) .m3-wrap{outline-color:rgba(0,0,0,.35)}
+html:not(.dark) .m3-wrap{outline-color:transparent}
 html:not(.dark) .m3-wrap:hover{outline-color:transparent}
 
 /* Workflow background card */
@@ -1513,13 +2252,14 @@ html:not(.dark) .m3-wrap:hover{outline-color:transparent}
   -webkit-backdrop-filter:blur(30px) saturate(1.8);
   backdrop-filter:blur(30px) saturate(1.8);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.30),inset 0 -1px 0 rgba(255,255,255,.06);
-  outline:1px solid rgba(255,255,255,.5);
+  /* transparent at rest: the ring is painted only by @keyframes ringOut on hover */
+  outline:1px solid transparent;
   outline-offset:0;
   transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease,
     outline-offset .7s cubic-bezier(.19,1,.22,1),outline-color .7s cubic-bezier(.19,1,.22,1);
 }
-.wf-wrap:hover{outline-color:transparent;outline-offset:12px;transform:translateY(-3px)}
-html:not(.dark) .wf-wrap{outline-color:rgba(0,0,0,.35)}
+.wf-wrap:hover{animation: ringOut 1s cubic-bezier(.19,1,.22,1) var(--ring-repeat);outline-color:transparent;outline-offset:12px;transform:translateY(-3px)}
+html:not(.dark) .wf-wrap{outline-color:transparent}
 html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 .quickfog-outer{border-radius:22px}
 
@@ -1564,10 +2304,16 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 .workflow-num{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:1.15rem;font-weight:800;font-family:'Sora',system-ui,sans-serif;background:color-mix(in srgb,var(--color-tertiary) 16%,transparent);color:var(--color-tertiary);margin-bottom:.3rem}
 .workflow-card .compare-steps{margin:.4rem 0 0}
 .workflow-card .time-chip{margin-top:auto;align-self:flex-start}
-.sub-divider{height:2px;max-width:720px;margin:2.6rem auto;border:0;background:var(--color-tertiary);opacity:.9;box-shadow:0 0 12px var(--glow-tertiary)}
+/* Divider bar — azure, matching the button azure (#0096ff).
+   The BAR is the ::before, not the element itself, so the pill sitting on it is
+   not squashed by the centre-out scaleX (a transform on the parent would scale
+   its children too). */
+.sub-divider{position:relative;height:2px;max-width:720px;margin:2.6rem auto;border:0}
+.sub-divider::before{content:'';position:absolute;inset:0;border-radius:999px;background:#0096ff;opacity:.9;box-shadow:0 0 12px color-mix(in srgb, #0096ff 45%, transparent)}
+/* the pill on the standalone bar sits above it, like a section seam label */
+.sub-divider .seam-label{top:-15px}
 
-/* Hide Full Catalog section */
-.catalog-section{display:none!important}
+/* Full Catalog section — SHOWN (was hidden). Re-hide with: .catalog-section{display:none!important} */
 
 /* Specs & FAQ — selectable text */
 #specs,#specs *{user-select:text!important;-webkit-user-select:text!important}
@@ -1639,7 +2385,16 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 
 /* Tighten gap above the hero clip */
 .hero{padding-top:0}
-.hero .hero-media{margin-top:0}
+/* ⛔ NOT 0 any more (2026-09-25): the clip switcher's label bubbles + their beaks
+   float ~87px above this box, and the old 0 left them pressed against the offer
+   band — 8.4px of daylight, measured.
+   ⛔⛔ This margin COLLAPSES with the offer band's own `margin-bottom:72px` (the
+     hero's padding-top is 0, so nothing separates them), and the collapsed value
+     is the LARGER of the two. A value of 72 or less therefore does NOTHING at all
+     — 26px was tried and moved the clip box by exactly 0px. It has to clear the 72
+     to buy any room; 120 leaves ~33px of air under the band. If the beak run
+     changes, this has to change with it. */
+.hero .hero-media{margin-top:120px}
 .hero .hero-media video{margin:0}
 .hero-note{
   display:inline-block;
@@ -1685,8 +2440,12 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 
 /* Portrait clip card — the media box takes the SOURCE's own aspect (464x832) so the
    clip FILLS it: no letterbox band, no crop. Columns are 66/34 to give the clip real
-   presence, so this one row runs TALLER than the 16:9 cards beside it — that is the
-   requested look, not a layout slip. */
+   presence, which makes the row run ~250px TALLER than the 16:9 cards beside it
+   (media height 0.610x row width, against 0.394x for a default row).
+   ⚠ CURRENTLY UNUSED — the "Final Take" row carried this class until 2026-09-29, when
+   the owner asked for size parity with the other cards; the class was dropped from that
+   one row. The rules are kept so that row can go back to portrait by re-adding
+   `portrait-row` to its class list alone. */
 .feature-row.side-row.portrait-row .feature-text{flex:0 1 66%;width:66%}
 .feature-row.side-row.portrait-row .feature-media{flex:0 1 34%;width:34%;aspect-ratio:464/832}
 @media (max-width:760px){.feature-row.side-row.portrait-row .feature-text{flex:0 1 50%;width:50%}.feature-row.side-row.portrait-row .feature-media{flex:0 1 50%;width:50%}}
@@ -1705,6 +2464,101 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 .hero-center .hero-cta .btn{padding:.62rem 1.3rem!important;font-size:.92rem!important;gap:.5rem!important;border-radius:11px!important}
 .hero-center .hero-cta .btn svg{width:13px!important;height:13px!important}
 .hero-center .hero-note{padding-bottom:.4rem!important;margin-top:.35rem!important;align-self:center!important;width:fit-content!important}
+
+/* ============================================================
+   EXPANDING-RING HOVER — ON EVERYTHING (owner).
+   The hover the cards already had — a 1px ring sitting on the edge that
+   fades out while expanding 12px — was only on cards/buttons/media. Same
+   effect, same .7s easing, now on every remaining piece of UI: pills,
+   badges, tags, the hero tiles, the coupon, the seam labels.
+   ⛔ the ring colour is a VARIABLE, not the hard-coded rgba() the old rules
+   use — a white ring is invisible on the light theme, and the existing
+   light-mode fix (a second `html:not(.dark)` selector list per card) would
+   have had to be duplicated for every element added here.
+   ⛔ `outline-offset` only transitions on an OUTLINE — an element with no
+   outline set shows nothing at rest — but the base rule still DECLARES a transparent
+   one, because without any outline the offset has nothing to animate.
+   ============================================================ */
+:root { --ring: rgba(255,255,255,.5); --ring-repeat: infinite; }
+html:not(.dark) { --ring: rgba(0,0,0,.35); }
+/* ⛔ The ring now pulses for as long as the pointer stays on the element (owner:
+   "repeat ... for every .5s"). An animation that loops FOREVER is precisely what this
+   setting exists to suppress, so it collapses to a single pass here. Driving it from a
+   variable keeps that in ONE place instead of repeating the selector list. */
+@media (prefers-reduced-motion: reduce) { :root { --ring-repeat: 1; } }
+
+/* ⛔⛔ The ring is painted ONLY while this animation runs, i.e. ON HOVER, and it
+   REPEATS every .5s for as long as the pointer stays there (one pass under reduced
+   motion — see --ring-repeat). Nothing is drawn at rest — the elements still DECLARE a 1px outline, but transparent, which is
+   what keeps `outline-offset` animatable at all.
+   ⛔ It MUST be an animation, not a transition: the two ends differ in colour, and a
+   transition would have to start from the (now transparent) rest value and so animate
+   transparent -> transparent. `--ring` above is the ring's LIVE colour and is what
+   makes this theme-aware; the light-mode override list now only clears the rest state. */
+@keyframes ringOut {
+  from { outline-color: var(--ring); outline-offset: 0; }
+  to   { outline-color: transparent; outline-offset: 12px; }
+}
+
+/* ⛔⛔ ONLY THE INNERMOST .quickfog-outer,.feature-card,.compare-card,.accordion,.img-frame,.c-card,.rating-card,.time-chip,.feature-media,.hero-media,.spec-item,.btn,.btn-ghost,.faq-btn,.version-badge,.theme-toggle,.g-arrow,.menu-btn,.action-btn,.tag,.price-card,.workflow-card,.support-card,.m3-wrap,.wf-wrap,.quick-nav a,.coupon-btn,.coupon-copy,.play-btn,.pill,.support-link,.vb-changelog,.acc-head,.media-tag,.media-reel,.pop-badge,.latest-tag,.ver-date,.step-num,.workflow-num,.pb-code,.so-valid,.catalog-card,.offer-card,.card,.hero-side,.special-offer,.specs-bar,.seam-label,.grid-lines ELEMENT ANIMATES (owner, 2026-09-29). `:hover` matches the
+   element under the pointer AND EVERY ONE OF ITS ANCESTORS, so pointing at the COPY chip
+   inside the coupon fired both rings at once — and a `.media-tag` fired three
+   (tag + .feature-media + .quickfog-outer). Measured on this page: **157 ring-carrying
+   elements, 46 of which contain another.**
+   `:has()` removes the ancestor's copy only: this rule matches when a ring element BELOW
+   is the one under the pointer, so exactly one ring is left running. Nothing is lost —
+   move the pointer off the child onto the card body and the ancestor's ring resumes,
+   because the rule stops matching. `animation: none` is enough; the rest of the hover
+   state (`outline-color: transparent`, offset 12px) is already invisible.
+   ⛔ The list below must stay in step with the six rule sets that declare a ring. */
+:is(.quickfog-outer,.feature-card,.compare-card,.accordion,.img-frame,.c-card,.rating-card,.time-chip,.feature-media,.hero-media,.spec-item,.g-frame,.btn,.btn-ghost,.faq-btn,.version-badge,.theme-toggle,.g-arrow,.menu-btn,.action-btn,.tag,.price-card,.workflow-card,.support-card,.m3-wrap,.wf-wrap,.quick-nav a,.coupon-btn,.coupon-copy,.play-btn,.pill,.support-link,.vb-changelog,.acc-head,.media-tag,.media-reel,.pop-badge,.latest-tag,.ver-date,.step-num,.workflow-num,.pb-code,.so-valid,.catalog-card,.offer-card,.card,.hero-side,.special-offer,.specs-bar,.seam-label,.grid-lines):hover:has(:is(.quickfog-outer,.feature-card,.compare-card,.accordion,.img-frame,.c-card,.rating-card,.time-chip,.feature-media,.hero-media,.spec-item,.g-frame,.btn,.btn-ghost,.faq-btn,.version-badge,.theme-toggle,.g-arrow,.menu-btn,.action-btn,.tag,.price-card,.workflow-card,.support-card,.m3-wrap,.wf-wrap,.quick-nav a,.coupon-btn,.coupon-copy,.play-btn,.pill,.support-link,.vb-changelog,.acc-head,.media-tag,.media-reel,.pop-badge,.latest-tag,.ver-date,.step-num,.workflow-num,.pb-code,.so-valid,.catalog-card,.offer-card,.card,.hero-side,.special-offer,.specs-bar,.seam-label,.grid-lines):hover) { animation: none; }
+
+.quick-nav a, .coupon-btn, .coupon-copy, .play-btn, .pill, .support-link,
+.vb-changelog, .acc-head, .media-tag, .media-reel, .pop-badge,
+.latest-tag, .ver-date, .step-num, .workflow-num, .pb-code, .so-valid, .tag,
+.catalog-card, .offer-card, .card, .hero-side, .special-offer, .specs-bar,
+.seam-label, .grid-lines, .offer-card {
+  /* transparent at rest — see @keyframes ringOut below */
+  outline: 1px solid transparent;
+  outline-offset: 0;
+  transition: outline-offset .7s cubic-bezier(.19,1,.22,1),
+              outline-color .7s cubic-bezier(.19,1,.22,1),
+              transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+}
+.quick-nav a:hover, .coupon-btn:hover, .coupon-copy:hover, .play-btn:hover,
+.pill:hover, .support-link:hover, .vb-changelog:hover,
+.acc-head:hover, .media-tag:hover, .media-reel:hover, .pop-badge:hover,
+.latest-tag:hover, .ver-date:hover, .step-num:hover, .workflow-num:hover,
+.pb-code:hover, .so-valid:hover, .tag:hover, .catalog-card:hover,
+.offer-card:hover, .card:hover, .hero-side:hover, .special-offer:hover,
+.specs-bar:hover, .seam-label:hover, .grid-lines:hover {
+  animation: ringOut 1s cubic-bezier(.19,1,.22,1) var(--ring-repeat);
+  outline-color: transparent;
+  outline-offset: 12px;
+}
+
+/* ============================================================
+   HOVER LIFT REMOVED — owner: "remove the effect of moving the
+   cards a tiny bit up when we hover over from every thing".
+   Every rule below is a copy of the original selector list, so it
+   wins on source order alone. The outline rings, borders and glows
+   still respond — nothing translates any more. Delete this block to
+   restore the lift (all 23 original rules are untouched above).
+   ============================================================ */
+.btn:hover,.btn-primary:hover,.btn-ghost:hover,.menu-btn:hover,.theme-toggle:hover,
+.tab-btn:hover,.card:hover,.price-card:hover,.offer-card:hover,.socials a:hover,
+.g-arrow:hover,.g-arrow:hover:not(:disabled),.action-btn:hover,.c-card:hover,
+.support-card:hover,.version-badge:hover,.workflow-card:hover,.coupon-btn:hover,
+.pb-code:hover,.quick-nav a:hover,.faq-btn:hover,.wf-wrap:hover,.m3-wrap:hover,
+.quickfog-outer:hover,.feature-card:hover,.compare-card:hover,.accordion:hover,
+.img-frame:hover,.g-frame:hover,.rating-card:hover,.feature-media:hover,
+.spec-item:hover,.time-chip:hover,.g-card:hover .g-frame{
+  transform:none;
+}
+
+/* Specs & FAQ hover sheen: no override needed here — it was caused by the
+   .acc-head:hover `background` shorthand wiping the glass gradient, fixed at
+   that rule. Nothing in #specs has a sweeping background-position on hover. */
 </style>
 </head>
 <body>
@@ -1738,7 +2592,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
     <div class="header-version">
       <a class="version-badge" href="index.html#changelog" target="_blank" rel="noopener" title="Open changelog">
         <span class="latest-tag"><span class="latest-dot"></span><span>Latest</span></span>
-        <span class="vb-version">v1.0.0 Beta</span>
+        <span class="vb-version">v1.0.0</span>
       </a>
       <a class="vb-changelog" href="index.html#changelog" target="_blank" rel="noopener">Click for Changelog</a>
     </div>
@@ -1754,6 +2608,18 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
     </div>
   </div>
 </header>
+
+<!-- ============================================================ -->
+<!-- SCROLL POINTS — pinned under the sticky header. Document order, -->
+<!-- because the scrollspy highlights left-to-right as you descend.  -->
+<!-- ============================================================ -->
+<nav class="quick-nav" aria-label="Jump to a section">
+  <a href="#workflow">Workflow</a>
+  <a href="#features">Features</a>
+  <a href="#showcase">Support</a>
+  <a href="#pricing">Pricing</a>
+  <a href="#howto">How to</a>
+</nav>
 
 <main id="top">
 
@@ -1781,8 +2647,11 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           <li class="g-card">
             <a class="g-thumb" href="#" title="Replace with your next add on link">
               <span class="g-frame">
-                <span class="g-ph gp-5" role="img" aria-label="Next add on placeholder">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 20 6.5v11L12 22l-8-4.5v-11L12 2Z"/><path d="M12 8.5 16 11v2.5l-4 2.5-4-2.5V11l4-2.5Z"/></svg>
+                <span class="g-ph gp-5" role="img" aria-label="Add on 05">
+                  <!-- ⚠ the .gp-5 gradient stays behind this image: it is the fallback
+                       that shows if the remote file fails, same as every other card.
+                       Replace the caption name/alt when this slot gets a real product. -->
+                  <img src="https://mr3dpageclips.carrd.co/assets/images/image16.jpg" alt="Add on 05" style="width:100%;height:100%;object-fit:cover;display:block;" />
                 </span>
                 <span class="g-ph-tag hot">NEW</span>
               </span>
@@ -1820,6 +2689,22 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
               <span class="g-caption"><span class="g-name">Gobos Master</span><span class="g-cta">View &rarr;</span></span>
             </a>
           </li>
+          <!-- 6th slot — placeholder. To make it a real product, replace the href,
+               the caption name, and put an <img src="..."> inside .g-ph (the
+               gradient behind it is only what shows when there is no image). -->
+          <li class="g-card">
+            <a class="g-thumb" href="#" title="Replace with your next add on link">
+              <span class="g-frame">
+                <span class="g-ph gp-6" role="img" aria-label="Add on 06">
+                  <!-- ⚠ .gp-6 stays behind this image: it is the fallback that shows if
+                       the remote file fails, same as every other card. -->
+                  <img src="https://mr3dpageclips.carrd.co/assets/images/image17.png" alt="Add on 06" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                </span>
+                <span class="g-ph-tag hot">Time-Saver</span>
+              </span>
+              <span class="g-caption"><span class="g-name">Add on 06</span><span class="g-cta">View &rarr;</span></span>
+            </a>
+          </li>
           <li class="g-card">
             <a class="g-thumb" href="https://superhivemarket.com/creators/mr3d?ref=473" target="_blank" rel="noopener">
               <span class="g-frame">
@@ -1838,20 +2723,84 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 </section>
 
 <!-- ============================================================ -->
+<!-- SPECIAL OFFER BAND — full-width 200px strip under the gallery. -->
+<!-- The two prices are LINKED to the offer card further down: see  -->
+<!-- the price slots in the page script (data-price / data-price-src) -->
+<!-- and the comment there for the one place to edit each number.    -->
+<!-- ============================================================ -->
+<section class="offer-band reveal" aria-label="Special offer">
+  <div class="ob-shine"></div>
+  <div class="ob-inner">
+    <!-- ⛔ Laid out by GRID AREAS, not a centring flex row (owner, 2026-09-29:
+         "put the Special Offer in the top center ... Limited Time Discount left center
+         ... the prices right below ... the coupon in the center center ... keep the
+         right side empty"). The kicker is deliberately NOT inside .ob-copy any more —
+         it is its own full-width top row, and the DOM order now matches the visual
+         order so the reading order still makes sense with styles off. -->
+    <div class="so-kicker">Special Offer</div>
+
+    <div class="ob-copy">
+      <div class="so-title">Limited Time Discount</div>
+      <div class="so-prices">
+        <span class="so-old" data-price="regular" data-fmt="usd2">$129.00</span>
+        <span class="so-new" data-price="offer" data-fmt="usd2">$89.00</span>
+      </div>
+    </div>
+
+    <div class="ob-mid">
+      <div class="coupon-wrap">
+        <button class="coupon-btn" id="couponBtnBand" type="button"
+                data-href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473"
+                aria-label="Copy the discount coupon code and open the store">
+          <span class="coupon-label">Coupon</span>
+          <span class="coupon-code">afmp</span>
+          <span class="coupon-copy">Copy</span>
+        </button>
+        <p class="coupon-hint">Click to copy the code.</p>
+      </div>
+      <div class="so-valid" data-text="offer-expiry">Valid until December 31st, 2026</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
 <!-- 2. HERO -->
 <!-- ============================================================ -->
 <section class="hero" id="demo" aria-label="Introduction">
   <!-- Antigravity-style particle pattern background -->
   <canvas class="section-particles" data-pattern="orbit" aria-hidden="true"></canvas>
   <div class="container">
-    <div class="hero-media" role="img" aria-label="Auto Face MoCap Pro demo preview">
-      <!-- MEDIA PLACEHOLDER: drop your hero clip into assets/videos/hero-demo.mp4 -->
-      <video autoplay muted loop playsinline src="assets/videos/hero-demo.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+    <div class="hero-media" aria-label="Auto Face MoCap Pro demo preview">
+      <!-- Hero clip — hosted on the Mr3D carrd CDN (was a placeholder pointing at
+           assets/videos/hero-demo.mp4, which was never added). Swap the src to use
+           a local file instead. -->
+      <video autoplay muted loop playsinline aria-label="Auto Face MoCap Pro demo preview" src="https://mr3dpageclips.carrd.co/assets/videos/video44.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
       <div class="grid-lines"></div>
-      <button class="play-btn" aria-label="Play demo video">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg>
+      <!-- the progress bar is injected by the page script, for this clip and every
+           other <video> on the page (see "Clip progress bars" in the CSS) -->
+      <!-- category tag (left) + character credit (right) — both outlined in the
+           same gradient as this box's glow. The script swaps BOTH with the clip,
+           so the credit can never end up attached to the wrong character. -->
+      <span class="hm-badge hm-badge-left">Anime</span>
+      <span class="hm-badge hm-badge-center">Realtime</span>
+      <a class="hm-badge hm-badge-right" href="https://kanafuyuko.booth.pm/items/5419110?registration=1" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span class="hm-badge-name">Chan</span></a>
+      <!-- clip switcher — one clip per character. Add entries to HERO_SLIDES in
+           the script; the arrows appear only where there IS somewhere to go, and
+           the dots above the clip mark the position. -->
+      <button class="g-arrow hm-nav hm-nav-prev" type="button" aria-label="Previous character clip" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
       </button>
-      <span class="pill">Demo: live webcam tracking to rig</span>
+      <button class="g-arrow hm-nav hm-nav-next" type="button" aria-label="Next character clip" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <!-- one dot per available clip, sitting just above the clip. The script also
+           injects a .hm-tips row ABOVE this one: one always-on label bubble per
+           clip, tail aimed down at its own dot. -->
+      <div class="hm-dots" id="hmDots" role="tablist" aria-label="Character clips"></div>
+      <button class="play-btn" type="button" aria-label="Play or pause the demo video">
+        <svg class="ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg>
+        <svg class="ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5h3.2v13H8zM12.8 5.5H16v13h-3.2z"/></svg>
+      </button>
     </div>
 
     <div class="hero-cards">
@@ -1864,6 +2813,22 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           <p class="hero-sub">
             Auto Face MoCap Pro Allows you to Apply Facial MoCap from videos Recorded with any webcam, phone, on to your (52 ARKit Shapekeys) Animation Ready Character!
           </p>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- HERO VIDEO CARD — paste the YouTube link (or just the     -->
+        <!-- video id) into data-yt and it becomes a click-to-play     -->
+        <!-- embed. While data-yt is EMPTY the card is a "coming soon" -->
+        <!-- placeholder and nothing is fetched from YouTube.          -->
+        <!-- ======================================================== -->
+        <div class="quickfog-outer hero-video-card">
+          <div class="yt-frame" data-yt="" role="img" aria-label="Demo video coming soon">
+            <span class="yt-label">Official Demo</span>
+            <button class="play-btn" type="button" aria-label="Play the demo video">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg>
+            </button>
+          </div>
+          <p class="yt-caption">Demo video coming soon</p>
         </div>
 
         <div class="hero-cta">
@@ -1933,7 +2898,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           <p class="meta">Clean drivers on your rig from the first take.</p>
           <ul class="compare-steps">
             <li><span class="step-num">1</span>Record the clip (webcam, phone or video file)</li>
-            <li><span class="step-num">2</span><span>Click <strong>Auto Map</strong> onto your Rigify / ARP rig</span></li>
+            <li><span class="step-num">2</span>Click <strong>Auto Map</strong> onto your Rigify / ARP rig</li>
             <li><span class="step-num">3</span>Apply smoothing &amp; blink detection, then bake</li>
           </ul>
           <span class="time-chip">~ 12 minutes</span>
@@ -1941,31 +2906,31 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
       </div>
     </div>
 
-    <div class="sub-divider" aria-hidden="true"></div>
+    <div class="sub-divider"><span class="seam-label">Features</span></div>
 
     <div class="section-head reveal" style="margin-top:2.4rem;">
       <span class="section-kicker">Features</span>
       <h2 class="section-title">Capture a performance,<br />not a cleanup job.</h2>
-      <p class="section-sub">Eleven stages that take you from raw video to final rig animation, with the heavy lifting done automatically.</p>
+      <p class="section-sub">Twelve stages that take you from raw video to final rig animation, with the heavy lifting done automatically.</p>
     </div>
 
     <!-- Row 1: Text left + clip right inside one main card -->
-    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+    <!-- id="features" sits HERE, not on the .section-head above: that block is
+         display:none (line 289), so anchoring to it scrolls to nowhere. -->
+    <div class="quickfog-outer" id="features" style="margin-bottom:1rem;padding:.6rem;">
       <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Easy to Use Addon UI</h3>
             <p class="feature-copy">
-              Auto Face MoCap Pro detects the landmarks it needs, then maps them onto your rig
-              automatically: eyebrows, eyelids, jaw, lips, cheeks and head rotation, without touching
-              your existing bone constraints.
+              Import the video clip you want to apply Mocap From and With One Click Auto Face MoCap
+              Pro Applies the Detected Movements from the selected video onto Characters Shape keys!
             </p>
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Rig mapping preview" style="margin:0;">
           <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video37.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Rig Mapping</span>
-          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
         </div>
       </div>
     </div>
@@ -1977,16 +2942,14 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Built on the 52 ARKit shape keys</h3>
             <p class="feature-copy">
-              Your character's 52 ARKit blend shapes carry the performance: eyes, brows, jaw, lips,
-              cheeks, nose and tongue. Every key animates live on the mesh as the take plays, so any
-              rig that ships the standard set is ready to go.
+              Your character's 52 AR-Kit blend shapes carry the performance: eyes, brows, jaw, lips,
+              cheeks, nose and tongue. Every key animates live on the mesh as it takes place in the clip.
             </p>
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="ARKit shape keys preview" style="margin:0;">
           <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video41.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">ARKit Shape Keys</span>
-          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
         </div>
       </div>
     </div>
@@ -1996,18 +2959,16 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
       <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
-            <h3 class="feature-title">Compare the take side by side with your character</h3>
+            <h3 class="feature-title">Compare side by side</h3>
             <p class="feature-copy">
               The source footage and your driven character play together in one view. Pause on any
-              frame and zoom in to check a blink, a lip sync or a brow raise against the performance
-              before you bake.
+              frame and zoom in to check a blink, a lip sync or a brow raise against the performance.
             </p>
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Side by side preview" style="margin:0;">
           <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video38.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Side by Side</span>
-          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
         </div>
       </div>
     </div>
@@ -2017,25 +2978,25 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
       <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
-            <h3 class="feature-title">Register your character's face rig once</h3>
+            <h3 class="feature-title">Multi-Character Support</h3>
             <p class="feature-copy">
-              Point the addon at your character's face bones, give the setup a name, and it is
-              registered as a preset you can recall on any take. A stylised anime rig and a realistic
-              human rig both go through the same flow.
+              Register as many Character as you want After that you can select the character from the
+              dropdown menu and apply Mocap on that Specific character. IF A Character has multiple
+              face objects then make sure to add them in the Collection.
             </p>
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Register character preview" style="margin:0;">
           <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video39.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Register Character</span>
-          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
         </div>
       </div>
     </div>
 
-    <!-- Row 5: Final Take -->
+    <!-- Row 5: Final Take — was `portrait-row`, which ran ~250px taller than every
+         other card; dropped so this card matches its neighbours. -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row portrait-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">The finished performance on your character</h3>
@@ -2047,33 +3008,55 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Finished performance preview" style="margin:0;">
+          <!-- object-fit:contain, NOT cover — the owner asked that the clip never be cropped.
+               The source is portrait (464x832), so in this 16:9 box it letterboxes: it draws
+               253x454 inside an 806x454 area. That is the intended trade for size parity. -->
           <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video42.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1"></video>
           <span class="media-tag">Final Take</span>
-          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
         </div>
       </div>
     </div>
 
-    <!-- Row 6: Text + clip inside one main card -->
+    <!-- Row 6: Lipsync -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
       <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
-            <h3 class="feature-title">Track from webcam, video or recorded clips</h3>
+            <h3 class="feature-title">Lipsync Adjustment Controls</h3>
             <p class="feature-copy">
-              You can Record Clips Right from inside the addon from your Phone either via WiFi Or Via USD tethering, or Use the footage you already shot on a phone/webcam. The addon model runs offline and gives great results if the face is clearly visible. or the Lighting is Good
+              IF you want you can Adjust Expressions, Lipsync, Mouth Open Mouth Left/Right and Even
+              more to Your Liking.
+            </p>
+          </div>
+        </div>
+        <div class="feature-media" role="img" aria-label="Lipsync preview" style="margin:0;">
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video43.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <span class="media-tag">Lipsync</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 7: Text + clip inside one main card -->
+    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+      <div class="feature-row side-row reveal" style="padding:0;">
+        <div class="feature-text">
+          <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
+            <h3 class="feature-title">Record Clips Easily</h3>
+            <p class="feature-copy">
+              You can Record Clips Right from inside the addon from your Phone either via WiFi Or Via USD
+              tethering, or Use the footage you already shot on a phone/webcam by Importing it in the
+              Addon. Gives great results if the face is clearly visible. or the Lighting is Good
             </p>
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Tracking preview" style="margin:0;">
           <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video40.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Tracking</span>
-          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
         </div>
       </div>
     </div>
 
-    <!-- Row 7 -->
+    <!-- Row 8 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
       <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
@@ -2089,12 +3072,11 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         <div class="feature-media" role="img" aria-label="Clean up preview" style="margin:0;">
           <video autoplay muted loop playsinline src="assets/videos/cleanup.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Clean Up &amp; Bake</span>
-          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
         </div>
       </div>
     </div>
 
-    <!-- Row 8 -->
+    <!-- Row 9 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
       <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
@@ -2110,12 +3092,11 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         <div class="feature-media" role="img" aria-label="Driver baking preview" style="margin:0;">
           <video autoplay muted loop playsinline src="assets/videos/driver-baking.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Driver Baking</span>
-          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
         </div>
       </div>
     </div>
 
-    <!-- Row 9 -->
+    <!-- Row 10 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
       <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
@@ -2130,12 +3111,11 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         <div class="feature-media" role="img" aria-label="Live preview" style="margin:0;">
           <video autoplay muted loop playsinline src="assets/videos/live-preview.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Live Preview</span>
-          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
         </div>
       </div>
     </div>
 
-    <!-- Row 10 -->
+    <!-- Row 11 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
       <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
@@ -2150,12 +3130,11 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         <div class="feature-media" role="img" aria-label="Export preview" style="margin:0;">
           <video autoplay muted loop playsinline src="assets/videos/export.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Export</span>
-          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
         </div>
       </div>
     </div>
 
-    <!-- Row 11 -->
+    <!-- Row 12 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
       <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
@@ -2171,7 +3150,6 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         <div class="feature-media" role="img" aria-label="Expression presets preview" style="margin:0;">
           <video autoplay muted loop playsinline src="assets/videos/presets.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Presets</span>
-          <span class="media-reel"><span class="pulse"></span>Preview clip</span>
         </div>
       </div>
     </div>
@@ -2346,7 +3324,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         <span class="pop-badge">Most popular</span>
         <span class="plan">Personal</span>
         <h3>Seat (1)</h3>
-        <div class="price"><sup>$</sup>129</div>
+        <div class="price"><sup>$</sup><span data-price-src="regular">129</span></div>
         <ul class="plan-list">
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Auto Face MoCap Pro (FULL)</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Seat (1)</li>
@@ -2382,7 +3360,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         <span class="btn btn-ghost">Contact Sales</span>
       </div>
     </div>
-    <p class="license-note">All licenses are perpetual, with free updates for the lifetime of the product. VAT applies where required.</p>
+    <p class="license-note">All licenses with 12 Months Support Period. After that they become perpetual.</p>
 
     <!-- Special offer banner -->
     <div class="special-offer reveal">
@@ -2391,13 +3369,78 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         <div class="so-kicker">Special Offer</div>
         <div class="so-title">Limited Time Discount</div>
         <div class="so-prices">
-          <span class="so-old">$129.00</span>
-          <span class="so-new">$89.00</span>
+          <span class="so-old" data-price="regular" data-fmt="usd2">$129.00</span>
+          <span class="so-new" data-price-src="offer">$89.00</span>
         </div>
-        <div class="so-valid">Valid until June 30th</div>
+
+        <!-- Coupon — click copies the code, then opens the store in a new tab. -->
+        <div class="coupon-wrap">
+          <button class="coupon-btn" id="couponBtn" type="button"
+                  data-href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473"
+                  aria-label="Copy the discount coupon code and open the store">
+            <span class="coupon-label">Coupon</span>
+            <span class="coupon-code">afmp</span>
+            <span class="coupon-copy">Copy</span>
+          </button>
+          <p class="coupon-hint">Click to copy the code.</p>
+        </div>
+
+        <div class="so-valid" data-text-src="offer-expiry">Valid until December 31st, 2026</div>
       </div>
     </div>
 
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- HOW TO / TUTORIALS — placeholder cards; swap the three cards   -->
+<!-- below for real tutorials. Section id="#howto" is the quick-nav -->
+<!-- target, so keep the id if you rename anything else.            -->
+<!-- ============================================================ -->
+<section class="section" id="howto" style="padding-top:0;">
+  <span class="seam-label">How to</span>
+  <canvas class="section-particles" data-pattern="drift" aria-hidden="true"></canvas>
+  <div class="container">
+    <div class="section-head reveal" style="text-align:center;">
+      <span class="section-kicker" style="justify-content:center;">Tutorials</span>
+      <h2 class="section-title">How to use Auto Face MoCap Pro</h2>
+      <p class="section-sub" style="margin-inline:auto;">Short walkthroughs for each step, from install to final render.</p>
+    </div>
+
+    <div class="support-grid reveal">
+      <div class="support-card">
+        <div class="support-card-top">
+          <span class="support-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          </span>
+          <span class="support-tag">Coming soon</span>
+        </div>
+        <h3>Install &amp; register your character</h3>
+        <p>Get the addon running in Blender and point it at your rig's face bones so it knows what it is driving.</p>
+      </div>
+
+      <div class="support-card">
+        <div class="support-card-top">
+          <span class="support-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="13" height="12" rx="2"/><path d="m22 8-7 4 7 4V8Z"/></svg>
+          </span>
+          <span class="support-tag">Coming soon</span>
+        </div>
+        <h3>Record or import a take</h3>
+        <p>Capture live from your phone over WiFi or a USB camera, or bring in footage you already shot.</p>
+      </div>
+
+      <div class="support-card">
+        <div class="support-card-top">
+          <span class="support-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="m2 16 10 5 10-5"/></svg>
+          </span>
+          <span class="support-tag">Coming soon</span>
+        </div>
+        <h3>Map, clean up and bake</h3>
+        <p>Auto map onto Rigify or ARP, smooth the curves, then bake the take out to keyframes or drivers.</p>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -2416,13 +3459,13 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
     <div class="accordion reveal">
       <div class="acc-item open">
         <button class="acc-head" aria-expanded="true">
-          <span>v1.0.0 Beta<span class="ver-date">Latest</span></span>
+          <span>v1.0.0<span class="ver-date">Latest</span></span>
           <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
         </button>
         <div class="acc-body">
           <div class="acc-inner">
             <ul>
-              <li>Initial public beta of Auto Face MoCap Pro</li>
+              <li>Initial public release of Auto Face MoCap Pro</li>
               <li>Record from webcam / phone inside the addon</li>
               <li>Auto map onto Rigify, ARP and custom face rigs</li>
             </ul>
@@ -2466,7 +3509,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 
 <script>
 /* ============================================================
-   AUTO FACE MOCAP PRO — LANDING PAGE JS (no dependencies)
+   AUTO FACIAL MOCAP PRO — LANDING PAGE JS (no dependencies)
    ============================================================ */
 (function () {
   'use strict';
@@ -2504,6 +3547,36 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   }
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
+
+  /* ---------- 3. Scroll points — highlight the section in view ---------- */
+  var quickNav = document.querySelector('.quick-nav');
+  if (quickNav) {
+    var quickLinks = Array.prototype.slice.call(quickNav.querySelectorAll('a[href^="#"]'));
+    var quickTargets = quickLinks.map(function (a) {
+      return document.querySelector(a.getAttribute('href'));
+    });
+    var syncQuickNav = function () {
+      // Probe just below the pinned header + nav, so a section counts as "in view"
+      // the moment its top clears the bar rather than when it reaches the viewport top.
+      var probe = window.scrollY + quickNav.getBoundingClientRect().bottom + 24;
+      var active = -1;
+      quickTargets.forEach(function (t, i) {
+        if (t && t.getBoundingClientRect().top + window.scrollY <= probe) active = i;
+      });
+      // At the very bottom the last section can never cross the probe line — force it.
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+        active = quickLinks.length - 1;
+      }
+      quickLinks.forEach(function (a, i) {
+        a.classList.toggle('active', i === active);
+        if (i === active) { a.setAttribute('aria-current', 'true'); }
+        else { a.removeAttribute('aria-current'); }
+      });
+    };
+    window.addEventListener('scroll', syncQuickNav, { passive: true });
+    window.addEventListener('resize', syncQuickNav);
+    syncQuickNav();
+  }
 
   /* ---------- 4. Tabbed feature showcase ---------- */
   var tabs = document.querySelectorAll('.tab-btn');
@@ -2572,6 +3645,22 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   } else {
     // Fallback: reveal everything immediately
     revealEls.forEach(function (el) { el.classList.add('visible'); });
+  }
+
+  /* ---------- 6b. Seam reveal — divider bars open out of their centre ---------- */
+  /* Replays on EVERY entry: the class is toggled, not added once, so scrolling
+     back up and down re-runs the open animation each time. A bar with no class
+     just shows at full width, so nothing is ever stranded invisible. */
+  var seamEls = document.querySelectorAll('.section, .gallery-section, .catalog-section, .site-footer, .sub-divider');
+  if ('IntersectionObserver' in window) {
+    var seamIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        en.target.classList.toggle('seam-open', en.isIntersecting);
+      });
+    }, { threshold: 0, rootMargin: '0px 0px 60px 0px' });
+    seamEls.forEach(function (el) { seamIO.observe(el); });
+  } else {
+    seamEls.forEach(function (el) { el.classList.add('seam-open'); });
   }
 
   /* ---------- 7. Product gallery carousel ---------- */
@@ -2704,14 +3793,342 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
     gUpdateDots();
   });
 
-  /* ---------- 8. Hero play button (placeholder behaviour) ---------- */
-  var playBtn = document.querySelector('.play-btn');
-  if (playBtn) {
-    playBtn.addEventListener('click', function () {
-      var pill = document.querySelector('.hero-media .pill');
-      if (pill) pill.textContent = 'MEDIA PLACEHOLDER: attach your MP4 / WebM demo video here';
-    });
+  /* ---------- Clip progress bars — every <video> on the page ----------
+     Injects a bar into each video's parent and drives it from that video's own
+     playback, so every clip on the page gets the same bar without anyone having
+     to remember to add markup. Runs BEFORE the hero player below, which reuses
+     drawClipBar(). */
+  var CLIP_BARS = [];
+  function clipBarFill(v) {
+    for (var i = 0; i < CLIP_BARS.length; i++) if (CLIP_BARS[i].v === v) return CLIP_BARS[i].fill;
+    return null;
   }
+  function drawClipBar(v) {
+    var fill = clipBarFill(v);
+    if (!fill) return;
+    var d = v.duration;
+    fill.style.width = (d && isFinite(d) && d > 0)
+      ? Math.min(100, v.currentTime / d * 100).toFixed(2) + '%' : '0%';
+  }
+  (function buildClipBars() {
+    var vids = document.querySelectorAll('video');
+    for (var i = 0; i < vids.length; i++) {
+      (function (v) {
+        var host = v.parentNode;
+        if (!host || host.querySelector(':scope > .clip-bar')) return;
+        // the bar is absolutely positioned, so the host has to be a containing block
+        if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+        var bar = document.createElement('div');
+        bar.className = 'clip-bar';
+        bar.setAttribute('aria-hidden', 'true');
+        var fill = document.createElement('span');
+        fill.className = 'clip-bar-fill';
+        bar.appendChild(fill);
+        host.appendChild(bar);
+        CLIP_BARS.push({ v: v, fill: fill });
+        ['timeupdate', 'loadedmetadata', 'seeked', 'ended', 'durationchange'].forEach(function (ev) {
+          v.addEventListener(ev, function () { drawClipBar(v); });
+        });
+        drawClipBar(v);
+
+        // loading spinner — same idea, one per clip
+        var spin = document.createElement('div');
+        spin.className = 'clip-load';
+        spin.setAttribute('aria-hidden', 'true');
+        host.appendChild(spin);
+        var setSpin = function (on) { spin.classList.toggle('on', !!on); };
+        ['loadstart', 'waiting', 'stalled'].forEach(function (ev) {
+          v.addEventListener(ev, function () { setSpin(true); });
+        });
+        // ⛔ 'error' belongs in this list, not just as an afterthought: without it a
+        // clip that can never load (missing file, or HEVC with no hardware decode)
+        // leaves a spinner turning for ever over a frozen frame.
+        ['canplay', 'playing', 'canplaythrough', 'loadeddata', 'error', 'emptied']
+          .forEach(function (ev) {
+            v.addEventListener(ev, function () { setSpin(false); });
+          });
+        setSpin(v.readyState < 3 && !!v.getAttribute('src'));
+
+        /* ---- click / drag the bar to skim the clip ----
+           ⛔ stopPropagation on every one of these: the hero box toggles play/pause
+           on click, so without it a scrub would also pause the clip mid-drag. */
+        var seekTo = function (clientX) {
+          var d = v.duration;
+          if (!d || !isFinite(d) || d <= 0) return;
+          var r = bar.getBoundingClientRect();
+          var f = (clientX - r.left) / (r.width || 1);
+          f = Math.max(0, Math.min(1, f));
+          try { v.currentTime = f * d; } catch (e) {}
+          drawClipBar(v);
+        };
+        var dragging = false;
+        bar.addEventListener('pointerdown', function (e) {
+          e.preventDefault(); e.stopPropagation();
+          dragging = true;
+          try { bar.setPointerCapture(e.pointerId); } catch (err) {}
+          seekTo(e.clientX);
+        });
+        bar.addEventListener('pointermove', function (e) {
+          if (!dragging) return;
+          e.stopPropagation();
+          seekTo(e.clientX);
+        });
+        var endSeek = function (e) {
+          if (!dragging) return;
+          dragging = false;
+          e.stopPropagation();
+          try { bar.releasePointerCapture(e.pointerId); } catch (err) {}
+        };
+        bar.addEventListener('pointerup', endSeek);
+        bar.addEventListener('pointercancel', endSeek);
+        bar.addEventListener('click', function (e) { e.stopPropagation(); });
+      })(vids[i]);
+    }
+  })();
+
+  /* ---------- 8. Hero clip player — progress bar + play/pause ----------
+     This used to be a placeholder that printed "MEDIA PLACEHOLDER: attach your MP4
+     here" into the pill on click. The pill is gone and the box holds a real clip,
+     so it now drives the real thing: the bar follows currentTime, and the button
+     toggles playback, showing the PAUSE glyph while playing and the PLAY glyph
+     while paused (the CSS keys off .is-playing on the box). Clicking the clip
+     itself toggles too. */
+  var heroBox = document.querySelector('.hero-media');
+  var heroVideo = heroBox ? heroBox.querySelector('video') : null;
+  if (heroBox && heroVideo) {
+    var heroBtn = heroBox.querySelector('.play-btn');
+    var heroSetState = function () {
+      heroBox.classList.toggle('is-playing', !heroVideo.paused && !heroVideo.ended);
+    };
+    // the hero's bar is built and driven by the shared clip-bar code above
+    var heroDrawBar = function () { drawClipBar(heroVideo); };
+    var heroToggle = function () {
+      if (heroVideo.paused || heroVideo.ended) {
+        var pr = heroVideo.play();
+        if (pr && pr.catch) pr.catch(function () {});   // the autoplay policy can refuse
+      } else {
+        heroVideo.pause();
+      }
+      heroSetState();
+    };
+    heroVideo.addEventListener('play', function () { heroSetState(); heroDrawBar(); });
+    heroVideo.addEventListener('pause', heroSetState);
+    heroVideo.addEventListener('ended', heroSetState);
+    heroVideo.addEventListener('timeupdate', heroDrawBar);
+    heroVideo.addEventListener('loadedmetadata', heroDrawBar);
+    heroVideo.addEventListener('seeked', heroDrawBar);
+    if (heroBtn) {
+      heroBtn.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation(); heroToggle();
+      });
+    }
+    heroBox.addEventListener('click', function (e) {
+      if (heroBtn && (e.target === heroBtn || heroBtn.contains(e.target))) return;
+      heroToggle();
+    });
+    heroSetState();
+    heroDrawBar();
+    // autoplay can land after this script runs, so re-check once
+    setTimeout(function () { heroSetState(); heroDrawBar(); }, 800);
+  }
+
+  /* ---------- 15. Hero clip switcher — one clip per character ----------
+     ADD A ROW PER CHARACTER below. The clip, the LEFT tag and the RIGHT credit
+     (its text AND its href) are swapped together in one step, so a credit can
+     never be left pointing at the wrong character.
+       src  — the clip · tag — left badge · name + href — right badge
+     With a single row the arrows stay disabled (dimmed), which is this page's own
+     convention (.g-arrow:disabled). Add a second row and they come alive. */
+  var HERO_SLIDES = [
+    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video44.mp4',
+      tag: 'Anime', name: 'Chan',
+      href: 'https://kanafuyuko.booth.pm/items/5419110?registration=1' },
+    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video45.mp4',
+      tag: 'Anime', name: 'Kun',
+      href: 'https://booth.pm/en/items/5420804' },
+    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video46.mp4',
+      tag: 'Mollusk (Snail)', name: 'Snail',
+      href: 'https://studio.blender.org/characters/forest-animals/v1' },
+    // ⛔ Every row MUST carry a `tag`: the swap only writes leftBadge when s.tag
+    // exists, so a row without one would leave the PREVIOUS character's tag sitting
+    // over this clip. Same class of trap as the href (see the note in apply()).
+    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video47.mp4',
+      tag: 'Blender Studio', name: 'Snow',
+      href: 'https://studio.blender.org/characters/snow/v4' },
+    // ⛔ NO href here on purpose — the credit is a plain label, not a link. apply()
+    // drops the href from the badge for a row like this (otherwise Snow's store page
+    // would follow the credit onto MetaHuman's clip), and the :not([href]) rules in
+    // the CSS take the chain glyph, the pointer and the hover lift off it.
+    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video48.mp4',
+      tag: 'Humanoid', name: 'Meta' }
+    // ,{ src: 'https://mr3dpageclips.carrd.co/assets/videos/videoNN.mp4',
+    //    tag: 'Realistic', name: 'Someone', href: 'https://...' }
+  ];
+  (function heroSwitcher() {
+    if (!heroBox || !heroVideo) return;
+    var leftBadge = heroBox.querySelector('.hm-badge-left');
+    var rightBadge = heroBox.querySelector('.hm-badge-right');
+    var rightName = heroBox.querySelector('.hm-badge-right .hm-badge-name');
+    var prevBtn = heroBox.querySelector('.hm-nav-prev');
+    var nextBtn = heroBox.querySelector('.hm-nav-next');
+    var dotsBox = heroBox.querySelector('.hm-dots');
+    var idx = 0;
+    var n = HERO_SLIDES.length;
+    // one dot per available clip, all of them shown, plus one always-on label
+    // bubble per dot in the row above (see "label bubbles" in the CSS).
+    var tipsBox = null;
+    if (dotsBox) {
+      tipsBox = document.createElement('div');
+      tipsBox.className = 'hm-tips';
+      // ⛔ aria-hidden + NO focusable child. The bubbles are a MOUSE-ONLY duplicate
+      // of the dots, and the dots are the real, announced, keyboard-reachable
+      // controls (role=tab + aria-label) — so nothing here is said twice. That is
+      // also why each bubble is a <span> and not a <button>: a button would take
+      // focus on click, and a focusable element inside aria-hidden is a genuine
+      // a11y bug. Do not "fix" this into a button.
+      tipsBox.setAttribute('aria-hidden', 'true');
+      heroBox.insertBefore(tipsBox, dotsBox);
+      for (var d = 0; d < n; d++) {
+        (function (i) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'g-dot';
+          b.setAttribute('role', 'tab');
+          // the label lives in the accessible name; the VISIBLE copy of it is the
+          // bubble above, which is on screen for every clip, not just the hovered one
+          var label = HERO_SLIDES[i].name || HERO_SLIDES[i].tag || ('Clip ' + (i + 1));
+          b.setAttribute('data-label', label);
+          b.setAttribute('aria-label', 'Clip ' + (i + 1) + ' — ' + label);
+          b.addEventListener('click', function (e) { e.stopPropagation(); apply(i); });
+          dotsBox.appendChild(b);
+          var t = document.createElement('span');
+          t.className = 'hm-tip';
+          t.textContent = label;
+          t.addEventListener('click', function (e) { e.stopPropagation(); apply(i); });
+          tipsBox.appendChild(t);
+        })(d);
+      }
+    }
+    // Aim every bubble's beak at its own dot and size it to reach.
+    // The dots are NOT moved: the labels' centres are ~65px apart and the dots' are
+    // ~17px apart, so the beak is what crosses the difference. Its box is placed in
+    // px (--tx/--tw) with the three corners as percentages of that box:
+    //   base  — two points on the bubble's bottom edge, kept inside the straight part
+    //           (a corner outside the bubble's rounded corner would float free)
+    //   apex  — ON the dot's centre x, at exactly the dot's top edge
+    // --tip-x is the box's own offset from the bubble's paint origin, which is what
+    // the ACTIVE bubble's travelling gradient needs (see tipFlow) to keep the beak's
+    // slice of gradient in phase with the body it hangs off.
+    // ⛔ Everything is measured, so it has to run again when the rows can move: a
+    // resize, a label re-wrapping, or the web font landing and re-sizing every label.
+    // ⛔⛔ THE DOTS ARE NOT MOVED. *"undo the dot's padding entirly"* (owner
+    // 2026-09-26) — they sit in flex's plain tight row, one 8px circle under the
+    // middle of the clip box, and the beaks cross the difference. Four spacing models
+    // were built and thrown away before this (a uniform blend of each label's
+    // distance, a middle-out blend, a 1.2x gap ratio, a +0.25rem gap step); the
+    // answer to a long pointer turned out to be a BIGGER POINTER, not a spread row.
+    function aimTips() {
+      if (!tipsBox || !dotsBox) return;
+      var tips = tipsBox.children, dots = dotsBox.children;
+      for (var k = 0; k < tips.length && k < dots.length; k++) {
+        var tr = tips[k].getBoundingClientRect();
+        var dr = dots[k].getBoundingClientRect();
+        if (!tr.width || !dr.width) continue;       // not laid out (hidden section)
+        var half = tr.width / 2;
+        var dx = (dr.left + dr.width / 2) - (tr.left + half);   // dot vs bubble centre
+        // ⛔⛔ The beak's SIZE grows with how far it has to travel: *"increase the tag
+        // points size when it's far away from it's dot"*. 6px half-width for a
+        // straight drop, widening with the reach — a sliver that crosses the whole row
+        // reads as a smear at a constant width, and at 6px a 127px reach is 21:1.
+        // ⛔ Capped three ways: at 14px, and at the bubble's own straight bottom edge
+        // (`half - 12`, 12px being the border-radius) so a base corner can never land
+        // in the corner arc where there is no bubble under it.
+        var bHalf = Math.max(3, Math.min(6 + Math.abs(dx) * 0.06, half - 12, 14));
+        // ⛔ keep BOTH base corners on the bubble's straight bottom edge: 12px is the
+        // border-radius, so a base corner inside that arc has no bubble under it
+        var room = Math.max(2, half - 12 - bHalf);
+        var base = Math.max(-room, Math.min(room, dx));
+        var dotX = dx + half;                       // in the bubble's own coordinates
+        var b0 = base + half - bHalf, b1 = base + half + bHalf;
+        var x0 = Math.min(b0, dotX) - 2, x1 = Math.max(b1, dotX) + 2;
+        var w = Math.max(1, x1 - x0);
+        // the tip lands ON the dot's top edge, whatever gap the layout has today
+        var len = Math.max(10, dr.top - tr.bottom + 1);
+        tips[k].style.setProperty('--tx', x0.toFixed(2) + 'px');
+        tips[k].style.setProperty('--tw', w.toFixed(2) + 'px');
+        tips[k].style.setProperty('--th', len.toFixed(2) + 'px');
+        tips[k].style.setProperty('--b0', ((b0 - x0) / w * 100).toFixed(2) + '%');
+        tips[k].style.setProperty('--b1', ((b1 - x0) / w * 100).toFixed(2) + '%');
+        tips[k].style.setProperty('--ax', ((dotX - x0) / w * 100).toFixed(2) + '%');
+        tips[k].style.setProperty('--tip-x', (-x0).toFixed(2) + 'px');
+      }
+    }
+    function apply(i) {
+      if (!n) return;
+      // NO wrap: clamp, so an arrow only ever exists where there is somewhere to go
+      idx = Math.max(0, Math.min(n - 1, i));
+      var s = HERO_SLIDES[idx] || {};
+      if (s.src && heroVideo.getAttribute('src') !== s.src) {
+        heroVideo.setAttribute('src', s.src);  // setting src reloads the element
+        var pr = heroVideo.play();             // muted, so autoplay is allowed
+        if (pr && pr.catch) pr.catch(function () {});
+      }
+      if (leftBadge && s.tag) leftBadge.textContent = s.tag;
+      if (rightName && s.name) rightName.textContent = s.name;
+      // ⛔ a slide with no href must DROP the link, not keep the last one: otherwise
+      // the previous character's store page stays attached to this character's clip.
+      if (rightBadge) {
+        if (s.href) rightBadge.setAttribute('href', s.href);
+        else rightBadge.removeAttribute('href');
+      }
+      if (prevBtn) prevBtn.hidden = (idx === 0);          // nothing to the left
+      if (nextBtn) nextBtn.hidden = (idx === n - 1);      // nothing to the right
+      if (dotsBox) {
+        // ⛔ The dot no longer renders its own label: that lives in the bubble above
+        // it (.hm-tips), which is on screen for EVERY clip. Writing textContent here
+        // would print a second copy of the name inside the dot.
+        var dt = dotsBox.children;
+        for (var k = 0; k < dt.length; k++) {
+          var on = (k === idx);
+          dt[k].classList.toggle('active', on);
+          dt[k].setAttribute('aria-selected', on ? 'true' : 'false');
+          if (tipsBox && tipsBox.children[k]) tipsBox.children[k].classList.toggle('active', on);
+        }
+        aimTips();
+      }
+      heroDrawBar();
+    }
+    // ⛔ stopPropagation is REQUIRED: .hero-media itself toggles play/pause on
+    // click, so without it an arrow press would also pause the clip it just moved to.
+    if (prevBtn) prevBtn.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation(); apply(idx - 1);
+    });
+    if (nextBtn) nextBtn.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation(); apply(idx + 1);
+    });
+    // ⛔ AUTO-ADVANCE NEEDS `loop` OFF: a looping clip never fires `ended`, so the
+    // carousel would never move on by itself. With a SINGLE clip there is nowhere
+    // to advance to, so it keeps looping (the markup default) instead of freezing
+    // on its last frame.
+    heroVideo.loop = (n < 2);
+    if (n > 1) {
+      heroVideo.addEventListener('ended', function () {
+        // wraps at the end so the showcase keeps cycling (the arrows still do NOT
+        // wrap — a press past either end is a no-op)
+        apply(idx + 1 >= n ? 0 : idx + 1);
+      });
+    }
+    // expose so the slide list can be extended from the console / a later patch
+    heroBox.heroApply = apply;
+    apply(0);
+    // the tails are aimed at measured centres, so they must be re-aimed whenever
+    // the row can move. ⛔ The web font is the one that bites: the labels are laid
+    // out in the fallback face first, and every bubble changes width when Space
+    // Grotesk lands — aim once at load and they can be aimed at the wrong row.
+    aimTips();
+    addEventListener('resize', aimTips);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(aimTips);
+  })();
 
   /* ---------- 9. Full catalog — 2-col × 4-row paginated grid ---------- */
   // PRODUCTS LIST — add / edit your products here.
@@ -2937,7 +4354,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           }
         }
 
-        // Particle dots (teal + olive mix)
+        // Particle dots (azure + cyan mix)
         for (i = 0; i < particles.length; i++) {
           p = particles[i];
           ctx.globalAlpha = 0.9;
@@ -2979,11 +4396,10 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
     var instances = [];
 
     function getPCols() {
-      var cs = getComputedStyle(document.documentElement);
-      return {
-        teal: cs.getPropertyValue('--color-tertiary').trim() || '#000',
-        olive: cs.getPropertyValue('--color-accent').trim() || '#000'
-      };
+      // Particles are the button azure (#0096ff), with a lighter companion so the
+      // two-hue mix the patterns were drawn with survives instead of going flat.
+      // (Was --color-tertiary / --color-accent, which resolve to white and grey.)
+      return { teal: '#0096ff', olive: '#53e8fd' };
     }
 
     function initP(canvas, pattern) {
@@ -2993,14 +4409,16 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
       var cols = getPCols();
       var parts = [];
       var w = 0, h = 0;
+      var bandX0 = 0, bandX1 = 0;   // horizontal extent of the seam divider, see size()
       var mX = -9999, mY = -9999; // mouse position relative to this canvas
 
       function make() {
-        var p = { x: Math.random() * w, y: Math.random() * h, r: 0.8 + Math.random() * 1.6, hue: Math.random() > 0.5 ? 'teal' : 'olive' };
+        var p = { x: bandX0 + Math.random() * (bandX1 - bandX0), y: Math.random() * h, r: 0.8 + Math.random() * 1.6, hue: Math.random() > 0.5 ? 'teal' : 'olive' };
         if (pattern === 'drift')  { p.vx = (Math.random() - 0.5) * 0.3; p.vy = (Math.random() - 0.5) * 0.3; p.ph = Math.random() * 6.28; }
         else if (pattern === 'flow') { p.vx = (Math.random() - 0.5) * 0.2; p.vy = 0.3 + Math.random() * 0.6; p.y = Math.random() * h; }
         else if (pattern === 'twinkle') { p.ph = Math.random() * 6.28; p.s = 0.4 + Math.random() * 1.4; }
-        else if (pattern === 'orbit') { p.a = Math.random() * 6.28; p.sp = (Math.random() - 0.5) * 0.01; p.ro = 25 + Math.random() * Math.min(w, h) * 0.45; p.ox = 0; p.oy = 0; }
+        else if (pattern === 'orbit') { p.a = Math.random() * 6.28; p.sp = (Math.random() - 0.5) * 0.01; p.ro = 25 + Math.random() * Math.min(w, h) * 0.45; p.ox = 0; p.oy = 0;
+                                       p.ro = Math.min(p.ro, (bandX1 - bandX0) / 2 - 8); }
         else if (pattern === 'grid')  { p.vx = (Math.random() - 0.5) * 0.25; p.vy = (Math.random() - 0.5) * 0.25; }
         else { p.vx = (Math.random() - 0.5) * 0.4; p.vy = (Math.random() - 0.5) * 0.4; }
         return p;
@@ -3009,14 +4427,29 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
       function size() {
         var r = section.getBoundingClientRect();
         w = r.width; h = r.height;
+        // The seam divider is `min(1180px, 92%)` wide and centred on the section
+        // (`.section::before`). Keep every particle inside that band, so the
+        // background art stops exactly where the divider line stops.
+        var dw = Math.min(1180, w * 0.92);
+        bandX0 = (w - dw) / 2;
+        bandX1 = (w + dw) / 2;
         canvas.width = Math.max(1, Math.round(w * dpr));
         canvas.height = Math.max(1, Math.round(h * dpr));
         canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        var n = Math.max(8, Math.min(35, Math.round(w * h / 48000)));
+        measureHoles();                 // BEFORE spawning: placeClear() needs the boxes
+        // Slightly denser than before (owner) — divisor 48000 → 40000, caps raised.
+        var n = Math.max(8, Math.min(42, Math.round(w * h / 40000)));
         // Double density for every pattern except orbit
-        if (pattern !== 'orbit') n = Math.max(8, Math.min(70, n * 2));
-        if (parts.length !== n) { parts = []; for (var i = 0; i < n; i++) parts.push(make()); }
+        if (pattern !== 'orbit') n = Math.max(8, Math.min(85, n * 2));
+        if (parts.length !== n) {
+          parts = [];
+          for (var i = 0; i < n; i++) {
+            var q = make();
+            if (pattern === 'twinkle') placeClear(q);
+            parts.push(q);
+          }
+        }
       }
 
       function wrap(p) {
@@ -3024,9 +4457,125 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         if (p.y < -20) p.y = h + 20; else if (p.y > h + 20) p.y = -20;
       }
 
+      /* ---- Keep the background OUT of the cards ----------------------------
+         This canvas paints BEHIND the content (z-index 0 under a z-index 1
+         container) and the cards are glass, so any particle under a card shows
+         straight through its face. Collect the card rectangles and skip
+         everything drawn inside them, so the background only appears in the
+         gaps AROUND the cards.
+         ⚠ measured with offsetLeft/offsetTop, NOT getBoundingClientRect: cards
+         carry a .reveal transform (translateY 30px) until they scroll in, and a
+         transform would displace the rects while the canvas itself never moves.
+         Both the canvas and the cards live in the same section, so their
+         layout offsets are directly comparable. */
+      var holes = [];
+      var HOLE_SEL = '.quickfog-outer,.price-card,.support-card,.workflow-card,' +
+        '.feature-card,.feature-media,.accordion,.acc-head,.compare-card,.time-chip,' +
+        '.c-card,.g-frame,.img-frame,.rating-card,.hero-media,.special-offer,' +
+        '.hero-side,.hero-copy-card,.specs-bar,.spec-item,.catalog-card,.offer-card,.card,' +
+        // …plus the buttons and button-like UI (owner: "or the buttons or anything")
+        '.btn,.faq-btn,.theme-toggle,.version-badge,.g-arrow,.action-btn,.menu-btn,' +
+        '.coupon-btn,.support-link,.step-num,.tag,.media-tag,.media-reel,.pop-badge,' +
+        '.latest-tag,.vb-version,.workflow-num,.pb-code,.workflow-num,.g-thumb';
+
+      /* Place a STATIC particle clear of the UI — twinkle does not move, so a
+         bounce can never rescue one that spawns inside a card; it would simply
+         stay hidden. Re-roll (capped) until it lands in a gap. */
+      function placeClear(p) {
+        for (var tries = 0; tries < 24; tries++) {
+          if (!inHole(p.x, p.y, BOUNCE_PAD)) return;
+          p.x = bandX0 + Math.random() * (bandX1 - bandX0); p.y = Math.random() * h;
+        }
+      }
+
+      function measureHoles() {
+        holes.length = 0;
+        var found = section.querySelectorAll(HOLE_SEL);
+        for (var k = 0; k < found.length; k++) {
+          var el = found[k], x = 0, y = 0, n = el;
+          while (n && n !== section) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
+          if (n !== section) continue;                     // not in this section's chain
+          if (el.offsetWidth < 2 || el.offsetHeight < 2) continue;
+          holes.push({ x0: x, y0: y, x1: x + el.offsetWidth, y1: y + el.offsetHeight });
+        }
+      }
+      function inHole(x, y, pad) {
+        pad = pad || 0;
+        for (var k = 0; k < holes.length; k++) {
+          var h = holes[k];
+          if (x >= h.x0 - pad && x <= h.x1 + pad && y >= h.y0 - pad && y <= h.y1 + pad) return true;
+        }
+        return false;
+      }
+      /* A connector is drawn BETWEEN two particles, so both endpoints can be clear
+         of a card while the line itself crosses it. Sample along the segment —
+         cheap, and a line across a big card cannot slip between 5 samples. */
+      function segHitsHole(x1, y1, x2, y2) {
+        for (var s = 0; s <= 4; s++) {
+          var t = s / 4;
+          if (inHole(x1 + (x2 - x1) * t, y1 + (y2 - y1) * t, 1)) return true;
+        }
+        return false;
+      }
+
+      /* ---- Bounce off the UI ------------------------------------------------
+         A particle that reaches a card, a button or any other UI box turns away
+         instead of vanishing behind it. Pushed out along the axis it is least
+         deep in, and the velocity on that axis is reflected — the standard
+         minimal-translation response, so it never tunnels and never jitters. */
+      var BOUNCE_PAD = 4;   // widest particle radius (2.4) + sub-pixel slop: the canvas
+                            // backing store is rounded to whole px while the section can
+                            // be fractional, so a 3px pad left a few anti-aliased pixels
+                            // sitting on a card edge
+      function bounce(p) {
+        for (var k = 0; k < holes.length; k++) {
+          var h = holes[k];
+          var x0 = h.x0 - BOUNCE_PAD, y0 = h.y0 - BOUNCE_PAD,
+              x1 = h.x1 + BOUNCE_PAD, y1 = h.y1 + BOUNCE_PAD;
+          if (p.x > x0 && p.x < x1 && p.y > y0 && p.y < y1) {
+            var dl = p.x - x0, dr = x1 - p.x, dt = p.y - y0, db = y1 - p.y;
+            var m = Math.min(dl, dr, dt, db);
+            if (m === dl)      { p.x = x0; p.vx = -Math.abs(p.vx || 0.2); }
+            else if (m === dr) { p.x = x1; p.vx =  Math.abs(p.vx || 0.2); }
+            else if (m === dt) { p.y = y0; p.vy = -Math.abs(p.vy || 0.2); }
+            else               { p.y = y1; p.vy =  Math.abs(p.vy || 0.2); }
+            return true;
+          }
+        }
+        return false;
+      }
+      /* Orbit particles do not own a velocity — their position comes from an
+         angle, so a push would be undone next frame. Widen the ring until it
+         clears the box and reverse the swing instead. */
+      function orbitBounce(p) {
+        for (var k = 0; k < holes.length; k++) {
+          var h = holes[k];
+          var x0 = h.x0 - BOUNCE_PAD, y0 = h.y0 - BOUNCE_PAD,
+              x1 = h.x1 + BOUNCE_PAD, y1 = h.y1 + BOUNCE_PAD;
+          if (p.x > x0 && p.x < x1 && p.y > y0 && p.y < y1) {
+            var cx = (h.x0 + h.x1) / 2, cy = (h.y0 + h.y1) / 2;
+            var ang = Math.atan2(p.y - cy, p.x - cx);
+            var reach = Math.max(Math.abs(h.x1 - h.x0), Math.abs(h.y1 - h.y0)) * 0.6;
+            p.ro = Math.max(p.ro + 2, Math.sqrt(Math.pow(p.x - w / 2, 2) + Math.pow(p.y - h / 2, 2)) + reach);
+            p.ox += Math.cos(ang) * 3;
+            p.oy += Math.sin(ang) * 3;
+            p.sp = -p.sp;
+            return true;
+          }
+        }
+        return false;
+      }
+
       function draw() {
         ctx.clearRect(0, 0, w, h);
         var i, j, p, q, dx, dy, d, a;
+        var hid = [];
+        // ⛔ pad 0, NOT BOUNCE_PAD. The bounce parks a particle exactly on the
+        // BOUNCE_PAD boundary, and `inHole(x, y, BOUNCE_PAD)` is TRUE at that exact
+        // point — so culling with the same pad made every bounced particle vanish
+        // instead of bouncing. This is now only a safety net for anything that ends
+        // up genuinely inside a box; the physics keeps them out.
+        for (i = 0; i < parts.length; i++) hid.push(inHole(parts[i].x, parts[i].y, 0));
         for (i = 0; i < parts.length; i++) {
           p = parts[i];
           if (pattern === 'drift')   { p.ph += 0.008; p.x += p.vx + Math.sin(p.ph) * 0.2; p.y += p.vy; }
@@ -3043,8 +4592,21 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
             else { p.x += (dx / d) * 1.5; p.y += (dy / d) * 1.5; }
           }
 
-          if (pattern === 'orbit') { p.ox *= 0.92; p.oy *= 0.92; }
-          else { wrap(p); }
+          if (pattern === 'orbit') {
+            orbitBounce(p);
+            // an orbit ring can still swing past the divider's end — pull it back in
+            if (p.x < bandX0 + 2) { p.ox += (bandX0 + 2 - p.x); p.sp = Math.abs(p.sp); }
+            else if (p.x > bandX1 - 2) { p.ox -= (p.x - bandX1 + 2); p.sp = -Math.abs(p.sp); }
+            p.ox *= 0.92; p.oy *= 0.92;
+          } else {
+            wrap(p);
+            // bounce AFTER wrap, so a particle that wraps across an edge straight
+            // into a card is pushed back out on the same frame
+            if (pattern !== 'twinkle') bounce(p);   // twinkle is static: placed clear at spawn
+            // …and never let one drift past the end of the divider line
+            if (p.x < bandX0) { p.x = bandX0; p.vx = Math.abs(p.vx || 0.2); }
+            else if (p.x > bandX1) { p.x = bandX1; p.vx = -Math.abs(p.vx || 0.2); }
+          }
         }
 
         if (pattern === 'flow' || pattern === 'grid') {
@@ -3054,7 +4616,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
             p = parts[i];
             for (j = i + 1; j < parts.length; j += 2) {
               q = parts[j]; dx = p.x - q.x; dy = p.y - q.y; d = Math.sqrt(dx * dx + dy * dy);
-              if (d < 70) { a = (1 - d / 70) * 0.3; ctx.globalAlpha = a; ctx.strokeStyle = cols.teal; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke(); }
+              if (d < 70 && !segHitsHole(p.x, p.y, q.x, q.y)) { a = (1 - d / 70) * 0.3; ctx.globalAlpha = a; ctx.strokeStyle = cols.teal; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke(); }
             }
           }
         }
@@ -3062,6 +4624,8 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
           ctx.lineWidth = 1.4;
           for (i = 0; i < parts.length; i++) {
             p = parts[i]; p.ph += 0.01;
+            var ring = (p.ph % 1) * 70;
+            if (inHole(p.x, p.y, ring + 1)) continue;   // ring would sweep over a card
             a = Math.max(0, 1 - (p.ph % 1));
             ctx.globalAlpha = a * 0.28; ctx.strokeStyle = cols.teal;
             ctx.beginPath(); ctx.arc(p.x, p.y, (p.ph % 1) * 70, 0, 6.283); ctx.stroke();
@@ -3069,11 +4633,12 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
         }
         if (pattern === 'orbit') {
           ctx.lineWidth = 1; ctx.globalAlpha = 0.12; ctx.strokeStyle = cols.teal;
-          for (i = 0; i < parts.length; i++) { p = parts[i]; ctx.beginPath(); ctx.moveTo(w / 2, h / 2); ctx.lineTo(p.x, p.y); ctx.stroke(); }
+          for (i = 0; i < parts.length; i++) { p = parts[i]; if (segHitsHole(w / 2, h / 2, p.x, p.y)) continue; ctx.beginPath(); ctx.moveTo(w / 2, h / 2); ctx.lineTo(p.x, p.y); ctx.stroke(); }
         }
 
         for (i = 0; i < parts.length; i++) {
           p = parts[i];
+          if (hid[i]) continue;                       // no background art behind a card
           ctx.globalAlpha = pattern === 'twinkle' ? 0.2 + Math.abs(Math.sin(p.ph)) * 0.8 : 0.85;
           ctx.fillStyle = p.hue === 'olive' ? cols.olive : cols.teal;
           ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill();
@@ -3129,6 +4694,10 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 /* Coupon codes — robust copy that works even in sandboxed panels */
 (function () {
   function copyCoupon(text, btn, feedbackEl, openBottom) {
+    // Where the buyer lands after a successful copy. The button names its own
+    // destination with data-href; with none, the old fallback stays, though note
+    // 'index.html#bottom' is an anchor that does not exist on this page.
+    var target = (btn && btn.getAttribute('data-href')) || 'index.html#bottom';
     function done(ok) {
       if (feedbackEl) {
         feedbackEl.textContent = ok ? 'Copied!' : 'Press Ctrl+C';
@@ -3139,7 +4708,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(function () {
         done(true);
-        if (openBottom) window.open('index.html#bottom', '_blank');
+        if (openBottom && target) window.open(target, '_blank');
       }).catch(function () { execFallback(); });
       return;
     }
@@ -3158,7 +4727,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
       document.body.removeChild(ta);
       if (worked) {
         done(true);
-        if (openBottom) window.open('index.html#bottom', '_blank');
+        if (openBottom && target) window.open(target, '_blank');
       } else {
         manualReveal();
       }
@@ -3182,13 +4751,124 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
     }
   }
 
-  var btn = document.getElementById('couponBtn');
-  if (btn) {
-    var code = btn.querySelector('.coupon-code').textContent.trim();
-    btn.addEventListener('click', function () {
-      copyCoupon(code, btn, btn.querySelector('.coupon-copy'), true);
-    });
+  /* ---------- 11. Linked prices — ONE place to edit each number ----------
+     Every price is written ONCE and copied into the slots that follow it.
+
+       source   = the element carrying data-price-src="<key>"  (edit its text)
+       follower = the element carrying data-price="<key>"      (rebuilt from it)
+
+     `regular` is the price on the Personal plan card; `offer` is the big azure
+     figure in the offer card. The offer card's struck-through price and BOTH
+     slots in the top band are followers, so changing the source and reloading
+     keeps every one of them in step. data-fmt picks the shape (usd2 → $129.00).
+     Nothing runs until the source holds a number, so a typo leaves the existing
+     text in place instead of blanking it. */
+  var PRICE_FMT = {
+    usd2: function (n) { return '$' + n.toFixed(2); },
+    plain: function (n) { return String(n); }
+  };
+  function priceOf(el) {
+    var m = el ? String(el.textContent).match(/[\d.,]+/) : null;
+    if (!m) return null;
+    var n = parseFloat(m[0].replace(/,/g, ''));
+    return isNaN(n) ? null : n;
   }
+  (function linkPrices() {
+    var value = {}, i, srcs = document.querySelectorAll('[data-price-src]');
+    for (i = 0; i < srcs.length; i++) {
+      var key = srcs[i].getAttribute('data-price-src');
+      if (key && value[key] === undefined) value[key] = priceOf(srcs[i]);
+    }
+    var out = document.querySelectorAll('[data-price]');
+    for (i = 0; i < out.length; i++) {
+      var k = out[i].getAttribute('data-price');
+      var n = value[k];
+      if (typeof n !== 'number') continue;
+      var fmt = PRICE_FMT[out[i].getAttribute('data-fmt')] || PRICE_FMT.plain;
+      out[i].textContent = fmt(n);
+    }
+  })();
+
+  /* Every coupon button on the page — the offer card and the top band each have
+     one, so they are wired by CLASS. (Wiring the old #couponBtn by id would have
+     left the second button dead.) Each button carries its own code and href. */
+  var couponBtns = document.querySelectorAll('.coupon-btn');
+  for (var cbi = 0; cbi < couponBtns.length; cbi++) {
+    (function (btn) {
+      var codeEl = btn.querySelector('.coupon-code');
+      if (!codeEl) return;
+      var code = codeEl.textContent.trim();
+      btn.addEventListener('click', function () {
+        // Reveal the code the moment it is asked for — it starts hidden, and this
+        // fires on every path (clipboard, execCommand fallback, manual select).
+        btn.classList.add('copied');
+        copyCoupon(code, btn, btn.querySelector('.coupon-copy'), true);
+      });
+    })(couponBtns[cbi]);
+  }
+
+  /* ---------- 12. Linked text slots — the offer's expiry date ----------
+     Same idea as the prices, for a value that is not a number: the element
+     carrying data-text-src="<key>" is the ONE place to edit it, and every
+     data-text="<key>" slot is filled from it verbatim. The band's date and
+     the offer card's date therefore cannot disagree. */
+  (function linkText() {
+    var v = {}, i, srcs = document.querySelectorAll('[data-text-src]');
+    for (i = 0; i < srcs.length; i++) {
+      var k = srcs[i].getAttribute('data-text-src');
+      if (k && v[k] === undefined) v[k] = srcs[i].textContent.trim();
+    }
+    var out = document.querySelectorAll('[data-text]');
+    for (i = 0; i < out.length; i++) {
+      var key = out[i].getAttribute('data-text');
+      if (v[key]) out[i].textContent = v[key];
+    }
+  })();
+
+  /* ---------- 13. Hero video card ----------
+     .yt-frame carries data-yt, which takes EITHER a full YouTube link or just
+     the video id. While it is empty the card stays the inert "coming soon"
+     placeholder; as soon as it holds an id the frame becomes click-to-play and
+     the player is only fetched when the visitor actually clicks (nothing is
+     loaded from YouTube up front). */
+  (function heroVideo() {
+    var frame = document.querySelector('.yt-frame');
+    if (!frame) return;
+    var raw = (frame.getAttribute('data-yt') || '').trim();
+    var m = raw.match(/(?:v=|youtu\.be\/|\/embed\/|\/shorts\/|\/live\/)([A-Za-z0-9_-]{6,})/) ||
+            raw.match(/^([A-Za-z0-9_-]{6,})$/);
+    var playBtn = frame.querySelector('.play-btn');
+    if (!m) {                                  // no link yet — leave the placeholder alone
+      if (playBtn) playBtn.disabled = true;
+      return;
+    }
+    var play = function () {
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube-nocookie.com/embed/' + m[1] + '?autoplay=1&rel=0';
+      f.title = 'Auto Face MoCap Pro demo';
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      f.allowFullscreen = true;
+      f.setAttribute('frameborder', '0');
+      while (frame.firstChild) frame.removeChild(frame.firstChild);
+      frame.appendChild(f);
+      frame.classList.remove('yt-ready');
+      frame.removeAttribute('role');
+      frame.style.cursor = 'default';
+      var cap = document.querySelector('.hero-video-card .yt-caption');
+      if (cap) cap.textContent = 'Demo video';
+    };
+    frame.classList.add('yt-ready');
+    frame.setAttribute('role', 'button');
+    frame.setAttribute('tabindex', '0');
+    frame.setAttribute('aria-label', 'Play the Auto Face MoCap Pro demo video');
+    frame.addEventListener('click', play);
+    frame.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); play(); }
+    });
+    var cap = document.querySelector('.hero-video-card .yt-caption');
+    if (cap) cap.textContent = 'Click to play the demo';
+    if (playBtn) playBtn.disabled = false;
+  })();
 
   var alphaBtn = document.getElementById('alphaCodeBtn');
   if (alphaBtn) {
