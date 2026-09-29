@@ -316,7 +316,8 @@ section, #features { scroll-margin-top: 132px; }
   background-size: 400%;
   animation: glowing 20s linear infinite;
   box-shadow: 0 0 12px color-mix(in srgb, #0096ff 70%, transparent);
-  transition: width .15s linear;
+  /* short: the bar is redrawn every frame now, and a long transition would lag it */
+  transition: width .06s linear;
 }
 /* the hero's own bar keeps the wider inset and higher lift asked for earlier */
 .hero-media { --clip-bar-inset: 22px; --clip-bar-lift: 16px; --clip-bar-h: 5px; }
@@ -805,31 +806,31 @@ section, #features { scroll-margin-top: 132px; }
    ============================================================ */
 .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8rem; align-items: stretch; }
 .compare-card {
-  border: 1px solid var(--border); border-radius: 20px; padding: 2.1rem 2rem;
+  border: 1px solid var(--border); border-radius: 20px; padding: 1.85rem 1.75rem;
   background: var(--card-bg); display: flex; flex-direction: column;
 }
 .compare-card .vs-badge {
-  align-self: flex-start; margin-bottom: 1rem;
-  font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
-  padding: .4rem .95rem; border-radius: 999px;
+  align-self: flex-start; margin-bottom: .88rem;
+  font-size: .64rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  padding: .35rem .84rem; border-radius: 999px;
 }
 .compare-card.old { border-color: color-mix(in srgb, var(--ink) 22%, transparent); }
 .compare-card.old .vs-badge { background: color-mix(in srgb, var(--ink) 10%, transparent); color: var(--muted); border: 1px solid var(--border-strong); }
 .compare-card.new { border-color: var(--color-tertiary); box-shadow: 0 22px 60px -24px var(--glow-tertiary); }
 .compare-card.new .vs-badge { background: var(--color-tertiary); color: var(--bg); }
-.compare-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.35rem; letter-spacing: -.02em; margin-bottom: .4rem; }
-.compare-card .meta { font-size: .86rem; color: var(--muted); margin-bottom: 1.4rem; }
+.compare-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.19rem; letter-spacing: -.02em; margin-bottom: .35rem; }
+.compare-card .meta { font-size: .76rem; color: var(--muted); margin-bottom: 1.23rem; }
 .time-chip {
-  display: inline-flex; align-items: center; gap: .5rem; margin-top: auto; align-self: flex-start;
-  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.05rem;
-  padding: .6rem 1.1rem; border-radius: 12px; background: var(--card-bg-strong);
+  display: inline-flex; align-items: center; gap: .44rem; margin-top: auto; align-self: flex-start;
+  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: .92rem;
+  padding: .53rem .97rem; border-radius: 12px; background: var(--card-bg-strong);
   border: 1px solid var(--border-strong);
 }
-.compare-steps { list-style: none; display: grid; gap: .9rem; margin-bottom: 1.8rem; }
-.compare-steps li { display: flex; gap: .75rem; align-items: flex-start; font-size: .92rem; }
+.compare-steps { list-style: none; display: grid; gap: .79rem; margin-bottom: 1.58rem; }
+.compare-steps li { display: flex; gap: .66rem; align-items: flex-start; font-size: .81rem; }
 .step-num {
-  flex: none; width: 24px; height: 24px; border-radius: 8px; margin-top: 1px;
-  display: grid; place-items: center; font-size: .74rem; font-weight: 700;
+  flex: none; width: 21px; height: 21px; border-radius: 7px; margin-top: 1px;
+  display: grid; place-items: center; font-size: .65rem; font-weight: 700;
   background: color-mix(in srgb, var(--color-tertiary) 22%, transparent); color: var(--color-tertiary);
 }
 .compare-card.old .step-num { background: color-mix(in srgb, var(--ink) 12%, transparent); color: var(--muted); }
@@ -1748,8 +1749,19 @@ section, #features { scroll-margin-top: 132px; }
      phone aspect ratio ... by reduceing inside padding"). 1.7rem of vertical padding
      on a 390px screen is most of a text line, and it is paid TWICE — top and bottom. */
   .offer-band { padding: .9rem .7rem; }
-  /* the three-column grid collapses to one, centred — the desktop "left column /
-     centre coupon / empty right" split has no room on a phone */
+  /* ⛔ The three-column split is NOT collapsed here any more. Collapsing at 900px threw
+     the owner's layout away on an ordinary laptop-width window — "i don't want this to
+     happen it should stay where i ask you to put it". Only the nowrap guards are
+     relaxed, so the title may wrap if its column tightens. */
+  .offer-band .so-title, .offer-band .coupon-hint, .offer-band .so-valid { white-space: normal; }
+}
+
+/* ⛔⛔ THE REAL COLLAPSE POINT. Measured minimum for the three-column split: the copy
+   column needs ~210px (nowrap title + the price row), the coupon column is a fixed
+   229px, and two column-gaps plus the band's own padding take ~110px more — about
+   550px of band, i.e. a ~600px viewport. 640 leaves margin. Split out from the 900px
+   query above, which was collapsing far too early. */
+@media (max-width: 640px) {
   .offer-band .ob-inner {
     grid-template-columns: 1fr;
     grid-template-areas: "kick" "copy" "mid";
@@ -1757,12 +1769,11 @@ section, #features { scroll-margin-top: 132px; }
     text-align: center;
     row-gap: .45rem;
   }
-  /* back IN FLOW on a phone: the column is stacked, so there is nothing to overlap and
-     an absolute kicker would sit on top of the copy */
+  /* back IN FLOW: the column is stacked here, so there is nothing to overlap and an
+     absolute kicker would sit on top of the copy */
   .offer-band .so-kicker { position: static; grid-area: kick; }
   .offer-band .ob-copy { text-align: center; }
   .offer-band .so-prices { justify-content: center; }
-  .offer-band .so-title, .offer-band .coupon-hint, .offer-band .so-valid { white-space: normal; }
 }
 
 /* Alpha release promo ticket */
@@ -2883,10 +2894,10 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
           <h3>Manual tracking &amp; cleanup</h3>
           <p class="meta">Point trackers by hand, then scrub every frame.</p>
           <ul class="compare-steps">
-            <li><span class="step-num">1</span>Manually place &amp; re place 2D trackers</li>
-            <li><span class="step-num">2</span>Hand map each tracker to a bone or shape key</li>
-            <li><span class="step-num">3</span>Clean drift, spikes and jitter frame by frame</li>
-            <li><span class="step-num">4</span>Re time blinks and eye movement by eye</li>
+            <li><span class="step-num">1</span><span>Manually place &amp; re place 2D trackers</span></li>
+            <li><span class="step-num">2</span><span>Hand map each tracker to a bone or shape key</span></li>
+            <li><span class="step-num">3</span><span>Clean drift, spikes and jitter frame by frame</span></li>
+            <li><span class="step-num">4</span><span>Re time blinks and eye movement by eye</span></li>
           </ul>
           <span class="time-chip">~ 4 hours</span>
         </div>
@@ -2897,9 +2908,9 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
           <h3>Record, map, bake</h3>
           <p class="meta">Clean drivers on your rig from the first take.</p>
           <ul class="compare-steps">
-            <li><span class="step-num">1</span>Record the clip (webcam, phone or video file)</li>
-            <li><span class="step-num">2</span>Click <strong>Auto Map</strong> onto your Rigify / ARP rig</li>
-            <li><span class="step-num">3</span>Apply smoothing &amp; blink detection, then bake</li>
+            <li><span class="step-num">1</span><span>Record the clip (webcam, phone or video file)</span></li>
+            <li><span class="step-num">2</span><span>Click <strong>Auto Map</strong> onto your Rigify / ARP rig</span></li>
+            <li><span class="step-num">3</span><span>Apply smoothing &amp; blink detection, then bake</span></li>
           </ul>
           <span class="time-chip">~ 12 minutes</span>
         </div>
@@ -3576,6 +3587,28 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
     window.addEventListener('scroll', syncQuickNav, { passive: true });
     window.addEventListener('resize', syncQuickNav);
     syncQuickNav();
+
+    /* A plain #fragment link scrolls THIS document's own viewport. When the page is
+       EMBEDDED (owner: "the quick nav is not working when embeding on superhive's
+       product page") and the host sizes the iframe to the full content height — which
+       is how store embeds are normally built — there is nothing left inside the frame
+       to scroll, so a click silently does NOTHING.
+       scrollIntoView() is a different operation: it walks UP through every scrollable
+       ancestor, so the host document moves when the frame cannot. The sticky-header
+       offset is already covered by the existing `scroll-margin-top: 132px` on the
+       sections, which scrollIntoView honours — so on a normal page the destination is
+       identical to the plain anchor. */
+    quickLinks.forEach(function (a, i) {
+      a.addEventListener('click', function (e) {
+        var t = quickTargets[i];
+        if (!t || typeof t.scrollIntoView !== 'function') return;   // let the browser try
+        e.preventDefault();
+        var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        t.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
+        // keep the URL hash, but without a second competing navigation
+        if (history.replaceState) history.replaceState(null, '', a.getAttribute('href'));
+      });
+    });
   }
 
   /* ---------- 4. Tabbed feature showcase ---------- */
@@ -3830,6 +3863,27 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
           v.addEventListener(ev, function () { drawClipBar(v); });
         });
         drawClipBar(v);
+
+        /* timeupdate is throttled by the spec to roughly 4x/SECOND, so a bar driven
+           only by it steps in ~250ms jumps: on a very short clip that is a handful of
+           visible stutters, and it cannot get smoother however short the clip is.
+           requestAnimationFrame drives it once per frame instead, so the bar is as
+           smooth on a 1s clip as on a 60s one. The listeners above stay as the
+           fallback for paused, seeking and pre-play states, where no loop runs. */
+        var barRaf = 0;
+        var barTick = function () {
+          barRaf = (v.paused || v.ended) ? 0 : requestAnimationFrame(barTick);
+          drawClipBar(v);
+        };
+        var barStart = function () {
+          if (!barRaf && !v.paused && !v.ended && window.requestAnimationFrame) {
+            barRaf = requestAnimationFrame(barTick);
+          }
+        };
+        var barStop = function () { if (barRaf) { cancelAnimationFrame(barRaf); barRaf = 0; } };
+        ['play', 'playing', 'seeking'].forEach(function (ev) { v.addEventListener(ev, barStart); });
+        ['pause', 'ended'].forEach(function (ev) { v.addEventListener(ev, barStop); });
+        if (!v.paused && !v.ended) barStart();
 
         // loading spinner — same idea, one per clip
         var spin = document.createElement('div');
