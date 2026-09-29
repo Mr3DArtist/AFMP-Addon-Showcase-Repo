@@ -1651,7 +1651,7 @@ section, #features { scroll-margin-top: 132px; }
      BELOW the kicker instead of in the band, leaving it measurably low (75px above the
      copy vs 47px below). It is absolutely positioned at the band's top instead, so it
      reserves no height at all and the copy sits genuinely top-to-bottom centred. */
-  grid-template-areas: "copy mid .";
+  grid-template-areas: "copy mid media";
   align-self: stretch;              /* fill the band's content box, not just shrink-wrap */
   align-content: center;
   align-items: center;
@@ -1686,6 +1686,35 @@ section, #features { scroll-margin-top: 132px; }
    width would not. */
 .offer-band .ob-mid { grid-area: mid; display: grid; grid-template-columns: 1fr;
   justify-items: stretch; gap: .35rem; }
+/* the right cell: the demo clip (owner: "should fill the right side"). ⛔ NO background,
+   border or shadow — "with transparent background", so there is no tile chrome behind it
+   and the band's own gradient shows around it.
+   ⛔⛔ SIZED TO THE CHARACTER, NOT TO THE CLIP'S 2:1 FRAME. Measured across all 120
+   frames of the GIF, the subject occupies x 323..775 and the file's FULL height: the
+   frame's right 57.9% is the character and the other 42% is transparent padding. Giving
+   the cell that same shape (453/391) at the same height makes it hug the character —
+   same on-screen size, same band height, no dead space inside the box.
+   ⚠ That is also why `object-position: right center` is load-bearing: with `cover` on a
+   2:1 image inside a narrower box, it is what picks the character's slice and drops the
+   transparent strip. */
+/* 1.5x the fitted cell (owner: "1.5x the scale of the clip"), parked on the band's
+   bottom-right corner. ⛔ The band grows to 1.5x with it: `.offer-band` is
+   `overflow: hidden` (the `inset: -50%` .ob-shine needs it), so a bigger clip would
+   otherwise be sliced off at the band's edge and lose its head.
+   ⛔ The two negative margins cancel the band's OWN padding on just those two sides, so
+   the clip lands ON the corner instead of floating inside the padding box; the band's
+   20px radius then rounds the character into the corner. */
+.offer-band .ob-media {
+  grid-area: media; justify-self: end; align-self: end;
+  width: 86.90%; aspect-ratio: 453 / 391;
+  margin-right: calc(-1 * clamp(1rem, 3vw, 2.6rem));
+  margin-bottom: -.5rem;
+  border-radius: 14px; overflow: hidden;
+}
+.offer-band .ob-media img {
+  display: block; width: 100%; height: 100%;
+  object-fit: cover; object-position: right center;
+}
 .offer-band .so-title { font-size: clamp(1.05rem, 1.9vw, 1.5rem); margin-bottom: 0; white-space: nowrap; }
 /* flex-start so the prices sit DIRECTLY UNDER the title, both flush to the left edge
    of the copy column — the base rule centres them */
@@ -1764,7 +1793,7 @@ section, #features { scroll-margin-top: 132px; }
 @media (max-width: 640px) {
   .offer-band .ob-inner {
     grid-template-columns: 1fr;
-    grid-template-areas: "kick" "copy" "mid";
+    grid-template-areas: "kick" "copy" "mid" "media";
     justify-items: center;
     text-align: center;
     row-gap: .45rem;
@@ -1774,6 +1803,10 @@ section, #features { scroll-margin-top: 132px; }
   .offer-band .so-kicker { position: static; grid-area: kick; }
   .offer-band .ob-copy { text-align: center; }
   .offer-band .so-prices { justify-content: center; }
+  /* the desktop rule parks the clip against the right edge, and an item's own
+     `justify-self` BEATS the grid's `justify-items: center` — so the stacked column
+     has to un-park it explicitly or it hugs the right edge on a phone */
+  .offer-band .ob-media { justify-self: center; margin-right: 0; margin-bottom: 0; }
 }
 
 /* Alpha release promo ticket */
@@ -2781,6 +2814,18 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
         <p class="coupon-hint">Click to copy the code.</p>
       </div>
       <div class="so-valid" data-text="offer-expiry">Valid until December 31st, 2026</div>
+    </div>
+
+    <!-- Right cell — the demo clip. This cell was deliberately EMPTY until now
+         ("keep the right side empty"); it holds the clip instead. -->
+    <div class="ob-media">
+      <!-- An <img>, not a <video>: the clip is an alpha-carrying animated GIF (782x391,
+           the box's own 2:1), so it loops by itself with no player. Being an <img> also
+           makes it invisible to the clip-bar builder, which only walks <video> elements,
+           so the old data-no-clip-bar opt-out is no longer needed here.
+           ⛔ GIF alpha is 1-BIT — the cut-out edges are hard, not feathered. -->
+      <img src="https://mr3dpageclips.carrd.co/assets/images/image18.gif"
+           alt="Auto Face MoCap Pro demo clip" width="782" height="391" />
     </div>
   </div>
 </section>
@@ -3868,6 +3913,8 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
     var vids = document.querySelectorAll('video');
     for (var i = 0; i < vids.length; i++) {
       (function (v) {
+        /* opt-out: a decorative loop (the offer band's clip) has nothing to scrub */
+        if (v.hasAttribute('data-no-clip-bar')) return;
         var host = v.parentNode;
         if (!host || host.querySelector(':scope > .clip-bar')) return;
         // the bar is absolutely positioned, so the host has to be a containing block
