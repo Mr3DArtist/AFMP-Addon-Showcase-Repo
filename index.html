@@ -1889,6 +1889,17 @@ section, #features { scroll-margin-top: 132px; }
   transition: transform .2s ease, border-color .2s ease, background .2s ease;
 }
 .quick-nav a:hover { transform: translateY(-2px); border-color: var(--color-tertiary); }
+
+/* ⛔⛔ EMBEDDED (Superhive product page) — the host already frames this page, so the
+   site's own header is chrome on top of chrome and it is what holds the quick nav 68px
+   down. In an embed the header steps aside and the nav takes the top slot.
+   ⛔ BOTH halves are required: pinning the nav to 0 with the header still present would
+   hide it BEHIND the header (nav z-index 90, header 100) — worse than not doing it. */
+html.is-embedded .site-header { display: none; }
+html.is-embedded .quick-nav { top: 0; }
+/* the anchor offset has to shrink with the header — it was sized to clear header + nav */
+html.is-embedded section,
+html.is-embedded #features { scroll-margin-top: 62px; }
 /* Warm 'Must Read' highlight next to FAQ */
 .quick-nav a.quick-warm {
   background: color-mix(in srgb, #f59e0b 14%, var(--card-bg));
@@ -3560,6 +3571,16 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
   onScroll();
 
   /* ---------- 3. Scroll points — highlight the section in view ---------- */
+  /* ⛔⛔ Embedded (a store product page frames this document). `window.self !== window.top`
+     is the only reliable test, and when the parent is CROSS-ORIGIN the access THROWS —
+     which is itself proof of an embed, so both branches flag it. Used by the
+     `html.is-embedded` rules to drop the site header and lift the quick nav to the top. */
+  (function markEmbedded() {
+    var framed = false;
+    try { framed = window.self !== window.top; } catch (e) { framed = true; }
+    if (framed) document.documentElement.classList.add('is-embedded');
+  })();
+
   var quickNav = document.querySelector('.quick-nav');
   if (quickNav) {
     var quickLinks = Array.prototype.slice.call(quickNav.querySelectorAll('a[href^="#"]'));
