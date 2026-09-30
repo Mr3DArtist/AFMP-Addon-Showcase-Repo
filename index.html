@@ -2132,17 +2132,21 @@ html:not(.dark) .support-badge { color: #0096ff; }
 }
 .quick-nav a:hover { transform: translateY(-2px); border-color: var(--color-tertiary); }
 
-/* ⛔⛔ EMBEDDED (Superhive product page) — the page still DETECTS the frame and adds
-   `html.is-embedded` (see markEmbedded() in the script), but the class no longer hides
-   anything: the site header used to be dropped here ("chrome on top of chrome") WITH the
-   quick nav pinned to `top:0` to compensate. The owner asked for the bar back in the
-   embed — "the top bar is not showing in iframe embed for super hive market" — so the
-   embedded page is now identical to the standalone one.
-   ⛔ If you ever hide the header here again, you MUST pin the nav to 0 in the same breath:
-   the nav is z-index 90 and the header 100, so a nav left at its normal `top:65px` under a
-   hidden header leaves a 65px hole, and one pinned to 0 under a VISIBLE header disappears
-   behind it. */
-/* (no overrides — the embedded page shows the header and the nav sits below it, as normal) */
+/* ⛔⛔ EMBEDDED (Superhive product page) — the host already frames this page, so the
+   site's own header is chrome on top of chrome and it is what holds the quick nav 68px
+   down. In an embed the header steps aside and the nav takes the top slot.
+   ⛔ BOTH halves are required: pinning the nav to 0 with the header still present would
+   hide it BEHIND the header (nav z-index 90, header 100) — worse than not doing it.
+   ⚠ RESTORED 2026-09-30 to the exact form the previous release carried (owner: "just get
+   the fix for the top bar not showing in the latest version from the old version and
+   don't change anything"). This IS the embedded top bar: on Superhive the nav row
+   (Workflow / Features / Support / Pricing / How to) is what shows at the top, and the
+   site's logo header is deliberately dropped here. */
+html.is-embedded .site-header { display: none; }
+html.is-embedded .quick-nav { top: 0; }
+/* the anchor offset has to shrink with the header — it was sized to clear header + nav */
+html.is-embedded section,
+html.is-embedded #features { scroll-margin-top: 62px; }
 /* Warm 'Must Read' highlight next to FAQ */
 .quick-nav a.quick-warm {
   background: color-mix(in srgb, #f59e0b 14%, var(--card-bg));
