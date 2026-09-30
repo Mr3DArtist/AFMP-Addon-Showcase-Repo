@@ -389,7 +389,14 @@ section, #features { scroll-margin-top: 132px; }
    it becomes a link, because .hero-media a.hm-badge:hover sets its own transform. */
 .hero-media .hm-badge-left { top: 16px; left: 22px; }
 .hero-media .hm-badge-right { top: 16px; right: 22px; }
-.hero-media .hm-badge-center {
+/* ⛔ REMOVED (owner: "remove realtime from the top center of all the hero clips").
+   Hidden here rather than deleted from the markup: the clip switcher JS rebuilds the
+   badges on every slide change, so removing the element would only last until the next
+   swap. The badge is static text (not per-slide), so one rule covers every clip. */
+.hero-media .hm-badge-center { display: none !important; }
+
+/* original rule kept below, now inert, so the layout intent is still readable */
+.hero-media .hm-badge-center-off {
   top: 16px; left: 0; right: 0;
   margin-left: auto; margin-right: auto; width: fit-content;
 }
@@ -420,7 +427,28 @@ section, #features { scroll-margin-top: 132px; }
    which would override the centring transform and drop the arrow by half its own
    height on hover. */
 .hero-media .hm-nav {
-  position: absolute; z-index: 5; top: calc(50% - 21px);
+  /* ⛔ ON THE TAG ROW, not vertically centred. The badges (the tag / credit balloons)
+     sit at `top: 16px` and are 29px tall; these arrows are 42px, so
+     16 + (29-42)/2 = 9.5px centres them on that row, so they flank the balloons
+     instead of floating halfway down the clip (owner: "move the hero clip side
+     arrows on the sides of the tags/balloons"). At <=1244px the arrows come INSIDE
+     the media box, where the badge row has no room for them, so they centre again
+     there — see the rule further down. */
+  /* ⛔⛔ OUTSIDE THE CLIP — above its top edge, on the balloon row.
+     The label bubbles and the dots are positioned `bottom: 100%`, i.e. they float
+     ABOVE this box (that is what the 88px top margin on .hero-media is for), and
+     they are the "tags/balloons" the owner means by "on the sides of these".
+     So the arrows leave the clip altogether: `top: auto` and `bottom: calc(100% - 11px)`
+     put a 42px arrow centred 10px above the clip's top edge, level with the bubbles.
+     Two earlier passes put them INSIDE the clip — first centred on it, then on the
+     top badges — both were reading the wrong row. */
+  /* ⛔ The offset is measured, not derived: the first value left the arrows 38px BELOW
+     the balloon row at every width, so the constant carries that correction.
+     `bottom: 100%` puts an element's bottom edge on the container's TOP edge, hence
+     the positive constant here rather than a negative one. */
+  position: absolute; z-index: 7; top: auto; bottom: calc(100% + 27px);
+  /* a soft halo so the pill sits ON the footage rather than on top of it */
+  box-shadow: 0 0 22px -6px color-mix(in srgb, #0096ff 60%, transparent);
   background: color-mix(in srgb, var(--bg) 68%, transparent);
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   /* the arrow carries the same gradient ring as the badges, so the ring replaces
@@ -445,6 +473,32 @@ section, #features { scroll-margin-top: 132px; }
    author-level display beats the UA stylesheet's [hidden]{display:none}. Without
    this rule the arrows would stay visible at both ends. */
 .hero-media .hm-nav[hidden] { display: none; }
+/* ⛔⛔ DO NOT set `left`/`right` on `.hm-nav` ITSELF at this breakpoint. An earlier pass
+   added `.hm-nav { left: 0; right: 0 }` here to move the arrows to the box edges — but the
+   element has a fixed 42px width, so that pair is OVER-CONSTRAINED and the browser honours
+   `left` and ignores `right`: BOTH arrows jumped to the left edge. The sides are set
+   per-arrow below, which is the only correct way to do it. */
+
+/* ---- Animated hero arrows ----
+   The chevron drifts the way it will take you: a nudge, not a slide, so it reads as an
+   invitation rather than motion for its own sake. The pill's gradient ring already
+   animates (see .hm-nav::before), so this animates the GLYPH and leaves the ring alone. */
+@keyframes hmDriftNext {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(4px); }
+}
+@keyframes hmDriftPrev {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(-4px); }
+}
+.hero-media .hm-nav-next svg { animation: hmDriftNext 2.2s ease-in-out infinite; }
+.hero-media .hm-nav-prev svg { animation: hmDriftPrev 2.2s ease-in-out infinite; }
+/* it leans in further while you are pointing at it */
+.hero-media .hm-nav:hover svg { animation-duration: 1s; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-media .hm-nav svg { animation: none; }
+}
+
 /* ---- Hero clip switcher: label bubbles + dots ----
    EVERY clip's name is on screen the whole time, as a speech bubble above the dot
    row, each one's tail a LONG beak that reaches down to ITS OWN dot. The DOTS stay
@@ -873,11 +927,38 @@ section, #features { scroll-margin-top: 132px; }
 /* ============================================================
    8. PRICING & LICENSE TIERS
    ============================================================ */
-.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; align-items: stretch; }
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr);
+  /* ⛔ COLUMN-GAP ONLY — this is the space BETWEEN the side-by-side cards (owner: "cards
+     side by side padding"). The row gap stays at 1.4rem so the stacked single-column
+     layout keeps its vertical rhythm.
+     History: 1.4rem originally, cut to 0.28rem (20%), now doubled to 0.56rem = 40% of the
+     original, per "2x the column padding". */
+  row-gap: 1.4rem; column-gap: 0.56rem; align-items: stretch; }
 .price.small { font-size: 1.8rem; line-height: 1.3; }
 .price-card {
   position: relative; display: flex; flex-direction: column;
-  border: 1px solid var(--border); border-radius: 22px; padding: 4.4rem 1.2rem 3rem;
+  border: 1px solid var(--border); border-radius: 22px;
+  /* ⛔ HALF the original 4.4rem / 1.2rem / 3rem (owner: "apply the 20% of what i told you
+     but not 20% make it 50%"). This is the SIDE-BY-SIDE state; the stacked single-column
+     layout at <=600px restores the full values below.
+     ⚠ The top padding matters here: at 20% it was 14.08px, which put the "Personal" label
+     INSIDE the 22px corner radius and the arc cut into it. At 35.2px the label clears the
+     corner arc entirely, so halving is safe where the 20% was not. */
+  /* ⛔ Bottom padding matches the sides (0.6rem) instead of 1.5rem, so the CTA sits at
+     the very bottom of the card (owner: "put the buttons at the very bottom").
+     1.5rem left 25px of dead space under the button (24px padding + the border). */
+  padding: 2.2rem 0.6rem 0.6rem;
+  /* ⛔ THE CARD KEEPS ITS HEIGHT (owner: "don't reduce the hieght of the card").
+     Several changes this session shortened these cards — the padding halved, the
+     bottom padding cut so the CTA could sit on the edge, and the feature list font
+     reduced twice. Each was asked for individually; the cumulative LOSS of height
+     was not. min-height restores it without undoing any of them.
+     ⛔ The free space lands between the list and the button, because the button is
+     pinned to the bottom by `margin-top: auto` — so the CTA stays on the edge. */
+  /* 480px x 0.85 = 408px = 25.5rem  (owner: "make it 15% instead 20%").
+     Was 30rem (-0%), then 21rem (-30%, needed a padding trim to bind at all),
+     then 24rem (-20%), now 25.5rem (-15%). */
+  min-height: 25.5rem;
   background: var(--card-bg);
   text-decoration: none; color: inherit;
   transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
@@ -901,9 +982,16 @@ section, #features { scroll-margin-top: 132px; }
   content: '';
   position: absolute; inset: 0; border-radius: inherit;
   pointer-events: none;
+  /* ⛔ The band's thickness is (stop span) x (background-size width). At the old
+     43.5%->58.5% over a 220% background that came to 15% x 2.2 = 33% of the card's WIDTH,
+     which was tuned when the cards were taller and narrower. The cards have since been
+     shortened and widened (padding halved, bottom padding cut, column gap changed), so the
+     same band now sweeps across the card as a stripe a third of its width wide.
+     46%->54% over the same 220% gives 8% x 2.2 = 17.6% of the card's width, which is
+     proportional at the card's CURRENT proportions. */
   background-image: linear-gradient(115deg,
-    transparent 43.5%, rgba(255,255,255,.9) 43.5%,
-    rgba(255,255,255,.9) 58.5%, transparent 58.5%);
+    transparent 46%, rgba(255,255,255,.9) 46%,
+    rgba(255,255,255,.9) 54%, transparent 54%);
   background-size: 220% 100%;
   background-repeat: no-repeat;
   background-position: 140% 0;
@@ -920,8 +1008,24 @@ section, #features { scroll-margin-top: 132px; }
 .price .per { font-size: .9rem; font-weight: 500; color: var(--muted); }
 .price-desc { margin-top: .7rem; font-size: .88rem; color: var(--muted); min-height: 2.6em; }
 .plan-list { list-style: none; display: grid; gap: .2rem; margin: .4rem 0 .6rem; }
-.plan-list li { display: flex; gap: .65rem; align-items: flex-start; font-size: .92rem; }
-.plan-list .tick { flex: none; width: 18px; height: 18px; border-radius: 6px; margin-top: 3px; display: grid; place-items: center; color: var(--bg); background: var(--color-accent); }
+.plan-list li { display: flex; gap: .65rem; align-items: flex-start;
+  /* .92rem -> .84rem (owner: "make this type of text in all pricing cards a bit
+     small" — the feature list items). Applies to every pricing card, since this
+     one rule carries them all. The tick boxes stay at 18px so they still read as
+     checkmarks rather than shrinking to dots. */
+  font-size: .78rem; }   /* .92 -> .84 -> .78 (owner: "a bit more small") */
+.plan-list .tick { flex: none; width: 18px; height: 18px; border-radius: 6px;
+  margin-top: 3px; display: grid; place-items: center;
+  /* ⛔⛔ The button's OWN gradient, not a token. This read `background: var(--color-accent)`,
+     which resolved to hsl(0,0%,45%) — a flat mid grey. The page's SECOND token block
+     overrides every brand colour to NEUTRAL GRAYSCALE (--color-primary is hsl(0,0%,4%),
+     --color-tertiary hsl(0,0%,98%)), so anything still pointing at those names has lost
+     its blue. `--color-accent` was the last of them in this section.
+     These are exactly the two stops .btn.btn-primary paints:
+     linear-gradient(135deg, rgb(0,150,255), rgb(0,101,226)) — measured, not copied by eye.
+     The glyph goes white to match the button's own text colour. */
+  color: #fff;
+  background: linear-gradient(135deg, #0096ff, #0065e2); }
 .plan-list .tick svg { width: 10px; height: 10px; }
 .plan-list li.no { color: var(--muted); opacity: .55; }
 .plan-list li.no .tick { background: color-mix(in srgb, var(--ink) 14%, transparent); color: var(--muted); }
@@ -1037,7 +1141,6 @@ section, #features { scroll-margin-top: 132px; }
 }
 @media (max-width: 900px) {
   .feature-row { gap: 1.5rem; padding: 40px 0; }
-  .pricing-grid { grid-template-columns: repeat(2, 1fr); max-width: 720px; margin-inline: auto; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 860px) {
@@ -1066,8 +1169,34 @@ section, #features { scroll-margin-top: 132px; }
   .footer-grid { grid-template-columns: 1fr; gap: 1.8rem; }
   .hero { padding-top: 60px; }
 }
+/* ⛔ 700px, not 900px. At 900 the three pricing cards were being collapsed to a 2-column
+   grid, so at Superhive's 832px column they wrapped instead of sitting in one row. Measured
+   with 3 forced across: 256.5px per card at 900, 235.6 at 832, 214.7 at 768, 194.8 at 700 —
+   and NO content spilled out of any card at any of those widths, so the early collapse was
+   protecting nothing. 700 is where 194.8px stops being comfortable for a card carrying a
+   price, a feature list and a button. */
+@media (max-width: 900px) {
+  /* ⛔ THE THREE-CARD ROW NEEDS A SMALLER HEADING. Measured with 3 cards across: the
+     longest heading ("Seats (Above 5)") needs <=27.1px of font at 832 and <=24.2px at 768,
+     against the design's 28.8px — so it wrapped to "Seats (Above" / "5)" and pushed that
+     card's price below the other two. 2.9vw tracks the card width and clears every width:
+     26.1 at 900, 24.1 at 832, 22.3 at 768, 20.3 at 701. */
+  .price-card h3 { font-size: clamp(1.25rem, 2.9vw, 1.8rem); }
+  /* Safety net for any heading that still wraps — balances the lines instead of
+     leaving a stray "5)" on its own line. */
+  .price-card h3 { text-wrap: balance; }
+}
+
+@media (max-width: 700px) {
+  /* two columns again: the card is wide, so the heading goes back to full size */
+  .pricing-grid { grid-template-columns: repeat(2, 1fr); max-width: 720px; margin-inline: auto; }
+  .price-card h3 { font-size: 1.8rem; }
+}
+
 @media (max-width: 600px) {
   .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin-inline: auto; }
+  /* stacked, not side by side: the card has the full width, so the full padding goes back */
+  .price-card { padding: 4.4rem 1.2rem 3rem; }
 }
 /* ============================================================
    PRODUCT GALLERY CAROUSEL — sits below the top bar
@@ -1624,12 +1753,38 @@ section, #features { scroll-margin-top: 132px; }
   display: flex; align-items: center; justify-content: center;
   /* top padding pulled in from 1.2rem; kept SYMMETRIC so the row sits dead on the
      band's centreline (an unequal top/bottom pads the content box off-centre) */
-  padding: .5rem clamp(1rem, 3vw, 2.6rem);
+  /* ⛔⛔ ONE SOURCE OF TRUTH for the band's own padding. `.ob-media` below cancels this
+     padding with a negative margin so the clip sits flush on the band's edge — and when
+     the two were written independently they drifted: at the <=900px breakpoint the padding
+     drops to `.7rem` while the negative margin still used the desktop clamp(1rem,3vw,2.6rem)
+     = 24.96px, so the clip overshot the band by 13.76px and `overflow: hidden` sliced the
+     character. That is what broke the page at Superhive's 832px column, and the same bug
+     bit once before on the phone. Both now read these variables. */
+  --band-gutter: clamp(1rem, 3vw, 2.6rem);
+  --band-vpad: .5rem;
+  padding: var(--band-vpad) var(--band-gutter);
   border-radius: 20px;
-  background: linear-gradient(100deg,
-    color-mix(in srgb, #0096ff 16%, var(--bg)),
-    color-mix(in srgb, var(--color-accent) 9%, var(--bg)) 52%,
-    color-mix(in srgb, #0096ff 16%, var(--bg)));
+  background:
+    /* A blue->cyan ramp built FOR this band, in plain CSS. No image is used and none
+       ever was - there is no url() in this declaration.
+       The stops are a DESIGNED palette, not a copy of anything: the hinge is #0096ff,
+       the brand blue this section already uses for the coupon border, the price, the
+       band's border and its shadow. Cyan #38e0ff at the bright end, deepening through
+       #00b2ff and #0070eb to full transparency. The ramp is deliberately FLAT-ish
+       through its middle so the wash reaches the centreline instead of dying early.
+       RADIAL, NOT a sized linear patch: a patch has a right edge, and a diagonal never
+       finishes its fade on every row before that edge, so the colour left there got
+       sliced off in one pixel (measured: blue 71 -> 41). A radial covers the element
+       and ends on transparent, so there is no edge to cut.
+       88% x 60% radii with the zero at 88% carries the wash to
+       0.88 x 88% = 77% of the width and 0.88 x 60% = 53% down, so it stays visible to
+       roughly 70% - just short of the character at ~71% - and dissolves there. */
+    radial-gradient(88% 60% at 0% 0%, rgba(56, 224, 255, .74) 0%, rgba(0, 178, 255, .62) 20%, rgba(0, 150, 255, .48) 38%, rgba(0, 112, 235, .33) 54%, rgba(0, 74, 195, .19) 68%, rgba(0, 52, 170, .08) 80%, rgba(0, 40, 140, 0) 90%),
+    /* the band's original gradient, unchanged, underneath */
+    linear-gradient(100deg,
+      color-mix(in srgb, #0096ff 16%, var(--bg)),
+      color-mix(in srgb, var(--color-accent) 9%, var(--bg)) 52%,
+      color-mix(in srgb, #0096ff 16%, var(--bg)));
   border: 1px solid color-mix(in srgb, #0096ff 34%, transparent);
   box-shadow: 0 12px 32px -16px color-mix(in srgb, #0096ff 45%, transparent);
 }
@@ -1653,7 +1808,12 @@ section, #features { scroll-margin-top: 132px; }
      reserves no height at all and the copy sits genuinely top-to-bottom centred. */
   grid-template-areas: "copy mid media";
   align-self: stretch;              /* fill the band's content box, not just shrink-wrap */
-  align-content: center;
+  /* ⛔ STRETCH, not center. With `center`, once the band reaches its `min-height: 200px`
+     the single row is centred inside it instead of filling, so `align-self: end` on
+     .ob-media pinned the clip to the ROW's bottom rather than the band's — leaving it
+     floating above the bottom edge (measured 7.7px at 832, 18 at 768, 29 at 700). The
+     items are still centred by `align-items` below, so nothing else moves. */
+  align-content: stretch;
   align-items: center;
   column-gap: clamp(1rem, 3vw, 2.6rem);
 }
@@ -1674,7 +1834,10 @@ section, #features { scroll-margin-top: 132px; }
    "centred" they then asked for was TOP-AND-BOTTOM, i.e. vertical, which is done on
    .ob-inner below. A first pass read it as horizontal and centred both lines on a
    shared centreline; that was reverted. */
-.offer-band .ob-copy { grid-area: copy; min-width: 0; text-align: left; }
+.offer-band .ob-copy { grid-area: copy; min-width: 0; text-align: left;
+  /* nudged in off the band's own padding (owner: "move this a bit in" — the
+     'Limited Time Discount' / '$129.00 $89.00' block). */
+  padding-left: 1.2rem; }
 /* the coupon and its expiry travel together in the middle cell */
 /* ⛔⛔ A single-column STRETCH grid, not a centring flex column. `align-items: center`
    on a flex column shrinks every child to its OWN content, so the coupon outline came
@@ -1707,9 +1870,19 @@ section, #features { scroll-margin-top: 132px; }
 .offer-band .ob-media {
   grid-area: media; justify-self: end; align-self: end;
   width: 86.90%; aspect-ratio: 453 / 391;
-  margin-right: calc(-1 * clamp(1rem, 3vw, 2.6rem));
-  margin-bottom: -.5rem;
-  border-radius: 14px; overflow: hidden;
+  /* ⛔ Both read the band's own padding variables above, so they cannot drift apart.
+     BOTTOM only is cancelled (owner: "no padding/margin on the bottom side of the banner
+     where the clip is -- or for the clip"): there is deliberately NO margin-top, and the
+     band keeps its top padding. */
+  margin-right: calc(-1 * var(--band-gutter));
+  margin-bottom: calc(-1 * var(--band-vpad));
+  /* ⛔⛔ NO border-radius on the cell. The cell now bounds the character EXACTLY, so a
+     radius here bites a rounded notch out of the subject at all four corners — visible
+     mid-band at the bottom-left, where the banner has no corner of its own, leaving the
+     band's background showing through and making the subject look like it floats just
+     above the bottom edge. The band's own 20px radius still rounds the character into
+     the banner's real corner, which is the effect that is wanted. */
+  overflow: hidden;
 }
 .offer-band .ob-media img {
   display: block; width: 100%; height: 100%;
@@ -1746,7 +1919,11 @@ section, #features { scroll-margin-top: 132px; }
    the 1px its box gains is invisible. */
 .offer-band .coupon-hint { position: static; transform: none; margin-top: .35rem; padding-top: .08em; white-space: nowrap; }
 .offer-band .so-valid { white-space: nowrap;
-  padding-top: calc(.35rem + .04em); padding-bottom: calc(.35rem - .04em); }
+  padding-top: calc(.35rem + .04em); padding-bottom: calc(.35rem - .04em);
+  /* ⛔ was inheriting `text-align: start` from .ob-mid, so this pill's text hugged
+     its left edge while the hint above it was centred — the pill and the hint are the
+     same 229px width, so the two texts did not line up (owner: "properly align these"). */
+  text-align: center; }
 
 /* the band's coupon keeps the offer card's azure tint and its moving sheen
    (same btnShine recipe and 3s beat as .special-offer and .btn-primary) */
@@ -1777,7 +1954,7 @@ section, #features { scroll-margin-top: 132px; }
      ⛔ Padding pulled in HARD at phone widths (owner: "make the banner work with
      phone aspect ratio ... by reduceing inside padding"). 1.7rem of vertical padding
      on a 390px screen is most of a text line, and it is paid TWICE — top and bottom. */
-  .offer-band { padding: .9rem .7rem; }
+  .offer-band { --band-gutter: .7rem; --band-vpad: .9rem; }
   /* ⛔ The three-column split is NOT collapsed here any more. Collapsing at 900px threw
      the owner's layout away on an ordinary laptop-width window — "i don't want this to
      happen it should stay where i ask you to put it". Only the nowrap guards are
@@ -1806,7 +1983,15 @@ section, #features { scroll-margin-top: 132px; }
   /* the desktop rule parks the clip against the right edge, and an item's own
      `justify-self` BEATS the grid's `justify-items: center` — so the stacked column
      has to un-park it explicitly or it hugs the right edge on a phone */
-  .offer-band .ob-media { justify-self: center; margin-right: 0; margin-bottom: 0; }
+  /* ⛔ NO margin-bottom here. It was zeroed to reset the corner offsets and that
+     silently cancelled the -.5rem which is the ONLY thing making the clip flush
+     with the band's bottom edge — so on a phone the clip floated .5rem above it.
+     `margin-right: 0` stays: the stacked column centres the clip, so there is no
+     corner to reach across for. */
+  /* margin-right: 0 only — the stacked column centres the clip, so there is no corner to
+     reach across for. The bottom offset needs no override any more: it reads
+     --band-vpad, which is already .9rem at this width. */
+  .offer-band .ob-media { justify-self: center; margin-right: 0; }
 }
 
 /* Alpha release promo ticket */
@@ -2060,7 +2245,7 @@ h1,h2,h3,h4,.site-header .brand,.section-title,.g-title,.g-name,.acc-head,.vb-ve
   position:relative;
   background-color:var(--card-bg);
   background-image:
-    linear-gradient(115deg,transparent 20%,rgba(255,255,255,.16) 40%,rgba(255,255,255,.04) 55%,transparent 70%),
+    linear-gradient(115deg,transparent 25%,rgba(255,255,255,.16) 41%,rgba(255,255,255,.04) 53%,transparent 65%),
     radial-gradient(130% 95% at 50% -18%,rgba(255,255,255,.20),rgba(255,255,255,.04) 55%),
     linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 60%);
   background-size:200% 100%,auto,auto;
@@ -2327,7 +2512,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   border-radius:22px;
   background-color:var(--card-bg);
   background-image:
-    linear-gradient(115deg,transparent 20%,rgba(255,255,255,.16) 40%,rgba(255,255,255,.04) 55%,transparent 70%),
+    linear-gradient(115deg,transparent 25%,rgba(255,255,255,.16) 41%,rgba(255,255,255,.04) 53%,transparent 65%),
     radial-gradient(130% 95% at 50% -18%,rgba(255,255,255,.20),rgba(255,255,255,.04) 55%),
     linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 60%);
   background-size:200% 100%,auto,auto;
@@ -2465,7 +2650,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   position:relative;
   background-color:var(--card-bg);
   background-image:
-    linear-gradient(115deg,transparent 20%,rgba(255,255,255,.16) 40%,rgba(255,255,255,.04) 55%,transparent 70%),
+    linear-gradient(115deg,transparent 25%,rgba(255,255,255,.16) 41%,rgba(255,255,255,.04) 53%,transparent 65%),
     radial-gradient(130% 95% at 50% -18%,rgba(255,255,255,.20),rgba(255,255,255,.04) 55%),
     linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 60%);
   background-size:200% 100%,auto,auto;
@@ -2708,7 +2893,9 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
                        Replace the caption name/alt when this slot gets a real product. -->
                   <img src="https://mr3dpageclips.carrd.co/assets/images/image16.jpg" alt="Add on 05" style="width:100%;height:100%;object-fit:cover;display:block;" />
                 </span>
-                <span class="g-ph-tag hot">NEW</span>
+                <!-- badge renamed NEW → Star on the owner's word (2026-09-30); the .hot
+                     styling is kept as-is, it is the same class the other two badges use. -->
+                <span class="g-ph-tag hot">Star</span>
               </span>
               <span class="g-caption"><span class="g-name">Add on 05</span><span class="g-cta">View &rarr;</span></span>
             </a>
@@ -2871,8 +3058,18 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
     </div>
 
     <div class="hero-cards">
+      <!-- Left rail clip — hosted on the Mr3D carrd CDN: video52.mp4 (replaced video50.mp4
+           on 2026-09-30). HEVC, 540x1620, 24 fps, 13.83 s — exactly the 1:3 of the box, so
+           it draws with ZERO crop; the .hero-side card around it stretches to the row
+           height and never moves.
+           data-no-clip-bar: decorative loop, nothing to scrub — skips the bar, the
+           spinner and the seek handlers in one go.
+           ⛔ This clip is HEVC: check it with the GPU ON. A --disable-gpu run fails it with
+           MEDIA_ERR_SRC_NOT_SUPPORTED, which looks exactly like a broken file.
+           ⛔ The CARD is the invariant, the clip is not — it was pulled and swapped twice
+           in one afternoon; never delete this .hero-side div, only its src changes. -->
       <div class="quickfog-outer hero-side reveal">
-        <video autoplay muted loop playsinline src="assets/videos/rig-map.mp4" aria-label="Rig mapping clip"></video>
+        <video autoplay muted loop playsinline data-no-clip-bar data-fresh src="https://mr3dpageclips.carrd.co/assets/videos/video52.mp4" aria-label="Demo clip (left)"></video>
       </div>
       <div class="hero-center">
         <div class="quickfog-outer hero-copy-card">
@@ -2907,8 +3104,17 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
         </div>
         <p class="hero-note">100% Local • Your Footage Never Leaves Your PC</p>
       </div>
+      <!-- Right rail clip — hosted on the Mr3D carrd CDN: video51.mp4. Pulled and put back
+           within a minute (2026-09-30: "remove the video51.mp4 from the page even if it's in
+           the background" → "sorry add it to the right side …video51.mp4").
+           It is PORTRAIT 540x1620, HEVC, 24 fps, 13.83 s — the 10:02 GMT upload that
+           replaced the old landscape 256x136 concert loop — so this rail now draws with
+           ZERO crop too, and the edge's stale copy of the old file is exactly what
+           data-fresh defeats.
+           data-no-clip-bar: decorative loop, nothing to scrub.
+           ⛔ The CARD is the invariant, the clip is not — do not delete this .hero-side. -->
       <div class="quickfog-outer hero-side reveal">
-        <video autoplay muted loop playsinline src="assets/videos/tracking.mp4" aria-label="Tracking clip"></video>
+        <video autoplay muted loop playsinline data-no-clip-bar data-fresh src="https://mr3dpageclips.carrd.co/assets/videos/video51.mp4" aria-label="Demo clip (right)"></video>
       </div>
     </div>
   </div>
@@ -2947,28 +3153,36 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
         <!-- Old way -->
         <div class="compare-card old reveal">
           <span class="vs-badge">The old way</span>
-          <h3>Manual tracking &amp; cleanup</h3>
-          <p class="meta">Point trackers by hand, then scrub every frame.</p>
+          <!-- copy replaced on the owner's word (2026-09-30). Their text has no subtitle,
+               so the .meta line is gone and the h3 carries the meta's own margin-bottom
+               (1.23rem) — otherwise the heading would sit .35rem off the list and the card
+               would visibly tighten. -->
+          <h3 style="margin-bottom:1.23rem;">Manual Hand Keyframe Animation.</h3>
           <ul class="compare-steps">
-            <li><span class="step-num">1</span><span>Manually place &amp; re place 2D trackers</span></li>
-            <li><span class="step-num">2</span><span>Hand map each tracker to a bone or shape key</span></li>
-            <li><span class="step-num">3</span><span>Clean drift, spikes and jitter frame by frame</span></li>
-            <li><span class="step-num">4</span><span>Re time blinks and eye movement by eye</span></li>
+            <li><span class="step-num">1</span><span>Manually Moving Rig and Key framing</span></li>
+            <li><span class="step-num">2</span><span>Manual Graph EDITOR Adjustments Takes Hours</span></li>
+            <li><span class="step-num">3</span><span>For any Small change everything Needs Readjustment</span></li>
+            <li><span class="step-num">4</span><span>And for Beginners it's Very Hard</span></li>
           </ul>
-          <span class="time-chip">~ 4 hours</span>
+          <span class="time-chip">~ 6 hours</span>
         </div>
 
         <!-- With add-on -->
         <div class="compare-card new reveal">
           <span class="vs-badge">With Auto Face MoCap Pro</span>
-          <h3>Record, map, bake</h3>
-          <p class="meta">Clean drivers on your rig from the first take.</p>
+          <!-- heading replaced on the owner's word (2026-09-30): their text is the heading
+               alone, so the .meta line goes here too — the two cards then read the same way
+               — and the h3 takes the meta's margin-bottom, leaving the card's rhythm alone. -->
+          <h3 style="margin-bottom:1.23rem;">Record, Generate &amp; Adjust</h3>
+          <!-- steps replaced on the owner's word (2026-09-30): step 1 kept, 2 and 3 rewritten
+               and a 4th added — their spelling and capitals verbatim ("AR-Kit", "Mocap"). -->
           <ul class="compare-steps">
             <li><span class="step-num">1</span><span>Record the clip (webcam, phone or video file)</span></li>
-            <li><span class="step-num">2</span><span>Click <strong>Auto Map</strong> onto your Rigify / ARP rig</span></li>
-            <li><span class="step-num">3</span><span>Apply smoothing &amp; blink detection, then bake</span></li>
+            <li><span class="step-num">2</span><span>Select AR-Kit Shapekey Character &amp; Click Apply Mocap</span></li>
+            <li><span class="step-num">3</span><span>Want to change something in the mocap Use Real-Time Sliders</span></li>
+            <li><span class="step-num">4</span><span>With Multi Character &amp; Multi Mocap Support</span></li>
           </ul>
-          <span class="time-chip">~ 12 minutes</span>
+          <span class="time-chip">~ 2 minutes</span>
         </div>
       </div>
     </div>
@@ -3891,6 +4105,31 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
     gRenderDots();
     gUpdateDots();
   });
+
+  /* ---------- Fresh clip URLs — always show what the LINK serves ----------
+     carrd serves every asset with `Cache-Control: public, max-age=604800` (SEVEN DAYS)
+     and these clip URLs carry no version, so a clip REPLACED at the same URL stays
+     frozen in the browser for a week — its ETag does change, but inside max-age it is
+     never consulted, and the page cannot look it up (the CDN sends no CORS header).
+     So a <video data-fresh> gets a per-load token instead: a NEW url every load, which
+     forces the browser to fetch whatever the link serves right now.
+     ⚠ The price is a re-download of those clips on EVERY load, so `data-fresh` belongs
+     on the small decorative loops (the two hero rails, ~3.9 MB together). The feature
+     and character clips are ~58 MB in total and stay cached ON PURPOSE — to opt one in,
+     add the attribute to its <video> and measure the file size first. */
+  (function freshClipSrcs() {
+    var t = Date.now();
+    var vids = document.querySelectorAll('video[data-fresh]');
+    for (var i = 0; i < vids.length; i++) {
+      var v = vids[i];
+      var s = v.getAttribute('src');
+      if (!s) continue;
+      // keep a real query string (carrd's own ?v=...), replace a token from a previous run
+      var base = s.replace(/([?&])t=\d+&?/, '$1').replace(/[?&]$/, '');
+      v.setAttribute('src', base + (base.indexOf('?') < 0 ? '?' : '&') + 't=' + t);
+      try { v.load(); } catch (e) {}
+    }
+  })();
 
   /* ---------- Clip progress bars — every <video> on the page ----------
      Injects a bar into each video's parent and drives it from that video's own
