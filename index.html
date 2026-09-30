@@ -83,8 +83,25 @@ body::before {
 img, svg { display: block; max-width: 100%; }
 a { color: inherit; }
 button { font-family: inherit; }
-/* #features is a block INSIDE #workflow (the cards), so it needs the offset itself */
-section, #features { scroll-margin-top: 132px; }
+/* ⛔ Inline links to a THIRD-PARTY product inside body copy (owner, 2026-10-01: "also add the
+   link … to every where 'Human Generator' is" / "and for the faceit too …"). Body copy had no
+   link style at all — `a{color:inherit}` above renders one exactly like the words beside it.
+   ⛔ Azure is a LITERAL: var(--color-tertiary) resolves to WHITE in the 2nd token block. The
+   light value is deliberately darker than the wordmark's #0096ff — that is a display word at
+   3.07:1, this is small body text where that fails AA.
+   ⛔⛔ NOT scoped to #shapekeys: the FAQ answer ("you can use Faceit Addon for creating ARkit
+   Shapekeys") is outside it. */
+.prod-link{color:#0a72c4;font-weight:600;text-decoration:underline;text-decoration-thickness:1px;
+  text-underline-offset:3px;text-decoration-color:color-mix(in srgb,currentColor 45%,transparent);
+  transition:color .2s ease,text-decoration-color .2s ease;}
+html.dark .prod-link{color:#4db4ff;}
+.prod-link:hover{color:#055a9e;text-decoration-color:currentColor;}
+html.dark .prod-link:hover{color:#7cc9ff;}
+/* #features is a block INSIDE #workflow (the cards), so it needs the offset itself.
+   #character is the Human Generator card inside #shapekeys — same deal, the quick nav's
+   "Character" pill scrolls to the card, and without this the card's banner lands under the
+   sticky header + nav. */
+section, #features, #character { scroll-margin-top: 132px; }
 
 .container { width: min(1180px, 92%); margin-inline: auto; }
 
@@ -2121,13 +2138,19 @@ html:not(.dark) .support-badge { color: #0096ff; }
   background: color-mix(in srgb, var(--color-tertiary) 18%, var(--card-bg));
   font-weight: 700;
 }
+/* ⚠ A FIFTH pill was added (Shapekeys) and a sixth would still fit, so the pills are a
+   touch smaller to keep the row on one line at laptop widths without wrapping under the
+   sticky header (owner, 2026-10-01: "and make the quick nav buttons a bit smaller"):
+   padding .55/.1.1rem -> .42/.88rem, font .85 -> .78rem.
+   A SEVENTH (Character) was added after that and still fits on ONE line at 1440 — measured,
+   not assumed; re-measure before adding another. */
 .quick-nav a {
-  padding: .55rem 1.1rem;
+  padding: .42rem .88rem;
   border-radius: 999px;
   background: var(--card-bg);
   border: 1px solid var(--border-strong);
   color: var(--ink);
-  font-size: .85rem; font-weight: 600; text-decoration: none;
+  font-size: .78rem; font-weight: 600; text-decoration: none;
   transition: transform .2s ease, border-color .2s ease, background .2s ease;
 }
 .quick-nav a:hover { transform: translateY(-2px); border-color: var(--color-tertiary); }
@@ -2711,6 +2734,18 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
    inside the text column is already centre aligned, so no text or tag needs mirroring.
    The `rev` class is on rows 2, 4, 6, 8, 10 and 12 (there are 12). */
 .feature-row.side-row.rev{flex-direction:row-reverse}
+/* ⛔ A row whose text column is gone (row 5 — the Final Take clip, kept while its copy and
+   card were removed). `.feature-media` is `flex:0 1 70%`, so on its own it would fill 70% of
+   the row and leave a 30% hole where the text used to sit; `:only-child` makes it fill the
+   row instead. It also needs no `rev`: reversing a one-child row changes nothing. */
+.feature-row.side-row .feature-media:only-child{flex:0 1 100%;width:100%;
+  /* ⛔ NOT the default 16/9. At full row width a 16:9 box is 653px tall against every other
+     row's 454 — the row-size parity the owner asked for on 2026-09-29 would be broken by the
+     very row it was fixed on. The other rows' media is 70% of the row at 16:9, i.e.
+     0.7 x 9/16 = 0.394 of the row width tall, so a FULL-width box lands on the same height at
+     1 / 0.394 = 2.54. Measured after: this row 457px against its neighbours' 454 (the 3px is
+     the flex gap the 70% column gives up), and the portrait clip keeps its contain-fit. */
+  aspect-ratio: 2.54}
 @media (max-width:760px){.feature-row.side-row .feature-text{flex:0 1 30%;width:30%}.feature-row.side-row .feature-media{flex:0 1 70%;width:70%}}
 
 /* Portrait clip card — the media box takes the SOURCE's own aspect (464x832) so the
@@ -2917,6 +2952,11 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 <nav class="quick-nav" aria-label="Jump to a section">
   <a href="#workflow">Workflow</a>
   <a href="#features">Features</a>
+  <!-- ⛔ DOCUMENT ORDER matters here: the scrollspy walks the list left-to-right as you
+       descend, so this pill sits above Support because the section does. -->
+  <a href="#shapekeys">Shapekeys</a>
+  <!-- the Human Generator card inside #shapekeys — it sits after Shapekeys for the same reason -->
+  <a href="#character">Character</a>
   <a href="#showcase">Support</a>
   <a href="#pricing">Pricing</a>
   <a href="#howto">How to</a>
@@ -3136,7 +3176,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
         <div class="quickfog-outer hero-copy-card">
           <h1>Facial Motion Capture<br />Made Super Easy!</h1>
           <p class="hero-sub">
-            Auto Face MoCap Pro Allows you to Apply Facial MoCap from videos Recorded with any webcam, phone, on to your (52 ARKit Shapekeys) Animation Ready Character!
+            Auto Face MoCap Pro Allows you to Apply Facial MoCap from videos Recorded with any webcam, phone, on to your (ARKit Shapekeys) Animation Ready Character!
           </p>
         </div>
 
@@ -3333,28 +3373,83 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
       <p class="section-sub">Twelve stages that take you from raw video to final rig animation, with the heavy lifting done automatically.</p>
     </div>
 
-    <!-- Row 1: Text left + clip right inside one main card -->
-    <!-- id="features" sits HERE, not on the .section-head above: that block is
-         display:none (line 289), so anchoring to it scrolls to nowhere. -->
+    <!-- Row 1 (new, 2026-10-01) — the owner asked for a clip "above all the clips there" in the
+         features section, so this row goes first and the `id="features"` anchor travels with it
+         (it has to land at the TOP of the list, which is what the quick nav promises).
+         ⛔⛔ Adding a row HERE shifts every row's POSITION, and `rev` alternates by position —
+         all twelve existing rows had their `rev` flipped in the same edit, or the zig-zag would
+         start with two flipped rows and run backwards from there. `_rows_check.js` proves it.
+         Clip: `video54.mp4` (1920x1080, 14.35 s, HEVC) — watched before the copy was written:
+         it is a SIDE BY SIDE, the real performance on the left and the character performing it
+         on the right, expression for expression. -->
     <div class="quickfog-outer" id="features" style="margin-bottom:1rem;padding:.6rem;">
       <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
-            <h3 class="feature-title">Easy to Use Addon UI</h3>
+            <h3 class="feature-title">Turn any video into facial animation</h3>
             <p class="feature-copy">
-              Import the video clip you want to apply Mocap From and With One Click Auto Face MoCap
-              Pro Applies the Detected Movements from the selected video onto Characters Shape keys!
+              Your footage plays on the left and your character performs it on the right, blink for
+              blink, smile for smile. Import a clip, record one from your phone, or drag in footage
+              you already shot, press Apply Mocap, and watch the expressions land on the character's
+              shape keys as it plays.<br />
+              (Make sure Face is Lit Properly for Best/Working MoCap)
             </p>
           </div>
         </div>
-        <div class="feature-media" role="img" aria-label="Rig mapping preview" style="margin:0;">
+        <div class="feature-media" role="img" aria-label="Video to character preview" style="margin:0;">
+          <video autoplay muted loop playsinline data-fresh src="https://mr3dpageclips.carrd.co/assets/videos/video54.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <span class="media-tag">Video to Character</span>
+        </div>
+      </div>
+
+      <!-- ⛔ The clip that used to belong to the "Easy to Use Addon UI" row, moved here on the
+           owner's word (2026-10-01: "remove this … and it's card and put the clip right inside and
+           below the card of the first clip"). That row's heading, copy and text card are gone; the
+           clip lives INSIDE this first card and UNDER this card's own clip.
+           ⛔ `aspect-ratio:2.54` rather than the default 16/9: at the card's full width a 16:9 box is
+           653px tall, half again as tall as every other row's clip (the same reason the media-only
+           row carries it). Measured ≈457px.
+           ⚠ It kept its own `Rig Mapping` tag — the tag names the clip, not the row it came from. -->
+      <!-- ⛔⛔ A PLAIN FLEX ROW, not `.feature-row`. `_rows_check.js` counts `.feature-row`
+           elements as the page's alternating feature rows; a second one inside this card would be
+           a 13th "row" with no text column and would break that count. The two cells here are
+           30/70 like the row above, so the right-hand cell lines up exactly under `video54`.
+           Owner, 2026-10-01: the two slots are `Rig Mapping` on the LEFT and `Final Take` on the
+           RIGHT ("not left side put it in the right side"), and the Final Take clip MOVED here
+           from its own row further down the section (that row is gone). -->
+      <!-- ⛔⛔ THE CELL'S ASPECT MATCHES THE CLIP'S OWN (464/832), which is what "fit it properly
+           on the right side" needed. In a 16:9 box this portrait clip draws only 253px inside an
+           813px cell — two wide empty bands (the `contain` trade from 09-29). Here the box IS the
+           clip's shape, so it fills its cell exactly with NO crop and NO bands: `contain` and
+           `cover` become the same thing, and `contain` is kept so a future swap can never crop it.
+           Owner, 2026-10-01: "and also fit it properly on the right side."
+           ⚠ Consequence, measured: the cell drives the row height — 30% of the card is 348px wide,
+           so this row is 624px tall against the other rows' 457, and `video37` (70%, 16:9) sits
+           top-aligned at 813x457 beside it. -->
+      <!-- ⛔ `align-items:stretch`, not flex-start: the portrait cell sets this row's height (624px),
+           and with flex-start the LEFT clip stopped at its own 16:9 height (457) and left a 167px
+           empty strip underneath. Owner, 2026-10-01: "also crop the left side clip to fit properly"
+           — stretched to the row height its 16:9 source is covered into a 1.30:1 box, so it fills
+           the cell and crops ~27% off the sides. That crop is the request; the portrait clip on
+           the right stays `contain` and uncropped. -->
+      <div style="display:flex;flex-wrap:nowrap;align-items:stretch;gap:.55rem;margin-top:.55rem;">
+        <!-- the clip from the removed "Easy to Use Addon UI" row — no media tag: the owner had
+             its "Rig Mapping" badge removed (it labelled a row that no longer exists). 16:9, so
+             it is uncropped at whatever size it is given. -->
+        <div class="feature-media" role="img" aria-label="Rig mapping preview" style="flex:0 1 70%;width:70%;min-width:0;margin:0;">
           <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video37.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
-          <span class="media-tag">Rig Mapping</span>
+        </div>
+        <!-- The Final Take clip, moved out of its own row. Its cell is the clip's own portrait
+             shape, so it fills it: no letterbox bands and still never cropped. -->
+        <div class="feature-media" role="img" aria-label="Finished performance preview" style="flex:0 1 30%;width:30%;min-width:0;margin:0;aspect-ratio:464/832">
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video42.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1"></video>
+          <span class="media-tag">Final Take</span>
         </div>
       </div>
     </div>
 
-    <!-- Row 2: ARKit shape keys -->
+    <!-- Row 2: ARKit shape keys. ⛔ `id="features"` used to sit on the wrapper that was here; it
+         moved to the new first row. -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
       <div class="feature-row side-row reveal rev" style="padding:0;">
         <div class="feature-text">
@@ -3412,39 +3507,15 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
       </div>
     </div>
 
-    <!-- Row 5: Final Take — was `portrait-row`, which ran ~250px taller than every
-         other card; dropped so this card matches its neighbours. -->
+    <!-- Row 6: Mocap live controls -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
       <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
-            <h3 class="feature-title">The finished performance on your character</h3>
+            <h3 class="feature-title">Mocap Live Controls</h3>
             <p class="feature-copy">
-              Your take plays back as finished animation on the character. Scrub the timeline to any
-              beat and what you see is what renders, with blink, brows, jaw and lips all arriving on
-              the same pass.
-            </p>
-          </div>
-        </div>
-        <div class="feature-media" role="img" aria-label="Finished performance preview" style="margin:0;">
-          <!-- object-fit:contain, NOT cover — the owner asked that the clip never be cropped.
-               The source is portrait (464x832), so in this 16:9 box it letterboxes: it draws
-               253x454 inside an 806x454 area. That is the intended trade for size parity. -->
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video42.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1"></video>
-          <span class="media-tag">Final Take</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Row 6: Lipsync -->
-    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row reveal rev" style="padding:0;">
-        <div class="feature-text">
-          <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
-            <h3 class="feature-title">Lipsync Adjustment Controls</h3>
-            <p class="feature-copy">
-              IF you want you can Adjust Expressions, Lipsync, Mouth Open Mouth Left/Right and Even
-              more to Your Liking.
+              You can Adjust, Clean/Smooth, and even disable and enable some parts of the Mocap as well
+              as Mouth Left/Right Shift and Even more to Your Liking.
             </p>
           </div>
         </div>
@@ -3457,7 +3528,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 
     <!-- Row 7: Text + clip inside one main card -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal rev" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Record Clips Easily</h3>
@@ -3475,49 +3546,74 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
       </div>
     </div>
 
-    <!-- Row 8 -->
-    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row reveal rev" style="padding:0;">
-        <div class="feature-text">
-          <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
-            <h3 class="feature-title">Production ready filters &amp; auto cleanup</h3>
-            <p class="feature-copy">
-              Adaptive smoothing removes micro jitter, blink detection rebuilds natural eyelid cycles, and
-              built in limits keep jaw, eyes and head rotation inside believable ranges. Bake to keyframes
-              or NLA strips when you're happy.
-            </p>
-          </div>
-        </div>
-        <div class="feature-media" role="img" aria-label="Clean up preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="assets/videos/cleanup.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
-          <span class="media-tag">Clean Up &amp; Bake</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Row 9 -->
+    <!-- Row 12 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
       <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
-            <h3 class="feature-title">Bake clean drivers &amp; keyframes in one pass</h3>
+            <!-- Copy and clip rewritten together on the owner's word (2026-09-30: "add this clip
+                 … on the 'Production ready filters & auto cleanup' [row] and also chnage the text
+                 to match what's happening in the video or what it's about"). The clip was watched
+                 frame by frame before writing a word: `video50.mp4` is 1920x1080, 19.2 s, and shows
+                 the FACIAL TUNING panel — Facial Expression Intensity, Smooth Expressions, Lipsync
+                 Strength, Smooth Lipsync, Mouth Lipsync Shift, Smooth Eye Look and the mouth
+                 controls — being driven while the character's shape keys move in the sidebar
+                 (Mocaps: 1 applied, Follow Playhead, Adjust Mocap's Start Frame). So the row is
+                 about LIVE tuning and smoothing, not about a bake/filters list. -->
+            <h3 class="feature-title">Clean &amp; smooth the MoCap with sliders</h3>
             <p class="feature-copy">
-              Turn any take into final animation with one click. Auto Face MoCap Pro bakes tracked
-              motion to shape keys, bone drivers, NLA strips or plain keyframes, keeping your timeline
-              tidy and your takes non destructive.
+              Smooth Expressions, Smooth Lipsync and Smooth Eye Look all sliders clean up right from one
+              panel. Slide them while the mocap plays and the character updates as you go, so you smooth,
+              clean and correct the Facial Mocap while you are looking right at it.
             </p>
           </div>
         </div>
-        <div class="feature-media" role="img" aria-label="Driver baking preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="assets/videos/driver-baking.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
-          <span class="media-tag">Driver Baking</span>
+        <div class="feature-media" role="img" aria-label="Facial tuning preview" style="margin:0;">
+          <!-- data-fresh: the owner swaps this clip, and carrd's 7-day cache (and its edge copy)
+               would otherwise pin the old one — same reason the hero rails carry it. -->
+          <video autoplay muted loop playsinline data-fresh src="https://mr3dpageclips.carrd.co/assets/videos/video50.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <span class="media-tag">Facial Tuning</span>
         </div>
       </div>
     </div>
 
-    <!-- Row 10 -->
+    <!-- Row 12 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
       <div class="feature-row side-row reveal rev" style="padding:0;">
+        <div class="feature-text">
+          <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
+            <!-- Copy rewritten to match the new clip (owner, 2026-10-01: "also match the text with
+                 what's happening in the video"). The old text sold a bake-to-drivers pass; the clip
+                 actually walks the MOCAPS tray — two takes applied at once, a start frame of 360,
+                 Follow Playhead, and the Apply Mocap button — so the row now describes stacking
+                 takes and re-timing them. -->
+            <h3 class="feature-title">Powerfull Multi MoCap System</h3>
+            <p class="feature-copy">
+              Apply more than one Mocap and keep them all in the Mocaps list. Move the Timeline playhead
+              and the addon Auto selects mocap that's on that frame and also updates the mocap slider
+              values that are set for that mocap
+            </p>
+          </div>
+        </div>
+        <div class="feature-media" role="img" aria-label="Driver baking preview" style="margin:0;">
+          <!-- clip swapped on the owner's word (2026-10-01: "now add this clip on the card below
+               it …/video53.mp4"). Was `assets/videos/driver-baking.mp4` — one of the five local
+               files that never existed, so this card had always been a blank box.
+               ⚠ What the clip actually shows, read off its panel: the MOCAPS tray with TWO takes
+               applied (`Hailuo_Video… F-360-704` and `First Mocap F-0-344`), `Adjust Mocap's Start
+               Frame` at 360, `Follow Playhead` on, and the `Apply Mocap` button — i.e. layering
+               and re-timing takes, not the bake-to-drivers story the copy below still tells.
+               `data-fresh`: the owner swaps these clips, and the CDN's 7-day cache would pin the
+               old bytes for a week. -->
+          <video autoplay muted loop playsinline data-fresh src="https://mr3dpageclips.carrd.co/assets/videos/video53.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <span class="media-tag">Layered Mocaps</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 12 -->
+    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+      <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Real time viewport feedback while you record</h3>
@@ -3534,9 +3630,9 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
       </div>
     </div>
 
-    <!-- Row 11 -->
+    <!-- Row 12 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal rev" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Export motion to any pipeline</h3>
@@ -3555,7 +3651,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 
     <!-- Row 12 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row reveal rev" style="padding:0;">
+      <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Expression presets for every shot</h3>
@@ -3570,6 +3666,145 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
           <video autoplay muted loop playsinline src="assets/videos/presets.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Presets</span>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 4b. CREATING SHAPEKEYS — new section, right above Support (owner, 2026-10-01:
+     "create a new section right above the support and name it" → the name he gave was
+     "Creating Shapekeys &").
+     ⚠ THE BODY IS AN EMPTY SLOT: the seam label and the (hidden — .section-head is
+     display:none page-wide) heading are in place, and nothing else, because the request
+     named the section but not what goes in it. Drop the content in here.
+     ⚠ His name ended with a dangling "&" — the label reads "Creating Shapekeys" only,
+     since "Creating Shapekeys &" would render as a broken heading. Say what follows the
+     "&" and it goes straight in (both the seam label and the kicker/title). -->
+<!-- ============================================================ -->
+<section class="section" id="shapekeys" aria-label="Creating Shapekeys">
+  <span class="seam-label">Creating Shapekeys</span>
+  <canvas class="section-particles" data-pattern="grid" aria-hidden="true"></canvas>
+  <div class="container">
+    <div class="section-head reveal" style="text-align:center;">
+      <span class="section-kicker" style="justify-content:center;">Creating Shapekeys</span>
+      <h2 class="section-title">Creating Shapekeys</h2>
+      <p class="section-sub" style="margin-inline:auto;"></p>
+    </div>
+
+    <!-- CARD 1 — the two routes, free but slow vs Faceit and fast (owner, 2026-10-01:
+         "create a main card and add the Heading 'Creating Shape keys is Easy' and in text you can
+         talk about watching youtube videos for free but slow shape key creation or Get Faceit
+         Addon for Faster Creation"). -->
+    <div class="quickfog-outer reveal" style="padding:1.1rem 1.3rem;margin-top:1.6rem;">
+      <h3 class="feature-title" style="text-align:center;margin-bottom:.7rem;">Creating Shape keys is Easy</h3>
+      <p class="feature-copy" style="text-align:center;max-width:78ch;margin-inline:auto;">
+        Nobody needs to be a rigger to get ARKit shape keys onto a character. There are plenty of free
+        videos on YouTube that walk you through building them by hand, and they work. The catch is
+        time: every key is sculpted and checked one at a time, so a full set can eat an afternoon or
+        more for a single character.
+      </p>
+      <p class="feature-copy" style="text-align:center;max-width:78ch;margin-inline:auto;margin-top:.7rem;">
+        <a class="prod-link" href="https://superhivemarket.com/products/faceit?ref=473" target="_blank" rel="noopener noreferrer">Faceit</a> does that part for you. It creates the ARKit shape keys on your character in about 10 to
+        15 minutes, so the same character is ready for mocap the day you start instead of next week.
+      </p>
+    </div>
+
+    <!-- CARD 2 — the Faceit banner and the detail (owner: "also add this face it banner
+         '…/image19.jpg' in the next card and about about face it in detail").
+         The source is 1200x320 (15:4) so it is dropped in at its own aspect, width:100%.
+         ⛔ The banner became a link on his word (2026-10-01: "and for the faceit too
+         'https://superhivemarket.com/products/faceit?ref=473'") — the same treatment the Human
+         Generator banner got, since he asked for the link "to every where" each name is. -->
+    <div class="quickfog-outer reveal" style="padding:.6rem;margin-top:1rem;">
+      <a class="prod-banner" href="https://superhivemarket.com/products/faceit?ref=473"
+         target="_blank" rel="noopener noreferrer" title="Faceit on Superhive">
+        <img src="https://mr3dpageclips.carrd.co/assets/images/image19.jpg"
+             alt="Faceit — quick and easy facial expressions in Blender" width="1200" height="320" />
+      </a>
+      <div style="padding:1.1rem 1.3rem 1.3rem;">
+        <!-- Copy replaced wholesale on the owner's word (2026-10-01) — his text, converted from the
+             markdown he pasted: `##` became the card's h3, the `-` list became the page's own
+             `.check-list` (same tick style this card already used), and `**…**` became <strong>. -->
+        <h3 class="feature-title" style="text-align:center;margin-bottom:.7rem;">What <a class="prod-link" href="https://superhivemarket.com/products/faceit?ref=473" target="_blank" rel="noopener noreferrer">Faceit</a> Does</h3>
+        <p class="feature-copy" style="text-align:center;max-width:78ch;margin-inline:auto;">
+          <a class="prod-link" href="https://superhivemarket.com/products/faceit?ref=473" target="_blank" rel="noopener noreferrer">Faceit</a> is the Blender add-on that handles the character-preparation side of this workflow.
+          Instead of manually sculpting all 52 ARKit facial shape keys one by one, <a class="prod-link" href="https://superhivemarket.com/products/faceit?ref=473" target="_blank" rel="noopener noreferrer">Faceit</a> gives you a
+          semi-automatic system for generating them specifically for your character.
+        </p>
+        <ul class="check-list" style="max-width:78ch;margin-inline:auto;">
+          <li><span class="check-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Creates the full set of 52 ARKit-compatible facial shape keys</li>
+          <li><span class="check-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Can reduce hours of manual shape-key work to a much faster setup process</li>
+          <li><span class="check-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span>Works with an existing compatible face rig, or <a class="prod-link" href="https://superhivemarket.com/products/faceit?ref=473" target="_blank" rel="noopener noreferrer">Faceit</a> can generate its own facial rig</span></li>
+          <li><span class="check-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Lets you refine individual expressions before baking the final shape keys</li>
+          <li><span class="check-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Prepares the character so those shapes can then be driven by facial motion-capture data</li>
+        </ul>
+        <p class="feature-copy" style="text-align:center;max-width:78ch;margin-inline:auto;margin-top:.9rem;">
+          Once everything looks right, <a class="prod-link" href="https://superhivemarket.com/products/faceit?ref=473" target="_blank" rel="noopener noreferrer">Faceit</a> bakes those expressions into the character as the 52 ARKit
+          shape keys.
+        </p>
+        <p class="feature-copy" style="text-align:center;max-width:78ch;margin-inline:auto;margin-top:.7rem;">
+          That's where Auto Face MoCap Pro takes over.
+        </p>
+        <p class="feature-copy" style="text-align:center;max-width:78ch;margin-inline:auto;margin-top:.7rem;">
+          <strong><a class="prod-link" href="https://superhivemarket.com/products/faceit?ref=473" target="_blank" rel="noopener noreferrer">Faceit</a> prepares the face. Auto Face MoCap Pro animates it.</strong>
+        </p>
+      </div>
+    </div>
+
+    <!-- CARD 3 — Human Generator (owner, 2026-10-01: "create a main card and place this
+         '…/image20.jpg' and talk about human generator and how it's compatible with auto face mocap
+         pro for facial mocap" and "add this link to the image
+         https://superhivemarket.com/products/humgen3d?ref=473").
+         The banner is 1200x600 (2:1) so it drops in at its own aspect, width:100%. ⛔ The whole
+         image is the link (his ref URL) — nothing else was asked for as a CTA; the hover pill is
+         only there so a visitor can tell the image is clickable. -->
+    <style>
+      #shapekeys .prod-banner{display:block;position:relative;border-radius:14px;overflow:hidden;
+        box-shadow:0 0 0 1px rgba(255,255,255,.08);transition:transform .25s ease,box-shadow .25s ease;}
+      #shapekeys .prod-banner img{width:100%;height:auto;display:block;}
+      #shapekeys .prod-banner:hover{transform:translateY(-2px);box-shadow:0 12px 34px rgba(0,150,255,.30);}
+      #shapekeys .prod-banner::after{content:"View on Superhive";position:absolute;left:50%;bottom:12px;
+        transform:translateX(-50%) translateY(6px);opacity:0;padding:.4rem .9rem;border-radius:999px;
+        background:rgba(10,12,16,.78);color:#fff;font-size:.78rem;font-weight:600;letter-spacing:.02em;
+        pointer-events:none;transition:opacity .25s ease,transform .25s ease;}
+      #shapekeys .prod-banner:hover::after{opacity:1;transform:translateX(-50%) translateY(0);}
+    </style>
+    <!-- ⛔ id="character" is the quick nav's target (owner: "ALSO ADD 'Character' quick nav and add the
+         scroll to human generator card") — the pill must land on THIS card, not on the #shapekeys
+         section. It carries scroll-margin like a section so the sticky header + nav clear it. -->
+    <div class="quickfog-outer reveal" id="character" style="padding:.6rem;margin-top:1rem;">
+      <a class="prod-banner" href="https://superhivemarket.com/products/humgen3d?ref=473"
+         target="_blank" rel="noopener noreferrer" title="Human Generator on Superhive">
+        <img src="https://mr3dpageclips.carrd.co/assets/images/image20.jpg"
+             alt="Human Generator Ultimate — generated characters in Blender"
+             width="1200" height="600" />
+      </a>
+      <div style="padding:1.1rem 1.3rem 1.3rem;">
+        <!-- Copy replaced wholesale on the owner's word (2026-10-01) — his text, verbatim: the two
+             middle lines become the section's usual tick list (the same furniture the Faceit card
+             above uses), the closing line is his, in bold. -->
+        <h3 class="feature-title" style="text-align:center;margin-bottom:.7rem;">Works With <a class="prod-link" href="https://superhivemarket.com/products/humgen3d?ref=473" target="_blank" rel="noopener noreferrer">Human Generator</a></h3>
+        <p class="feature-copy" style="text-align:center;max-width:78ch;margin-inline:auto;">
+          <a class="prod-link" href="https://superhivemarket.com/products/humgen3d?ref=473" target="_blank" rel="noopener noreferrer">Human Generator</a> gives you a fast way to create the complete character before the mocap stage.
+          Build a customizable human directly inside Blender with the body, face, skin, hair, clothing,
+          and animation rig already set up.
+        </p>
+        <p class="feature-copy" style="text-align:center;max-width:78ch;margin-inline:auto;margin-top:.7rem;">
+          And for facial mocap, the workflow gets even easier.
+        </p>
+        <ul class="check-list" style="max-width:78ch;margin-inline:auto;margin-top:.9rem;">
+          <!-- ⛔⛔ the tick TEXT is wrapped in a <span>: `.check-list li` is `display:flex`, so
+               every child is a flex item and gets BLOCKIFIED — a bare <a> in the middle of the
+               sentence would split it into three columns ("Add" | "Human Generator" | "'s facial
+               rig…") with the list gap between them. The span keeps the sentence one flex item and
+               the link inline inside it. -->
+          <li><span class="check-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span>Add <a class="prod-link" href="https://superhivemarket.com/products/humgen3d?ref=473" target="_blank" rel="noopener noreferrer">Human Generator</a>'s facial rig to load the 52 facial shape keys</span></li>
+          <li><span class="check-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Auto Face MoCap Pro can then drive those expressions using your video mocap</li>
+        </ul>
+        <p class="feature-copy" style="text-align:center;max-width:78ch;margin-inline:auto;margin-top:.9rem;">
+          <strong><a class="prod-link" href="https://superhivemarket.com/products/humgen3d?ref=473" target="_blank" rel="noopener noreferrer">Human Generator</a> builds and rigs the character. Auto Face MoCap Pro brings the face to life.</strong>
+        </p>
       </div>
     </div>
   </div>
@@ -3706,7 +3941,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
           <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
         </button>
         <div class="acc-body">
-          <div class="acc-inner">While No Rigged Characters are supported only Characters with ARkit Shapekeys are but if your character has Facial rig you can use Faceit Addon for creating ARkit Shapekeys (Creating Shapekeys Take 10 to 15 mins) or with any other addon or your choose then you can start Generating MoCap in Seconds</div>
+          <div class="acc-inner">While No Rigged Characters are supported only Characters with ARkit Shapekeys are but if your character has Facial rig you can use <a class="prod-link" href="https://superhivemarket.com/products/faceit?ref=473" target="_blank" rel="noopener noreferrer">Faceit</a> Addon for creating ARkit Shapekeys (Creating Shapekeys Take 10 to 15 mins) or with any other addon or your choose then you can start Generating MoCap in Seconds</div>
         </div>
       </div>
 
@@ -3781,20 +4016,52 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
     </div>
     <p class="license-note">All licenses with 12 Months Support Period. After that they become perpetual.</p>
 
-    <!-- Special offer banner -->
-    <div class="special-offer reveal">
-      <div class="so-shine"></div>
-      <div class="so-inner">
-        <div class="so-kicker">Special Offer</div>
+    <!-- ⛔ THE DISCOUNT CARD THAT STOOD HERE IS GONE (owner, 2026-10-01: "replace this [the
+         Limited Time Discount card] with the one that's below the more from mr3d section").
+         The replacement is the offer BAND below, a direct child of this <section> so it is NOT
+         inside .container — see the comment on it. The band under #gallery is untouched. -->
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SPECIAL OFFER BAND, second copy — below the pricing cards.    -->
+  <!-- Source: the band under the "More from Mr3D" gallery, copied    -->
+  <!-- to the owner's word. ⛔⛔ IT INHERITS THE CARD'S *SOURCE*      -->
+  <!-- ROLES: the deleted card was the ONE place `offer` ($89) and   -->
+  <!-- `offer-expiry` were edited, and BOTH bands are FOLLOWERS      -->
+  <!-- rebuilt from those two attributes (page script, sections 11   -->
+  <!-- and 12). Dropping them would silently unlink the price and    -->
+  <!-- the date for good — so so-new and so-valid carry data-*-src   -->
+  <!-- here, and the $129 stays a follower of the plan card.         -->
+  <!-- ⛔ NOT inside .container: `.offer-band` sizes itself           -->
+  <!-- min(1180px,92%) exactly like .container does, so nesting it    -->
+  <!-- would shrink it twice (1180 -> ~1085). Direct child keeps it  -->
+  <!-- on the page column, identical to the band above.              -->
+  <!-- ⛔ The coupon button is wired BY CLASS — no id wiring to move. -->
+  <!-- ============================================================ -->
+  <!-- ⛔ Both margins retuned here (owner, 2026-10-01: "add a bit of padding" then "and reduce
+       the bottom padding"). The band's own rule is `margin: 0 auto 4.5rem` — NO top margin at
+       all, so above it the licence note's box ended at 12991 and the band's began at 12991:
+       TOUCHING. Below it, 4.5rem stacked on #pricing's own 72px padding-bottom for a 144px gap.
+       Now 2rem/2rem: 32px of air above, and the space below is the band's 32px + the section's
+       own 72px = 104px. ⛔ Only THIS band — the one under #gallery has no text above it and was
+       not asked about. -->
+  <section class="offer-band reveal" aria-label="Special offer" style="margin-top:2rem;margin-bottom:2rem;">
+    <div class="ob-shine"></div>
+    <div class="ob-inner">
+      <div class="so-kicker">Special Offer</div>
+
+      <div class="ob-copy">
         <div class="so-title">Limited Time Discount</div>
         <div class="so-prices">
           <span class="so-old" data-price="regular" data-fmt="usd2">$129.00</span>
-          <span class="so-new" data-price-src="offer">$89.00</span>
+          <span class="so-new" data-price-src="offer" data-fmt="usd2">$89.00</span>
         </div>
+      </div>
 
-        <!-- Coupon — click copies the code, then opens the store in a new tab. -->
+      <div class="ob-mid">
         <div class="coupon-wrap">
-          <button class="coupon-btn" id="couponBtn" type="button"
+          <button class="coupon-btn" id="couponBtnPricing" type="button"
                   data-href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473"
                   aria-label="Copy the discount coupon code and open the store">
             <span class="coupon-label">Coupon</span>
@@ -3803,12 +4070,15 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
           </button>
           <p class="coupon-hint">Click to copy the code.</p>
         </div>
-
         <div class="so-valid" data-text-src="offer-expiry">Valid until December 31st, 2026</div>
       </div>
-    </div>
 
-  </div>
+      <div class="ob-media">
+        <img src="https://mr3dpageclips.carrd.co/assets/images/image18.gif"
+             alt="Auto Face MoCap Pro demo clip" width="782" height="391" />
+      </div>
+    </div>
+  </section>
 </section>
 
 <!-- ============================================================ -->
