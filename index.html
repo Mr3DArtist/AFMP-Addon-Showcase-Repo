@@ -872,7 +872,10 @@ section, #features { scroll-margin-top: 132px; }
 .compare-card.old .vs-badge { background: color-mix(in srgb, var(--ink) 10%, transparent); color: var(--muted); border: 1px solid var(--border-strong); }
 .compare-card.new { border-color: var(--color-tertiary); box-shadow: 0 22px 60px -24px var(--glow-tertiary); }
 .compare-card.new .vs-badge { background: var(--color-tertiary); color: var(--bg); }
-.compare-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.19rem; letter-spacing: -.02em; margin-bottom: .35rem; }
+/* the 1.23rem gap used to live as an inline style on the two headings (it replaced the
+   .meta line's margin when the subtitles were dropped) — it belongs in the rule, so the
+   scoped .compact variant below can override it without !important */
+.compare-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.19rem; letter-spacing: -.02em; margin-bottom: 1.23rem; }
 .compare-card .meta { font-size: .76rem; color: var(--muted); margin-bottom: 1.23rem; }
 .time-chip {
   display: inline-flex; align-items: center; gap: .44rem; margin-top: auto; align-self: flex-start;
@@ -1380,14 +1383,26 @@ section, #features { scroll-margin-top: 132px; }
   display: inline-flex; align-items: center; gap: .55rem;
   margin: 0 auto 2.4rem;
   padding: .55rem 1.2rem; border-radius: 999px;
-  background: var(--card-bg);
-  border: 1px solid var(--border-strong);
-  color: var(--color-accent);
+  /* ⛔ was `background:var(--card-bg)` + `color:var(--color-accent)`, and that accent token
+     resolves to GREY in this page's second token block — so the two response badges read as
+     dim grey pills. Owner, 2026-09-30: "make this bright and also change the color".
+     Now: an azure tinted surface, a bright brand azure label, and a glowing dot.
+     ⚠ #0096ff is used as a LITERAL on purpose — it measures 3.07:1 on white and 6.42:1 on the
+     dark card, so it holds up in BOTH themes (the palette's cyan #53e8fd only manages 1.71:1
+     on white, which is why the "Latest" badge took the azure too). */
+  background: color-mix(in srgb, #0096ff 16%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, #0096ff 52%, transparent);
+  color: #33aaff;
   font-size: .82rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  box-shadow: 0 0 26px -8px color-mix(in srgb, #0096ff 65%, transparent);
 }
+/* ⚠ the label is #33aaff for brightness on the dark card, but that only reaches ~2.5:1 on the
+   LIGHT theme's card, so the light theme takes the darker brand azure (3.07:1 measured) */
+html:not(.dark) .support-badge { color: #0096ff; }
 .support-badge .pulse {
   width: 9px; height: 9px; border-radius: 50%;
-  background: var(--color-accent);
+  background: #0096ff;
+  box-shadow: 0 0 10px 2px color-mix(in srgb, #0096ff 55%, transparent);
   animation: pulse 1.6s ease-in-out infinite;
 }
 
@@ -1597,6 +1612,15 @@ section, #features { scroll-margin-top: 132px; }
 .ver-date { margin-left: .6rem; font-size: .8rem; font-weight: 500; color: var(--muted); font-family: 'Inter', sans-serif; letter-spacing: .02em; }
 
 /* 2-Click Workflow steps */
+/* ⛔⛔ This section's top band CANNOT be changed from here — try it and it silently does nothing.
+   `:1512` is the same declaration block as `:1513`:
+     `#workflow, #showcase, #compare, #specs, #changelog, .gallery-section, .catalog-section,
+      .section { padding-top:72px !important; padding-bottom:72px !important }`
+   For THIS element the matching selector is the ID **`#workflow`** (1,0,0), and an ID beats any
+   class rule (0,1,0) whatever the source order — both being !important changes nothing. Measured:
+   `.workflow-section{padding-top:0!important}` here, later in the sheet, still computed 72px.
+   The only local override that wins is an **inline `!important`** on the element (inline+important
+   is the top author level), which is what the markup now carries. */
 .workflow-section { padding-bottom: 40px; }
 .workflow-grid {
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.6rem;
@@ -2676,6 +2700,12 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 .feature-row.side-row .feature-title{font-size:clamp(.95rem,1.6vw,1.25rem)!important;text-align:center!important}
 .feature-row.side-row .feature-copy{font-size:clamp(.8rem,1.1vw,.95rem)!important;text-align:center!important}
 .feature-row.side-row .feature-media{flex:0 1 70%;width:70%;min-width:0}
+/* Alternating rows: odd rows read text left + clip right, even rows are flipped, so the eye
+   zig-zags down the section (owner, 2026-09-30: "make ones text left and the next ones right
+   and so on for all of them"). ⛔ `row-reverse` on the flex row is the whole trick — the copy
+   inside the text column is already centre aligned, so no text or tag needs mirroring.
+   The `rev` class is on rows 2, 4, 6, 8, 10 and 12 (there are 12). */
+.feature-row.side-row.rev{flex-direction:row-reverse}
 @media (max-width:760px){.feature-row.side-row .feature-text{flex:0 1 30%;width:30%}.feature-row.side-row .feature-media{flex:0 1 70%;width:70%}}
 
 /* Portrait clip card — the media box takes the SOURCE's own aspect (464x832) so the
@@ -2693,8 +2723,28 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 /* Hero side clips stay on sides at all widths */
 .hero-cards{display:grid!important;grid-template-columns:minmax(0,.7fr) minmax(0,1.6fr) minmax(0,.7fr)!important}
 @media (max-width:600px){.hero-cards{grid-template-columns:minmax(0,.5fr) minmax(0,1.5fr) minmax(0,.5fr)!important;gap:.3rem!important}}
+/* padding removed on the owner's word (2026-09-30: "also remove the padding") — the card now
+   hugs the h1/sub text; it was `1.2rem 1.4rem`. The nearest heading/paragraph still carry
+   their own margins, so the text is not flush against the border. */
 .hero-copy-card{background-image:none!important;background:var(--card-bg)!important;padding:1.2rem 1.4rem!important;text-align:center!important;width:100%!important}
 .hero-copy-card::after{content:none!important}
+/* The moving sheen from the primary button, on the hero copy card (owner, 2026-09-30:
+   "add the button shene on this … it's card"). Same 3s btnShine beat and the same skew.
+   ⛔ It rides on ::BEFORE, not ::after: `.hero-copy-card::after{content:none!important}`
+   is what keeps the glass gloss off this card, so re-enabling ::after would bring the
+   gloss back with it.
+   ⛔ `overflow:hidden` is REQUIRED — without it the skewed bar paints outside the card's
+   rounded corners. Nothing in this card overhangs, so clipping is safe here (the price
+   cards' overhanging badges are why THEIR sheen is a background sweep instead).
+   ⚠ The streak is .18 white: the button's own value is .9, which on a card this size is a
+   full white flash. One number to taste. */
+.hero-copy-card{overflow:hidden}
+.hero-copy-card::before{
+  content:'';position:absolute;top:0;left:0;width:45%;height:100%;pointer-events:none;
+  background:linear-gradient(105deg,transparent 45%,rgba(255,255,255,.18) 45%,rgba(255,255,255,.18) 60%,transparent 60%);
+  transform:translateX(-170%) skewX(-20deg);animation:btnShine 3s linear infinite;
+}
+@media (prefers-reduced-motion:reduce){.hero-copy-card::before{animation:none}}
 .hero-center h1{font-size:clamp(1.6rem,3.2vw,2.7rem)!important;padding:0 0 .5rem!important}
 .hero-center .hero-sub{font-size:clamp(.8rem,1.3vw,.95rem)!important;margin:0 auto!important;max-width:52ch!important}
 .hero-center .hero-note{font-size:.75rem!important}
@@ -2825,7 +2875,13 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
         <span class="brand-mark">
           <img src="https://mr3dpageclips.carrd.co/assets/images/image11.png" alt="Auto Face MoCap Pro logo" style="width:auto;height:auto;max-width:44px;max-height:44px;object-fit:contain;display:block;" />
         </span>
-        <span>Auto Face <span style="color:var(--color-tertiary)">MoCap Pro</span></span>
+        <!-- ⛔ The wordmark is SPLIT ACROSS SPANS — a grep and replace on the whole name does
+             nothing visible (the same trap as the 09-29 renaming round). "Face MoCap" is now
+             the brand azure on the owner's word (2026-09-30: "make the logo text 'Face MoCap'
+             Color"); it was `--color-tertiary`, which resolves to WHITE in this page's second
+             token block, so the two tones were indistinguishable. #0096ff is a literal on
+             purpose: 6.42:1 on the dark header, 3.07:1 on the light one. -->
+        <span>Auto <span style="color:#0096ff">Face MoCap</span> Pro</span>
       </a>
     </div>
 
@@ -3123,7 +3179,23 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 <!-- ============================================================ -->
 <!-- WORKFLOW STEPS — 2-click process -->
 <!-- ============================================================ -->
-<section class="section workflow-section" id="workflow" style="padding-top:0;">
+<!-- ⛔ `padding-top:0` MUST be !important here: `.gallery-section, .catalog-section,
+     .section{padding-top:72px!important}` (`:1513`) is an author !important declaration, and a
+     plain inline style LOSES to it — the plain `style="padding-top:0"` that used to sit here
+     never applied, which is the 72px band the owner asked about ("why is there so much empty
+     space?") once the two workflow cards above the compare pair were hidden. -->
+<!-- ⛔ `padding-top` MUST be !important here AND must not be 0. Measured, and the reason is
+     two separate CSS facts:
+     1) an inline style LOSES to the author !important at `:1512` (`#workflow, …, .section
+        {padding-top:72px!important}`) — and for this element the matching selector there is the
+        ID `#workflow`, which beats any class rule whatever the order — so only inline+important
+        can lower it at all;
+     2) at 0 the section's first child margin **collapses out of the section**, which pulls the
+        absolutely-positioned `WORKFLOW & FEATURES` seam label (centred on the section's top
+        edge) down ON TOP of the compare cards — it overlapped them by ~21px in a render.
+     24px clears the label (it ends 20px below the seam) and still removes ~48px of the old
+     110px band. -->
+<section class="section workflow-section" id="workflow" style="padding-top:24px!important;">
   <span class="seam-label">Workflow &amp; Features</span>
   <div class="container">
     <div class="section-head reveal" style="text-align:center;">
@@ -3132,7 +3204,14 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
       <p class="section-sub" style="margin-inline:auto;">From raw footage to rig animation in just two clicks.</p>
     </div>
 
-    <div class="wf-wrap">
+    <!-- ⛔ The whole 2-step workflow block is HIDDEN on the owner's word (2026-09-30: "hide
+         these"), and it has to be hidden HERE, at the wrapper — not on the two cards. Hiding
+         the cards alone leaves `.wf-wrap` itself painting: it is a glass panel with
+         `border`/`background`/`padding` and `width:fit-content`, so with no visible children
+         it hugged down to an empty 28x20 box in the middle of the section (the owner spotted
+         it: "why you left this"). The cards and the grid are untouched — deleting this one
+         style attribute brings the whole block back. -->
+    <div class="wf-wrap" style="display:none;">
       <div class="workflow-grid">
         <div class="workflow-card reveal">
           <div class="workflow-num">1</div>
@@ -3148,8 +3227,61 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
       </div>
     </div>
 
-    <div class="quickfog-outer" style="margin-top:2.4rem;padding:.6rem;">
-      <div class="compare-grid" style="margin:0;">
+    <!-- ⛔ COMPACT VARIANT, scoped to .compare-grid.compact. Sized for a screenshot that has
+         to sit in a Superhive product listing (owner, 2026-09-30: "make this compact and
+         small so they fit properly in Superhive") — the pair is roughly a third shorter than
+         the page's own type scale would make it, so both headings and most steps hold ONE
+         line. The shared .compare-steps / .step-num / .time-chip rules are used by the
+         workflow cards too, which is why every rule below is scoped rather than edited in
+         place. Remove the `compact` class to get the full-size pair back. -->
+    <!-- The "what is this" card, added above the pair on the owner's word (2026-09-30: "create a
+         card above … and in the Heading text Add 'What is Auto Face Mocap Pro' and for the text
+         to add below summerise what afmp does … no more then 350 characters"). The summary is
+         held to that limit by the gate (_compare_check.js counts the rendered text).
+         ⚠ `margin-top:1rem` is load-bearing: with the section's 24px top padding the seam label
+         reaches 20px below the seam, so a first child with NO margin would start 24px down and
+         sit almost on the label. -->
+    <div class="quickfog-outer afmp-intro-card">
+      <h3>What is Auto Face MoCap Pro</h3>
+      <!-- ⛔ House rules for this copy, from the owner: no dashes or hyphens at all (his "AR-Kit"
+           spelling is the one exception), no "bakes it to your rig in two clicks", never the
+           number 52, and the summary runs to about 500 characters. The gate enforces all four. -->
+      <!-- ⛔ THREE paragraphs, not one block: at ~860 characters a single wall of text is
+           unreadable (owner, 2026-09-30: "also add line spaces where ever needed"). The gap
+           between them comes from .afmp-intro-card p's margin-bottom. -->
+      <p>Auto Face Mocap Pro is a all new Flagship Blender Addon that turns any face video into facial animation. Bring a webcam clip, a phone recording or footage you already have, and it detects the performance and maps it onto your character's <span style="white-space:nowrap;">AR-Kit</span> shape keys (Togue is Not Supported Yet). There is no headset, no suit and no tracking markers to place, only the video you already have (Make sure the video lighting is good and everything is visible clearly).</p>
+      <p>Everything stays adjustable with real time sliders, so you can tune the result until it looks right, and every slider can be keyframed like any other animation. It supports multiple characters and multiple mocaps Per character, so a whole cast can live in one file.</p>
+      <p>It is beginner friendly, so even someone on their first day can get a clean result without studying a manual or watching a tutorial, and it all runs locally on your machine, so your footage never leaves your PC and nothing is uploaded anywhere.</p>
+    </div>
+
+    <style>
+      /* the intro card, in the same compact scale as the pair below it */
+      .afmp-intro-card { margin-top: 1rem; padding: 1rem .9rem; border-radius: 14px; }
+      .afmp-intro-card h3 { font-size: 1.2rem; margin-bottom: .6rem; }
+      /* paragraph gap: the copy is three paragraphs now, and this margin is the "line space"
+         between them (the last one must not add a trailing gap inside the card) */
+      .afmp-intro-card p { font-size: 1rem; line-height: 1.65; color: var(--muted); margin: 0 0 .7rem; }
+      .afmp-intro-card p:last-child { margin-bottom: 0; }
+      .compare-grid.compact { gap: .6rem; }
+      .compare-grid.compact .compare-card { padding: 1rem .9rem; border-radius: 14px; }
+      .compare-grid.compact .compare-card .vs-badge { font-size: .55rem; letter-spacing: .09em; padding: .24rem .6rem; margin-bottom: .55rem; }
+      .compare-grid.compact .compare-card h3 { font-size: .95rem; margin-bottom: .6rem; }
+      .compare-grid.compact .compare-steps { gap: .42rem; margin-bottom: .85rem; }
+      .compare-grid.compact .compare-steps li { font-size: .7rem; gap: .5rem; }
+      .compare-grid.compact .step-num { width: 17px; height: 17px; border-radius: 6px; font-size: .56rem; margin-top: 0; }
+      .compare-grid.compact .time-chip { font-size: .74rem; padding: .34rem .62rem; border-radius: 9px; gap: .3rem; }
+    </style>
+
+    <!-- ⛔ The wrapper's band and margin-top are BACK TO THEIR ORIGINAL VALUES on purpose: the
+         owner asked to reduce only the space BETWEEN the two columns ("the column center
+         padding") and then, when the frame's band went with it, "not the outter padding undo
+         it now". Only .compare-grid.compact's `gap` is reduced — do not touch this line. -->
+    <!-- the space between this card and the "What is Auto Face MoCap Pro" card above it —
+         owner, 2026-09-30: "redcue the padding in the center of what is auto face mocap pro and
+         the workflow cards main card". `margin-top` 2.4rem → 1rem; the card's OWN .6rem padding
+         is untouched (the owner explicitly protected that one earlier). -->
+    <div class="quickfog-outer" style="margin-top:1rem;padding:.6rem;">
+      <div class="compare-grid compact" style="margin:0;">
         <!-- Old way -->
         <div class="compare-card old reveal">
           <span class="vs-badge">The old way</span>
@@ -3157,7 +3289,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
                so the .meta line is gone and the h3 carries the meta's own margin-bottom
                (1.23rem) — otherwise the heading would sit .35rem off the list and the card
                would visibly tighten. -->
-          <h3 style="margin-bottom:1.23rem;">Manual Hand Keyframe Animation.</h3>
+          <h3>Manual Hand Keyframe Animation.</h3>
           <ul class="compare-steps">
             <li><span class="step-num">1</span><span>Manually Moving Rig and Key framing</span></li>
             <li><span class="step-num">2</span><span>Manual Graph EDITOR Adjustments Takes Hours</span></li>
@@ -3173,7 +3305,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
           <!-- heading replaced on the owner's word (2026-09-30): their text is the heading
                alone, so the .meta line goes here too — the two cards then read the same way
                — and the h3 takes the meta's margin-bottom, leaving the card's rhythm alone. -->
-          <h3 style="margin-bottom:1.23rem;">Record, Generate &amp; Adjust</h3>
+          <h3>Record, Generate &amp; Adjust</h3>
           <!-- steps replaced on the owner's word (2026-09-30): step 1 kept, 2 and 3 rewritten
                and a 4th added — their spelling and capitals verbatim ("AR-Kit", "Mocap"). -->
           <ul class="compare-steps">
@@ -3181,6 +3313,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
             <li><span class="step-num">2</span><span>Select AR-Kit Shapekey Character &amp; Click Apply Mocap</span></li>
             <li><span class="step-num">3</span><span>Want to change something in the mocap Use Real-Time Sliders</span></li>
             <li><span class="step-num">4</span><span>With Multi Character &amp; Multi Mocap Support</span></li>
+            <li><span class="step-num">5</span><span>Beginner Friendly Even a 1 day User can use it Easily</span></li>
           </ul>
           <span class="time-chip">~ 2 minutes</span>
         </div>
@@ -3218,7 +3351,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 
     <!-- Row 2: ARKit shape keys -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal rev" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Built on the 52 ARKit shape keys</h3>
@@ -3256,7 +3389,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 
     <!-- Row 4: Register Character -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal rev" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Multi-Character Support</h3>
@@ -3300,7 +3433,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 
     <!-- Row 6: Lipsync -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal rev" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Lipsync Adjustment Controls</h3>
@@ -3339,7 +3472,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 
     <!-- Row 8 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal rev" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Production ready filters &amp; auto cleanup</h3>
@@ -3379,7 +3512,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 
     <!-- Row 10 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal rev" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Real time viewport feedback while you record</h3>
@@ -3417,7 +3550,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 
     <!-- Row 12 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal rev" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Expression presets for every shot</h3>
@@ -3452,7 +3585,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 
     <div class="support-badges">
       <span class="support-badge reveal"><span class="pulse"></span>Avg. Response &lt; 14h</span>
-      <span class="support-badge reveal"><span class="pulse"></span>Fastest Response &lt; 5m</span>
+      <span class="support-badge reveal"><span class="pulse"></span>Fastest Response &lt; 5min</span>
     </div>
 
     <div class="quickfog-outer" style="padding:.6rem;">
