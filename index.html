@@ -2137,16 +2137,16 @@ html:not(.dark) .support-badge { color: #0096ff; }
    down. In an embed the header steps aside and the nav takes the top slot.
    ⛔ BOTH halves are required: pinning the nav to 0 with the header still present would
    hide it BEHIND the header (nav z-index 90, header 100) — worse than not doing it.
-   ⚠ RESTORED 2026-09-30 to the exact form the previous release carried (owner: "just get
-   the fix for the top bar not showing in the latest version from the old version and
-   don't change anything"). This IS the embedded top bar: on Superhive the nav row
-   (Workflow / Features / Support / Pricing / How to) is what shows at the top, and the
-   site's logo header is deliberately dropped here. */
-html.is-embedded .site-header { display: none; }
-html.is-embedded .quick-nav { top: 0; }
-/* the anchor offset has to shrink with the header — it was sized to clear header + nav */
-html.is-embedded section,
-html.is-embedded #features { scroll-margin-top: 62px; }
+   ⛔⛔ REMOVED AGAIN, and this time for the right reason: the owner's Superhive screenshot
+   shows ONLY these nav pills at the top of the iframe, and he reported it as "didn't work" —
+   i.e. the bar he wants inside the store embed is the SITE HEADER (logo + Latest badge + FAQ +
+   theme toggle), NOT this nav row. Keeping `display:none` on the header is exactly what
+   removes it. With the rule gone the embedded page is identical to the standalone one: the
+   header shows and the nav sits under it at its normal `top:65px`, so the 62px scroll-margin
+   override is wrong too (the normal 132px clears header + nav).
+   ⛔ If a future round wants the nav-only look back, both rules plus the 62px offset must
+   return TOGETHER — the nav is z-index 90 under the header's 100. */
+/* (no overrides — the embedded page keeps its header) */
 /* Warm 'Must Read' highlight next to FAQ */
 .quick-nav a.quick-warm {
   background: color-mix(in srgb, #f59e0b 14%, var(--card-bg));
