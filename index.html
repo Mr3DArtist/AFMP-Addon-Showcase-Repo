@@ -3880,14 +3880,37 @@ html:not(.dark) .card-fx > .fx-dots {
   top: 36px;
   left: 50%;
   transform: translateX(-50%);
-  width: 150%;
-  /* ⛔ SQUASHED VERTICALLY — owner: *"squash the image from the top and bottom sides a
-     bit"*. The WIDTH is what sets how wide the horizon is, so only the height moves:
-     750 → 520 flattens the ellipse into a gentler arc without narrowing it.
-     ⛔ The fade below is expressed in PERCENTAGES of this height, so it lands on the
-     same absolute pixels at 520 as it did at 750 — 22% is still ~1482 and 48% is still
-     ~1618. Changing the height does not move the fade; changing the TOP does. */
-  height: 520px;
+  /* ⛔⛔ SIZED OFF THE VIEWPORT, NOT OFF THE CONTAINER — this is what stops the arc
+     getting flat as the page narrows. Owner: *"it should not get flat when we lower the
+     wideness of the page"*.
+     What the eye reads as "flat" is the arc's RISE across the VISIBLE width, relative to
+     that width. For an ellipse the rise depends on how much of it you can see, so a
+     width stated as a % of a CONTAINER breaks the moment the container stops growing
+     with the viewport: `.container` is `min(1180px, 92%)`, so below ~1283px it tracks
+     the viewport but above it it is pinned at 1180. Measured across the range, `190%`
+     of the container gave a rise/width of **0.0756 at 1440px and 0.0462 at 832px — 39%
+     flatter**, which is exactly the store embed. At 123vw it is **0.0756 at every
+     width** from 414 to 1440.
+     ⛔ `aspect-ratio` alone did NOT fix this and is not the same bug: it keeps the
+     SHAPE of the whole ellipse constant, but if you can only see the middle 57% of it
+     the visible curve is still flatter than seeing 81% of it. Both were needed.
+     ⚠ `123vw` includes the scrollbar while the body does not, so the dome runs ~1%
+     wide — harmless here (it is a soft fade, not an edge that has to sit flush), unlike
+     the `.m3-wrap` strip where the same `vw`-vs-`%` difference broke a flush alignment.
+     ⚠ The dome's height is `36.2vw`; it still fits inside the hero up to roughly a
+     2990px viewport. Past that it would spill into the next section. */
+  width: 123vw;
+  /* ⛔⛔ `aspect-ratio`, NOT A FIXED `height`. Owner: *"why it's showing flat on
+     superhive"*. The curve of an ellipse is set by its proportions, not its size — and
+     the fixed heights here were 750 desktop / 360 under 900px while the WIDTH was going
+     UP to 190% at the narrow end. At the store's ~832px column that made the ellipse
+     about 4:1 against 3.4:1 at 1440, i.e. visibly flatter. Tying the height to the
+     width means the arc is the SAME SHAPE at every width, because the ratio IS the
+     shape.
+     ⛔ 3.4 is derived, not chosen: the desktop ellipse that looked right was 1770 x 520.
+     Change the ratio and you change how domed it looks at every width at once.
+     ⚠ The mask stops below are percentages of this height, so they scale with it. */
+  aspect-ratio: 3.4 / 1;
   border-radius: 100%;
   /* ⛔ behind the clip, wordmark and cards, but inside `.container`'s stacking
      context so it stays above the page background and the live canvas */
@@ -3926,10 +3949,24 @@ html:not(.dark) .card-fx > .fx-dots {
      the whole ellipse would come straight back. Same trap as `.fx-dots` in `#cardFx`. */
   -webkit-mask-image:
     linear-gradient(to bottom, #000 0%, #000 22%, transparent 48%),
-    linear-gradient(to right, transparent 0%, #000 20%, #000 86%, transparent 100%);
+    /* ⛔⛔ THE SIDE FADE HAS TO LAND ON THE VIEWPORT EDGE, NOT INSIDE IT.
+       Owner: *"fade it from the edges just like the ones you saw in the super hive
+       image"*. The previous stops (0 → 20 / 86 → 100) were percentages of the DOME, and
+       the dome is wider than the viewport — so at the moment `overflow-x: clip` cuts it
+       the dome was still **47% opaque on the left and 67% on the right**, which is a
+       hard edge with a soft gradient next to it. Exactly what the store screenshot
+       showed.
+       ⛔ 9.35% IS DERIVED, NOT TUNED. The dome is `123vw` and centred, so it overhangs by
+       (123-100)/2 = 11.5vw on each side, and 11.5/123 = **9.35%** of the dome's own width.
+       That fraction is the SAME at every viewport width, which is why this keeps working
+       as the page narrows. ⚠ Change `width: 123vw` above and this number must change with
+       it: `inset = (K-100)/2/K` for a dome `K`vw wide.
+       ⛔ The ramp is 9.35% → 26%, i.e. 16.65% of the dome = ~20vw of the viewport, so the
+       fade band is ~20% of the page on each side. */
+    linear-gradient(to right, transparent 9.35%, #000 26%, #000 74%, transparent 90.65%);
           mask-image:
     linear-gradient(to bottom, #000 0%, #000 22%, transparent 48%),
-    linear-gradient(to right, transparent 0%, #000 20%, #000 86%, transparent 100%);
+    linear-gradient(to right, transparent 9.35%, #000 26%, #000 74%, transparent 90.65%);
   -webkit-mask-composite: source-in;
           mask-composite: intersect;
 }
@@ -3945,7 +3982,11 @@ html:not(.dark) .card-fx > .fx-dots {
 /* ⛔ NARROW SCREENS: the arc would otherwise be a near-flat line and read as a stray
    band. Shorter and lower keeps it a horizon rather than a stripe. */
 @media (max-width: 900px) {
-  .hero-horizon { height: 360px; width: 190%; }
+/* ⛔⛔ NO WIDTH OVERRIDE HERE ANY MORE, AND ADDING ONE BACK RE-BREAKS IT.
+   This block used to set `width: 190%` under 900px, which is what made the store's
+   embed look flat — every step of the dome's width that is stated as a percentage has
+   to be a percentage of the VIEWPORT, and `vw` already tracks it. The `aspect-ratio` on
+   the base rule keeps the height in step, so there is nothing left to override here. */
 }
 </style>
 <script id="pricingGlow">
