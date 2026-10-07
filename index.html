@@ -4388,6 +4388,41 @@ html.dark #workflow .feature-text > .quickfog-outer::before {
   color: #8fd0ff;
 }
 
+/* ------------------------------------- 8. THE VISIBILITY GATE
+   Owner: *"it's still using 30% cpu and 20% gpu i want you to optimze it"*, then *"make it use
+   as little as possible"*.
+
+   ⛔⛔ MEASURED FIRST, AND IT EXONERATES EVERYTHING I HAD ALREADY OPTIMISED. With one suspect
+   disabled at a time, over three seconds each:
+       baseline (all on)                 1.356s of task time
+       particle field OFF                1.420s   ->  saved NOTHING
+       every backdrop-filter OFF         1.400s   ->  saved NOTHING
+       .fx-ring + .fx-dots + .fx-pool OFF 0.927s  ->  saved 0.429s, 32% of the page
+   ⛔ So the background field is NOT the cost any more — the batching took its script time to
+   26ms per 3 seconds and this proves it. The cost is the PER-CARD pattern layers, and the
+   reason is simply how many of them there are: **20 `.card-fx` cards, each with a ring and a
+   dot field, so 40 layers animating every frame — while exactly ONE card is on screen.**
+   Nineteen twentieths of that work is spent drawing something nobody can see.
+   ⛔⛔ WHY THE ANIMATIONS ARE EXPENSIVE RATHER THAN MERELY PRESENT. `dotWave` animates
+   `mask-position` and `fxOrbit` animates a `@property` angle feeding a conic-gradient. Neither
+   can be composited — a transform can, but these are not transforms — so both force the card
+   to be REPAINTED every frame, for the whole time they run.
+   ⛔⛔ ONLY `animation-name` IS TOGGLED, deliberately. Setting the `animation` shorthand here
+   would reset `animation-duration` and `animation-delay`, and the delay is what staggers the
+   wave across the section (`.card-fx:nth-of-type(2n) > .fx-dots { animation-delay: -.9s }`).
+   Same specificity plus later source order would have silently un-staggered every card and
+   made the whole section pulse in lockstep.
+   ⛔ The class is added by `#fxVisibility` at the end of the body, which watches every
+   `.card-fx` with an IntersectionObserver and a 200px `rootMargin`, so a card is live slightly
+   BEFORE it enters the viewport and nothing pops. This is the technique the `#cardFx` block
+   records as holding a full rollout to 2-12 live at any scroll position. */
+.card-fx > .fx-dots,
+.card-fx > .fx-ring {
+  animation-name: none;
+}
+.card-fx.fx-live > .fx-dots { animation-name: dotWave; }
+.card-fx.fx-live > .fx-ring { animation-name: fxOrbit; }
+
 /* ------------------------------------- 6. the hover COLOUR, on the rest of the cards
    Owner: *"the hover over color does not show also add that"*.
    ⛔⛔ THE FEATURES TEXT CARDS GOT THIS AND THE OTHERS DID NOT. When the pricing-card match
@@ -7990,14 +8025,14 @@ html.dark .hero-copy-card:hover {
      affect a smaller area, which is a different change. */
   var PUSH = 2.5;
   var SIZE_MIN = 1, SIZE_MAX = 3;
-  /* ⛔⛔ THE PERFORMANCE CEILINGS. Owner: *"can you optimize in a way that the quality stays
-     the same and uses very very little gpu and cpu"*, running on Superhive's iframe.
-     ⛔ Every value here sits ABOVE what a real window produces, so no normal view is changed;
-     they only stop the pathological case (an iframe sized to the whole document) from asking
-     for a 40-megapixel canvas and a 2000px link range. See `measure()`. */
-  var MAX_CANVAS_W = 2560;      // px of CSS width
-  var MAX_CANVAS_H = 2400;      // px of CSS height — above any real viewport, incl. 4K
-  var MAX_LINK_RANGE = 200;     // px — the reference gives ~160 at 1418x900
+  /* ⛔⛔ THERE IS NO MAXIMUM SIZE ANY MORE. Owner: *"just remove the max px you have set"*.
+     The three ceilings that were here (2560 wide, 2400 tall, a 200px link range) existed only
+     to stop a frame that is as tall as the document from asking for a 40-megapixel canvas.
+     The visible-band tracking does that job properly, so every dimension is now derived from
+     what the user can actually see and nothing is clamped.
+     ⛔ WHAT REPLACES THEM IS A REFUSAL TO BUILD, NOT A CEILING — see `rebuild()`. If the
+     frame is taller than the screen and the band is not known yet, the field is not sized,
+     not seeded and not drawn. That is the frame or two before the observer's first report. */
   /* ⛔ the alpha buckets for the link pass. Every link used to get its own `stroke()` and its
      own freshly built `rgba(...)` string — thousands of both per frame. They are now grouped
      into this many paths and stroked once each. 12 keeps the maximum alpha error at about
@@ -8170,10 +8205,12 @@ html.dark .hero-copy-card:hover {
   }
 
   function setupBandProbe() {
+    /* ⛔ FIRST, AND OUTSIDE THE try: this decides whether it is safe to build at all, so it
+       must not depend on the observer being available. */
+    frameIsTall = computeFrameIsTall();
     if (!window.IntersectionObserver || !document.body) return false;
     try {
       buildBandSentinels();
-      frameIsTall = computeFrameIsTall();
       bandObs = new IntersectionObserver(function (entries) {
         for (var i = 0; i < entries.length; i++) {
           var e = entries[i], idx = -1, k;
@@ -8220,23 +8257,21 @@ html.dark .hero-copy-card:hover {
        caps' values every real window is BELOW the ceiling and nothing changes; only the
        pathological case is bounded. ⚠ 2400px is deliberately generous — a 4K monitor's CSS
        viewport is around 2160 — so this is insurance, not a design decision. */
-    W = Math.min(window.innerWidth, MAX_CANVAS_W);
+    W = window.innerWidth;
     /* ⛔⛔ THE HEIGHT IS THE VISIBLE BAND WHEN THERE IS ONE, NOTHING ELSE.
        Before `applyBand()` has an answer the canvas still starts at a generous guess, but the
        owner's point was that a CAP was the wrong shape of fix: it made the wrong thing
        smaller instead of rendering the right thing. Once the band is known the height is
        exactly what the user can see, however tall the frame is. */
-    H = frameIsTall && bandReady ? cvH
-      : Math.min(window.innerHeight, MAX_CANVAS_H);
+    H = frameIsTall && bandReady ? cvH : window.innerHeight;
     canvas.width = Math.round(W * DPR);
     canvas.height = Math.round(H * DPR);
     canvas.style.width = W + 'px';
     canvas.style.height = H + 'px';
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    /* ⛔ the reference's range, but never more than MAX_LINK_RANGE — see the cap note above.
-       At a 1418x900 window the reference value is ~160px, well under the ceiling, so the
-       field is unchanged in every normal case. */
-    linkDist2 = Math.min((W / 7) * (H / 7), MAX_LINK_RANGE * MAX_LINK_RANGE);
+    /* ⛔ the reference's own range, with no ceiling: `H` is the BAND, not the frame, so at
+       a 20000px frame this is still the ~160px the reference produces at 1418x900. */
+    linkDist2 = (W / 7) * (H / 7);
     /* ⛔ the DOCUMENT's size, not the window's — this is what the field is seeded across */
     docW = Math.max(W, document.documentElement.scrollWidth || 0);
     docH = Math.max(H, document.documentElement.scrollHeight || 0);
@@ -8433,6 +8468,8 @@ html.dark .hero-copy-card:hover {
   function frame(t) {
     raf = requestAnimationFrame(frame);
     if (t - lastT < FRAME_MS - 2) return;          // under one 30fps beat — skip this frame
+    /* ⛔ the field has not been built yet because the band is unknown — see `rebuild()`. */
+    if (frameIsTall && !bandReady) return;
     var k = lastT ? (t - lastT) / (1000 / 60) : 1;
     if (k > 2.5) k = 2.5;
     lastT = t;
@@ -8475,6 +8512,13 @@ html.dark .hero-copy-card:hover {
   }
 
   function rebuild() {
+    /* ⛔⛔ NOTHING IS BUILT UNTIL THERE IS A VISIBLE BAND TO BUILD FROM.
+       In a frame taller than the screen, `window.innerHeight` is the whole document, so
+       sizing or seeding before the observer reports would produce the 20000px canvas and the
+       2000px link range all over again. Waiting costs the first frame or two and changes
+       nothing else: `frame()` refuses on the same condition, so nothing is drawn either.
+       ⛔ In a normal window `frameIsTall` is false and this never triggers. */
+    if (frameIsTall && !bandReady) return;
     measure();
     /* ⛔ the canvas has to be PLACED as well as sized when the frame is the whole page —
        `measure()` sets the backing store, this puts it at the visible band. In a normal window
@@ -8527,6 +8571,100 @@ html.dark .hero-copy-card:hover {
   rebuild();
   if (!visible) return;
   start();
+})();
+</script>
+
+<script>
+/* ⛔⛔ THE VISIBILITY GATE — the whole of the last optimisation.
+   Owner: *"it's still using 30% cpu and 20% gpu"*, then *"make it use as little as possible"*.
+
+   ⛔⛔ THE PAGE HAD 40 PATTERN ANIMATIONS RUNNING AND ONE CARD ON SCREEN. Measured: 20
+   `.card-fx` cards, each with a `.fx-ring` (an `fxOrbit` conic-gradient rotation) and a
+   `.fx-dots` (a `dotWave` mask-position slide). Disabling those three layer classes saved
+   0.429s of the 1.356s the page spent per three seconds — 32% — while disabling the particle
+   field saved nothing at all. Neither animation can be GPU-composited, so each one repaints
+   its card continuously for as long as it runs, on-screen or not.
+   ⛔ This toggles `animation-name` on the two layer classes through a single class on the
+   card. **Only `animation-name`** — the CSS gate would reset the durations and the stagger
+   delays if it used the `animation` shorthand, and the stagger is what stops the whole
+   section waving in lockstep.
+   ⛔ `rootMargin: 200px` so a card goes live slightly before it appears, and comes back the
+   moment it is near. That keeps the effect identical to the eye while the animations that are
+   actually running at any instant drop from 40 to a handful.
+   ⛔ `#cardFxLayers` has already run by the time this does — it is inline, earlier in the body
+   — so the `.card-fx` elements exist to observe. The observer is re-armed on nothing else: the
+   card set is fixed at load. */
+(function () {
+  'use strict';
+  if (!window.IntersectionObserver) {
+    /* ⛔ no observer, no gate: better to keep every card animating than to leave them all
+       frozen. This is the pre-gate behaviour and it is correct, only wasteful. */
+    return;
+  }
+  var cards = document.querySelectorAll('.card-fx');
+  if (!cards.length) return;
+  var io = new IntersectionObserver(function (entries) {
+    for (var i = 0; i < entries.length; i++) {
+      var e = entries[i];
+      if (e.isIntersecting) e.target.classList.add('fx-live');
+      else e.target.classList.remove('fx-live');
+    }
+  }, { root: null, rootMargin: '200px 0px 200px 0px', threshold: 0 });
+  for (var i = 0; i < cards.length; i++) io.observe(cards[i]);
+})();
+</script>
+
+<script>
+/* ⛔⛔ PAUSE EVERY INFINITE ANIMATION THAT IS OFF SCREEN — the whole page, not just the cards.
+   Owner: *"make it use as little as possible"*.
+
+   ⛔⛔ WHY THIS AND NOT A LIST OF SELECTORS. With the card layers already gated, disabling
+   EVERY remaining CSS animation still measured 0.172s of the 0.86s the page spends per three
+   seconds — 20%, and the largest identified cost left. Those animations are scattered: the
+   `btnShine` sheens on buttons and the offer band, the clip-bar fills, the offer band's and
+   price cards' dot waves, the arrow pulses. Enumerating them is a list that goes stale the
+   moment a card is added, which is the mistake that produced three separate hover fixes
+   earlier in this session. `document.getAnimations()` asks the browser instead.
+   ⛔⛔ ONLY `iterations: Infinity` ONES ARE TOUCHED, AND ONLY PAUSED, NEVER CANCELLED.
+   Pausing an infinite animation is seamless — it resumes exactly where it stopped and the
+   element is never in a different state than it was. A finite animation (an entrance, a
+   one-shot reveal) is left completely alone, because pausing one of those would delay it and
+   change when the element arrives. `pause()` rather than removing the name is also what keeps
+   this reversible: scrolling back resumes mid-cycle, with no jump.
+   ⛔ `rootMargin: 200px`, so anything about to appear is already running before it is seen.
+   ⛔ Safe with no IntersectionObserver or no `getAnimations`: the loop simply finds nothing and
+   every animation keeps running exactly as it does now. Nothing is left half-paused.
+   ⛔ The card layers are not in this set — the gate above removes their `animation-name`
+   entirely, so they do not appear in `getAnimations()` at all. The two do not overlap. */
+(function () {
+  'use strict';
+  if (!window.IntersectionObserver || !document.getAnimations) return;
+
+  function infinite(anim) {
+    if (!anim || !anim.effect || !anim.effect.getTiming) return false;
+    try { return anim.effect.getTiming().iterations === Infinity; } catch (e) { return false; }
+  }
+
+  var io = new IntersectionObserver(function (entries) {
+    for (var i = 0; i < entries.length; i++) {
+      var e = entries[i];
+      if (!e.target.getAnimations) continue;
+      var anims = e.target.getAnimations();
+      for (var j = 0; j < anims.length; j++) {
+        if (!infinite(anims[j])) continue;
+        try { e.isIntersecting ? anims[j].play() : anims[j].pause(); } catch (err) {}
+      }
+    }
+  }, { root: null, rootMargin: '200px 0px 200px 0px', threshold: 0 });
+
+  var all = document.getAnimations(), watched = [], i, el;
+  for (i = 0; i < all.length; i++) {
+    if (!infinite(all[i])) continue;
+    el = all[i].effect.target;
+    if (!el || watched.indexOf(el) >= 0) continue;
+    watched.push(el);
+    io.observe(el);
+  }
 })();
 </script>
 
