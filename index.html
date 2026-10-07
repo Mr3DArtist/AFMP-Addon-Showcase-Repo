@@ -4362,6 +4362,47 @@ html.dark #workflow .feature-text > .quickfog-outer::before {
   background-position: 120% 0, 0 0, 0 0 !important;
 }
 
+/* ⛔⛔ STOP THE BROWSER RENDERING SECTIONS THAT ARE OFF SCREEN.
+   Owner: *"i'm mearuning on superhive iframe embed"* — which is the measurement that mattered,
+   and every earlier one in this session was taken in a normal window and was therefore
+   answering the wrong question.
+
+   ⛔⛔ MEASURED INSIDE A 20000px-TALL FRAME, one suspect disabled at a time:
+       baseline                    0.982s of task time per 3 seconds
+       particle field OFF          1.061s   ->  saved NOTHING
+       every backdrop-filter OFF   0.943s   ->  saved 0.039s
+       every video OFF             0.956s   ->  saved 0.026s
+       EVERY ANIMATION OFF         0.489s   ->  saved 0.493s, HALF THE PAGE
+   The page runs 125 animations and carries 128 elements with a `backdrop-filter`; in a frame
+   as tall as the document, the compositor does that work for the whole 15000px whether anyone
+   can see it or not.
+
+   ⛔⛔ `content-visibility: auto` IS THE SAFE WAY TO STOP IT, AND PAUSING WAS NOT.
+   An earlier attempt paused animations through `document.getAnimations()` and it had to be
+   reverted: on the owner's machine it saved nothing and it stopped the animations working.
+   This does not touch a single animation. It tells the browser that an off-screen section can
+   be skipped entirely — style, layout and paint — and everything resumes exactly as it was
+   when the section scrolls back in. Nothing is paused, nothing restarts, no phase is lost,
+   because no animation is being manipulated at all: the browser simply does not render what
+   cannot be seen. It is the browser's own optimisation, which is why it cannot break a look.
+
+   ⛔ `contain-intrinsic-size: auto <fallback>` IS NOT OPTIONAL. Without it a skipped section
+   reports a height of ZERO, so the scrollbar and everything below it jump every time a
+   section leaves the screen. `auto` makes the browser remember each section's last real
+   height, so the placeholder is exact after the first pass and the fallback is only used
+   before a section has ever been rendered.
+   ⛔ Applied to the SECTIONS only, never to `body` or the header: the sticky header must not
+   be inside a skipped subtree, and neither must the particle field's band sentinels, which
+   are body children.
+   ⚠ `content-visibility` is Chromium and Safari 18+; where it is unsupported the declaration
+   is ignored and the page behaves exactly as it does now. */
+.section,
+.gallery-section,
+.catalog-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1600px;
+}
+
 /* ------------------------------------- 7. the two TIME CHIPS, onto the page theme
    Owner: *"also update these two to match the page theme"*, and on being asked which two:
    **the two time chips** — "~ 6 hours" and "~ 2 minutes".
@@ -8613,101 +8654,27 @@ html.dark .hero-copy-card:hover {
      now ONE gate, for the whole page. The `.fx-live` hook remains but no rule reads it; if a
      CSS gate is ever added back here it MUST use `animation-play-state`, never the name. -->
 
-<script>
-/* ⛔⛔ PAUSE EVERY INFINITE ANIMATION THAT IS OFF SCREEN — the whole page, not just the cards.
-   Owner: *"make it use as little as possible"*.
-
-   ⛔⛔ WHY THIS AND NOT A LIST OF SELECTORS. With the card layers already gated, disabling
-   EVERY remaining CSS animation still measured 0.172s of the 0.86s the page spends per three
-   seconds — 20%, and the largest identified cost left. Those animations are scattered: the
-   `btnShine` sheens on buttons and the offer band, the clip-bar fills, the offer band's and
-   price cards' dot waves, the arrow pulses. Enumerating them is a list that goes stale the
-   moment a card is added, which is the mistake that produced three separate hover fixes
-   earlier in this session. `document.getAnimations()` asks the browser instead.
-   ⛔⛔ ONLY `iterations: Infinity` ONES ARE TOUCHED, AND ONLY PAUSED, NEVER CANCELLED.
-   Pausing an infinite animation is seamless — it resumes exactly where it stopped and the
-   element is never in a different state than it was. A finite animation (an entrance, a
-   one-shot reveal) is left completely alone, because pausing one of those would delay it and
-   change when the element arrives. `pause()` rather than removing the name is also what keeps
-   this reversible: scrolling back resumes mid-cycle, with no jump.
-   ⛔ `rootMargin: 200px`, so anything about to appear is already running before it is seen.
-   ⛔ Safe with no IntersectionObserver or no `getAnimations`: the loop simply finds nothing and
-   every animation keeps running exactly as it does now. Nothing is left half-paused.
-   ⛔ The card layers are not in this set — the gate above removes their `animation-name`
-   entirely, so they do not appear in `getAnimations()` at all. The two do not overlap. */
-(function () {
-  'use strict';
-  if (!window.IntersectionObserver || !document.getAnimations) return;
-
-  function infinite(anim) {
-    if (!anim || !anim.effect || !anim.effect.getTiming) return false;
-    try { return anim.effect.getTiming().iterations === Infinity; } catch (e) { return false; }
-  }
-
-  var io = new IntersectionObserver(function (entries) {
-    for (var i = 0; i < entries.length; i++) {
-      var e = entries[i];
-      if (!e.target.getAnimations) continue;
-      var anims = e.target.getAnimations();
-      for (var j = 0; j < anims.length; j++) {
-        if (!infinite(anims[j])) continue;
-        try { e.isIntersecting ? anims[j].play() : anims[j].pause(); } catch (err) {}
-      }
-    }
-  }, { root: null, rootMargin: '200px 0px 200px 0px', threshold: 0 });
-
-  /* ⛔⛔ THE COLLECTION RUNS MORE THAN ONCE, AND THAT IS THE WHOLE FIX.
-     It used to run once, at parse time. MEASURED: that left only 30 of 122 infinite
-     animations paused, and the 92 still running included **23 off-screen `dotWave` and 19
-     off-screen `fxOrbit`** — the card layers this gate exists for.
-     ⛔⛔ WHY THEY WERE MISSED: `#cardFxLayers` builds the cards on `DOMContentLoaded`, which
-     has NOT fired while the body is still being parsed. So at parse time the `.card-fx` cards
-     — and therefore their `.fx-dots` and `.fx-ring` animations — did not exist yet, and
-     `document.getAnimations()` could not report them. Only the animations created by markup
-     that was already parsed (the clip bars, the pulses) were observed.
-     ⛔ `watched` makes re-running free: an element already observed is skipped, and
-     `io.observe()` on a new element fires its initial callback immediately, so anything found
-     late is paused in the same tick.
-     ⛔ Three passes because animated elements appear at three different times: on
-     `DOMContentLoaded` (the card layers), on `load` (anything waiting for a resource), and
-     once more on a timer for anything a script adds afterwards. */
-  var io, watched = [];
-
-  function collect() {
-    var all = document.getAnimations(), i, el;
-    for (i = 0; i < all.length; i++) {
-      if (!infinite(all[i])) continue;
-      el = all[i].effect.target;
-      if (!el || watched.indexOf(el) >= 0) continue;
-      watched.push(el);
-      io.observe(el);
-    }
-  }
-
-  io = new IntersectionObserver(function (entries) {
-    for (var i = 0; i < entries.length; i++) {
-      var e = entries[i];
-      if (!e.target.getAnimations) continue;
-      var anims = e.target.getAnimations();
-      for (var j = 0; j < anims.length; j++) {
-        if (!infinite(anims[j])) continue;
-        try { e.isIntersecting ? anims[j].play() : anims[j].pause(); } catch (err) {}
-      }
-    }
-  }, { root: null, rootMargin: '200px 0px 200px 0px', threshold: 0 });
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', collect);
-  else collect();
-  window.addEventListener('load', collect);
-  /* ⛔ MEASURED: after the two standard passes, 48 infinite animations were still running off
-     screen — the clip-bar layers most of all, 14 of them, because the clip-bar script builds
-     its elements AFTER the videos report their duration rather than during parsing. A later
-     pass catches them for one `getAnimations()` call. `watched` makes each re-run a no-op for
-     everything already observed. */
-  setTimeout(collect, 1500);
-  setTimeout(collect, 4000);
-})();
-</script>
+<!-- ⛔⛔ THE ANIMATION PAUSE GATE IS REMOVED. Owner: *"still the same not a bit of
+     it was optimzied and also the animations are not working"*.
+     This was a page-wide IntersectionObserver that paused every infinite CSS animation whose
+     element was off screen, via `document.getAnimations()`. It measured well in a headless
+     run (1.356s -> 0.481s of task time per three seconds) and it is gone anyway, for the
+     reason that matters more: on the owner's machine it saved nothing AND it stopped the
+     animations working. An optimisation that costs behaviour without buying speed is a
+     regression, so it is deleted rather than tuned.
+     ⛔ Do NOT re-add a gate here without first reproducing a saving on the owner's own
+     machine. The headless numbers in this session's notes are real, but they were taken in
+     headless Chrome, whose compositing costs are not the owner's.
+     ---- what is kept, because none of it changes what the page looks like ----
+       the batched particle field (one fill for all dots, one stroke per alpha bucket)
+       the visible-band tracking, for frames taller than the screen
+       no max-size caps, with a refusal to build before the band is known instead
+     ---- what was here, for reference ----
+       (function () {
+         if (!window.IntersectionObserver || !document.getAnimations) return;
+         // pause every infinite animation whose element is off screen, play it on return
+         // collected on DOMContentLoaded + load + two timers, watched[] deduping re-runs
+       })(); -->
 
 <!-- ⛔ REMOVED: the `#fxParticles` script. It built a <canvas> per card, seeded it on the
      10px dot grid, animated it with requestAnimationFrame, phase-locked its mask to the
