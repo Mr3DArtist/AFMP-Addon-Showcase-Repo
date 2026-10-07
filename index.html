@@ -188,14 +188,68 @@ section, #features, #character { scroll-margin-top: 132px; }
 /* ============================================================
    1. STICKY HEADER
    ============================================================ */
-.site-header {
+/* ⛔⛔ `header.site-header`, NOT `.site-header` — THE ELEMENT SELECTOR IS LOAD-BEARING.
+   `.card-fx { position: relative }` (in the `#cardFx` block, further down the document)
+   ALSO matches this header, because the header is one of the `#cardFxLayers` TARGETS.
+   Both selectors are (0,1,0), so **source order decided** and `.card-fx` won — which
+   silently turned `position: sticky` into `relative` and the top bar scrolled away with
+   the page. Adding the `header` element selector makes this (0,1,1) and it wins outright,
+   without putting a `.site-header` exception inside the `.card-fx` rule — a named
+   exception there is exactly the pattern that broke the page-wide ring rollout.
+   ⚠ Symptom to recognise: `getComputedStyle` reports `relative` for an element whose only
+   own rule says `sticky`. `CSS.getMatchedStylesForNode` names the second rule. */
+header.site-header {
   position: sticky; top: 0; z-index: 100;
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  /* ⛔ ALL FOUR CORNERS, owner: *"from top left right corners too"*. The first pass
+     rounded only the bottom two, on the reasoning that the top ones sit on the viewport
+     edge — they do, so rounding them shows a small notch of page content in each top
+     corner while the bar is at rest. That is the requested look, not a defect.
+     ⛔ `border-bottom` follows the radius, so the hairline still curves with the shape
+     rather than running straight past it. */
+  background: color-mix(in srgb, var(--bg) 50%, transparent);
   -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
+  border-radius: 20px;
   transition: box-shadow .3s ease, background .45s ease;
 }
 .site-header.scrolled { box-shadow: 0 14px 34px -22px color-mix(in srgb, var(--ink) 40%, transparent); }
+
+/* ⛔⛔ THE WHITE BEHIND THE ROUNDED TOP CORNERS — A SEPARATE ELEMENT, NOT A PSEUDO.
+   Owner: *"make top left right corners place that's left after rounding make it full white"*.
+   Rounding the top corners leaves a small notch at each side of the viewport where the
+   page shows through, because the gap is OUTSIDE the header's own 20px radius.
+   ⛔ A `::before`/`::after` on the header CANNOT fill it. Inside a stacking context the
+   element's own background and border paint FIRST, so every descendant — a `z-index:-1`
+   pseudo included — lands on TOP of them; the white would cover the whole bar instead of
+   just the notches. The white has to come from BEHIND the header, so it is a sibling.
+
+   ⛔⛔ IT PAINTS THE NOTCH SHAPE, NOT A RECTANGLE. A white rectangle the size of the bar
+   was the first attempt and it is WRONG: the header's background is 50% alpha, so it would
+   composite over white instead of over the page and `backdrop-filter` would blur white —
+   the glass would turn into a flat washed bar, everywhere, not just at the corners.
+   The notch at the top-left is exactly `{ x<20, y<20, distance from (20,20) > 20 }`, so a
+   20x20 tile holding one radial gradient — transparent inside 20px, white outside — IS the
+   notch. One tile per corner, and every other pixel of this element stays transparent.
+   ⛔ 20px here, `20px` in `header.site-header { border-radius }`, and `20px` in both
+   gradient stops are THE SAME NUMBER. Change the radius and all three move together.
+
+   ⛔ Only 20px tall, so the bar's own height is irrelevant and nothing needs measuring —
+   the bar can wrap to any height it likes without leaving a white band underneath.
+   ⛔ `fixed`, not `absolute`, so it tracks the sticky header at every scroll offset.
+   `z-index: 99` is deliberately one below the header's `100` — and both sit above
+   `#interactiveBg` at `-2`, so the particle field does not drift through the notches. */
+.topbar-backing {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 20px;
+  background-image:
+    radial-gradient(circle 20px at 20px 20px, transparent 20px, #fff 20px),
+    radial-gradient(circle 20px at 0    20px, transparent 20px, #fff 20px);
+  background-size: 20px 20px, 20px 20px;
+  background-position: left top, right top;
+  background-repeat: no-repeat, no-repeat;
+  z-index: 99;
+  pointer-events: none;
+}
 .header-inner {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   height: 68px;
@@ -1898,6 +1952,21 @@ html:not(.dark) .support-badge { color: #0096ff; }
   align-items: center;
   column-gap: clamp(1rem, 3vw, 2.6rem);
 }
+/* ⛔⛔ WHITE, ON THE BAND, DARK THEME ONLY. Owner: *"make this white 'Special Offer'"*.
+   `.so-kicker` is the "SPECIAL OFFER" line, and it appears in exactly two places — both
+   `.offer-band`, the one in the page flow and the second further down — so scoping to the
+   band covers every occurrence with no second edit to forget.
+   ⛔⛔ IT CANNOT JUST BE `color: #fff`, BECAUSE THE BAND HAS NO FILL. Its background is two
+   azure `radial-gradient` glows sitting on the PAGE (~:1891, ~:1922) — the opaque fill was
+   removed on the owner's own word earlier. Over the light theme's pale page, white text
+   there would be invisible. The rule below carries a LITERAL `#0096ff`, not a theme-aware
+   token, so it does not adapt on its own; the light theme is therefore left untouched and
+   white is added only under `html.dark`, where the band sits on a dark page and white is the
+   contrast the owner is after.
+   ⛔ `opacity: .85` on the base `.so-kicker` is left alone: over a dark band 85% white still
+   reads as white, and raising it would brighten the light theme too, which was not asked. */
+html.dark .offer-band .so-kicker { color: #fff; }
+
 .offer-band .so-kicker {
   position: absolute; top: 0; left: 0; right: 0;
   /* 2x the base .78rem (owner, 2026-09-29). ⛔ `line-height` is pinned deliberately:
@@ -2000,6 +2069,17 @@ html:not(.dark) .support-badge { color: #0096ff; }
    the 1px its box gains is invisible. */
 .offer-band .coupon-hint { position: static; transform: none; margin-top: .35rem; padding-top: .08em; white-space: nowrap; }
 .offer-band .so-valid { white-space: nowrap;
+  /* ⛔⛔ NO BORDER — owner: *"remove the ouline from this 'Valid until December 31st, 2026'"*.
+     ⛔ MEASURED BEFORE CHANGING: of the two things that can draw an edge here, only ONE is
+     visible. `border` computes to `1px solid rgba(255,255,255,.18)` — a real line — while
+     `outline` computes to `1px solid rgba(0,0,0,0)`, already fully transparent and painting
+     nothing. So "the outline" the owner is pointing at is the BORDER; removing `outline`
+     would have been a no-op on an invisible property.
+     ⛔ The pill keeps its `background` (12% white) and its 999px radius, so it is still a
+     pill — it just has no drawn edge.
+     ⛔ The page-wide hover ring is switched off separately, below, because `.so-valid` is in
+     the `ringOut` lists (~:3004) and would otherwise still grow an outline on hover. */
+  border: 0 !important;
   padding-top: calc(.35rem + .04em); padding-bottom: calc(.35rem - .04em);
   /* ⛔ was inheriting `text-align: start` from .ob-mid, so this pill's text hugged
      its left edge while the hint above it was centred — the pill and the hint are the
@@ -2258,8 +2338,13 @@ html:not(.dark) .support-badge { color: #0096ff; }
 .must-read{display:inline-flex;align-items:center;font-size:.6rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:.14rem .4rem;border-radius:999px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff}
 @media (max-width:620px){.version-badge{display:none}.vb-changelog{display:none}}
 
-/* Top bar — black (dark theme only) */
-.dark .site-header{background:#000 !important;border-bottom:1px solid rgba(255,255,255,.16)}
+/* Top bar — dark theme. ⛔ THIS RULE IS WHY THE FIRST 50% ATTEMPT DID NOTHING: it is
+   `!important`, so the plain `.site-header` rule above loses to it whatever order they
+   are in. The opacity has to be changed HERE, not there.
+   ⛔ 100% -> 50% on the owner's word. `color-mix` against `transparent`, so the 50% is
+   the alpha; the element's own `backdrop-filter: blur(16px)` is what keeps the bar
+   readable at half opacity, and it is untouched. */
+.dark .site-header{background:color-mix(in srgb, #000 50%, transparent) !important;border-bottom:1px solid rgba(255,255,255,.16)}
 .dark .site-header .brand,
 .dark .site-header .faq-btn,
 .dark .site-header .version-badge .vb-version{color:#fff}
@@ -2831,7 +2916,68 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   background:linear-gradient(105deg,transparent 45%,rgba(255,255,255,.18) 45%,rgba(255,255,255,.18) 60%,transparent 60%);
   transform:translateX(-170%) skewX(-20deg);animation:btnShine 3s linear infinite;
 }
+.offer-band .so-valid:hover,
+.so-valid:hover {
+  /* ⛔ the other half of "remove the outline": `.so-valid` is in the page-wide `ringOut`
+     lists, so without this it still grows an animated outline whenever it is hovered. */
+  animation: none !important;
+  outline: 0 !important;
+  outline-color: transparent !important;
+  outline-offset: 0 !important;
+  transform: none !important;
+}
+
 @media (prefers-reduced-motion:reduce){.hero-copy-card::before{animation:none}}
+
+/* ⛔⛔ THE HERO COPY CARD, TRANSPARENT. Owner: *"add the patren system to this card too with
+   card transparancy"* — the heading is "Facial Motion Capture Made Super Easy!".
+   ⛔⛔ WHAT MAKES IT READ AS A CARD IS THE GLASS, NOT THE BACKGROUND — the same finding as
+   the features text cards and the Shapekeys cards. Measured: `background-color` here is
+   `var(--card-bg)`, seven percent white, while the page-wide `.quickfog-outer` rule (~:2395)
+   adds a 30px backdrop blur with 1.8x saturation and four inset white highlights on top of
+   it. Stripping the background alone leaves the card completely intact, so all four
+   declarations go together.
+   ⛔ `overflow: hidden` STAYS (line above): the card's sheen is a skewed bar that paints
+   outside the rounded corners without it. The `.card-fx` layers are `inset: 0` inside the
+   card, so clipping does not touch them, and nothing in this card overhangs.
+   ⛔ The sheen on `::before` is left alone — it is a separate effect the owner asked for
+   earlier, and `#cardFxLayers` injects `.fx-dots`/`.fx-pool`/`.fx-ring` as real spans
+   precisely because both pseudos here are already spoken for.
+   ⛔⛔ THE BLUR GOES ON THE ELEMENT ITSELF, NOT ON A PSEUDO — AND THAT IS FORCED, NOT CHOSEN.
+   On the features text cards the same blur lives on `::before` because that layer also has to
+   carry an `opacity`. Here BOTH pseudos are spoken for: `::before` is the sheen, and `::after`
+   is deliberately `content: none !important` because re-enabling it "would bring the gloss
+   back with it" (see the note above). There is nothing left to put a layer on, and the
+   element works anyway because there is no `opacity` in play — the reason the features card
+   could not use the element is that `opacity` is a compositing group and would have dimmed
+   the blur with the fill. No opacity here, so no problem.
+   ⛔⛔ A `backdrop-filter` PAINTS A VISIBLE BOX EVEN WITH A FULLY TRANSPARENT BACKGROUND —
+   that is the same fact that once made a "transparent" accordion bubble show a rectangle.
+   Here it is the effect being asked for: the fill stays transparent, the frost is the only
+   thing the layer contributes, and it follows `border-radius` so it is a rounded panel.
+   ⛔⛔ 1.5px — THE EXACT VALUE ALREADY ON THE FEATURES TEXT CARDS. Owner, after seeing 6px:
+   *"it's too much add exact amount used before"*. "Before" is `#workflow .feature-text >
+   .quickfog-outer::before` (~:3870), which is where this blur first appeared and which was
+   walked down to 1.5px over two separate requests. Copying that number rather than picking a
+   new one is the ask; my 6px was justified on area ("six times the size, so 1.5px would be
+   invisible") and that reasoning was wrong — the owner is comparing the two cards directly,
+   and a different frost on each is the thing they noticed.
+   ⛔ `saturate(1.8)` is still NOT restored — the request was blur, and the features card has
+   blur alone. Matching means matching both ways.
+   ⛔ It blurs what is BEHIND the card only. The dot field, the pool and the ring are real
+   children painted on top, so the pattern stays sharp — which is the point of having them as
+   spans rather than as the card's own background.
+   ⚠ A `backdrop-filter` also creates a stacking context and a containing block. Nothing in
+   this card is `position: fixed`, so neither matters here.
+   ⚠ Re-measure contrast with `_hero_card_check.js`: the frost softens the dome behind the
+   heading, and the heading's glow is what carries the contrast at the dome's fade. */
+.hero-copy-card {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(1.5px) !important;
+          backdrop-filter: blur(1.5px) !important;
+}
 .hero-center h1{font-size:clamp(1.6rem,3.2vw,2.7rem)!important;padding:0 0 .5rem!important}
 .hero-center .hero-sub{font-size:clamp(.8rem,1.3vw,.95rem)!important;margin:0 auto!important;max-width:52ch!important}
 .hero-center .hero-note{font-size:.75rem!important}
@@ -3266,7 +3412,9 @@ html.dark .price-card::after {
   content: '';
   position: absolute; inset: 0; border-radius: inherit;
   pointer-events: none; z-index: 0;
-  background-image: radial-gradient(circle, rgba(255, 255, 255, .38) 1.1px, transparent 1.5px);
+  /* ⛔ raised with `.card-fx > .fx-dots` (*"make the patern brighter"*) — see the note there.
+     The two must stay the same value, and this pool must ALSO match `::before` below. */
+  background-image: radial-gradient(circle, rgba(0, 150, 255, .95) 1.1px, transparent 1.5px);
   background-size: 10px 10px;
   background-repeat: repeat;
   background-position: 0 0;
@@ -3299,7 +3447,7 @@ html.dark .price-card::after {
   content: '';
   position: absolute; inset: 0; border-radius: inherit;
   pointer-events: none; z-index: 0;
-  background-image: radial-gradient(circle, rgba(255, 255, 255, .45) 1.1px, transparent 1.5px);
+  background-image: radial-gradient(circle, rgba(255, 255, 255, .82) 1.1px, transparent 1.5px);
   background-size: 10px 10px;
   /* same wave as the cards — see `@keyframes dotWave`. The only difference is the
      corner: this band's wash is anchored TOP-LEFT, so the fade is `0% 0%`. */
@@ -3317,7 +3465,7 @@ html.dark .price-card::after {
   content: '';
   position: absolute; inset: 0; border-radius: inherit;
   pointer-events: none; z-index: 0;
-  background-image: radial-gradient(circle, rgba(255, 255, 255, .45) 1.1px, transparent 1.5px);
+  background-image: radial-gradient(circle, rgba(255, 255, 255, .82) 1.1px, transparent 1.5px);
   background-size: 10px 10px;
   background-repeat: repeat;
   background-position: 0 0;
@@ -3332,7 +3480,7 @@ html.dark .price-card::after {
    invert instead of the mask moving */
 html:not(.dark) .offer-band::before,
 html:not(.dark) .offer-band::after {
-  background-image: radial-gradient(circle, color-mix(in srgb, #062a44 42%, transparent) 1.1px, transparent 1.5px);
+  background-image: radial-gradient(circle, color-mix(in srgb, #062a44 78%, transparent) 1.1px, transparent 1.5px);
 }
 
 /* ============ 6. INTERACTIVE BACKGROUND — replaces the SVG topology tile ============
@@ -3352,6 +3500,14 @@ html:not(.dark) .offer-band::after {
   width: 100%; height: 100%;
   z-index: -2; pointer-events: none;
   display: block;
+  /* ⛔ 90%, on the owner's word (asked for 50% first, then 90%). ⛔ It sits on the ELEMENT, not on the colours inside
+     `particle-field.js` — halving the four colours there would have to be done four
+     times and would fight the per-link alpha falloff, whereas one `opacity` scales the
+     whole field including that falloff and the cursor highlight together.
+     ⚠ It is a compositor property on a fixed full-viewport layer, so it is free; and
+     because the canvas is transparent (clearRect, not a black fill) it blends with the
+     page's gradient rather than dimming a black rectangle. */
+  opacity: .9;
 }
 /* ============ 7. THE BRAND TITLE (owner: "create a big text 'Auto Face Mocap
    Pro' Right below the Top banner and make it a gradient text") ============
@@ -3372,16 +3528,20 @@ html:not(.dark) .offer-band::after {
   text-align: center;
   max-width: 1180px;
   margin: 0 auto;
-  /* ⛔ PADDING ON BOTH SIDES NOW, on the owner's word (*"add a bit of padding top and
-     bottom"*). It was top-only before, and that was deliberate: the line box already
-     carries ~13px of ascent above the cap height and ~13px of descender room below the
-     baseline, and `.hero-cards` adds its own 16px `margin-top`, so the bottom was
-     already getting ~30px of visual air for free while the top got 13px. The bottom
-     value is therefore deliberately SMALLER than the top — equal numbers would not
-     look equal.
-     ⚠ These are tuned against the type size below. If the font-size changes again,
-     re-measure with `_hero_layout.js`; the two move together. */
-  padding: 6rem 4% 2.25rem;
+  /* ⛔⛔ `5.375rem / 0.625rem` IS 96px / 10px, AND THE TWO ARE 106px TOGETHER — THE SAME AS
+     `6rem / 0` WAS. Owner, one step on from *"move the text close to the bottom cards"*:
+     *"a tiny bit up"*.
+     ⛔⛔ THAT PAIRING IS THE WHOLE POINT. Moving the wordmark up by taking 10px off the TOP
+     padding alone would also shorten the box, so `.hero-cards` would rise 10px with it and
+     the gap the owner is looking at would not change at all — the text and the cards would
+     both slide up and the composition would silently lose 10px of height. Adding the same
+     10px to the BOTTOM keeps the box height at 202px, so the cards stay exactly where they
+     are (measured: 1676 before and after) and only the glyphs move.
+     ⛔ This is the "one control moves one thing" rule: the thing asked for is the TEXT's
+     position, so the cards are compensated rather than dragged along.
+     ⛔ Net effect on the number that was tuned last: the glyph-to-card gap goes 16px -> 26px.
+     ⚠ If this is tuned again, keep `top + bottom = 106px` or the cards move. */
+  padding: 5.375rem 4% 0.625rem;
 }
 /* ⛔⛔ THE WORDMARK ASSEMBLY IS REMOVED (owner: *"remove the text animation"*).
    The <canvas class="brand-title-fx">, the <script src=brand-assemble.js> and this
@@ -3475,7 +3635,7 @@ html.dark .price-card::before {
   content: '';
   position: absolute; inset: 0; border-radius: inherit;
   pointer-events: none; z-index: 0;
-  background-image: radial-gradient(circle, rgba(255, 255, 255, .38) 1.1px, transparent 1.5px);
+  background-image: radial-gradient(circle, rgba(0, 150, 255, .95) 1.1px, transparent 1.5px);
   background-size: 10px 10px;
   /* ⛔⛔ A WAVE, NOT A BLINK — owner, 2026-10-07: *"make it aniamte in wave"*,
      then *"instead of blinking"*. The blink is gone.
@@ -3686,7 +3846,17 @@ html:not(.dark) .hero-copy-card .hero-sub { text-shadow: none; }
    prompt"*); doing so again needs the `.fx-abs` snapshot described at the end of this
    block, because at that scope it pulls `.pop-badge` and the hero badges out of
    position. Do not widen `TARGETS` without reading that note. */
-.card-fx > *:not(.fx-dots):not(.fx-ring) { position: relative; z-index: 1; }
+/* ⛔⛔ `.fx-abs` IS EXCLUDED, AND `z-index: 2` IS DELIBERATELY *NOT* SET ON IT.
+   The note at the end of this block suggests `el.classList.add('fx-abs')` PLUS a
+   `.card-fx > .fx-abs { z-index: 2 }` rule. For the hero clip that rule would be a
+   REGRESSION, and measurement is why: those twelve children already carry their own
+   z-indexes — `.hm-nav` at 7, `.hm-tips` at 6, `.hm-dots` at 5, the badges at 4,
+   `.clip-load` at 4, `.clip-bar` at 3, `.play-btn` at 2, the video at 1 — and flattening
+   every one of them to 2 would put the navigation arrows BEHIND the video. Exempting them
+   from `position: relative; z-index: 1` and leaving their own stacking alone is what keeps
+   the clip working; they all already sit above the dot field's `z-index: 0`, so the layers
+   still order correctly with no further rule. */
+.card-fx > *:not(.fx-dots):not(.fx-ring):not(.fx-pool):not(.fx-abs) { position: relative; z-index: 1; }
 
 /* ---------------------------------------------------------- the dot pattern
    ⛔ SAME FIELD AND SAME WAVE as `html.dark .price-card::before` — the two must stay
@@ -3706,7 +3876,20 @@ html:not(.dark) .hero-copy-card .hero-sub { text-shadow: none; }
    image ends and writes these two, so the fade sits in the empty band instead.
    ⛔ Both fall back to the text-only anchor, so a card with no image is unchanged. */
 .card-fx > .fx-dots {
-  background-image: radial-gradient(circle, rgba(255, 255, 255, .38) 1.1px, transparent 1.5px);
+  /* ⛔⛔ ONE ALPHA, THREE PLACES — CHANGE ALL OF THEM TOGETHER.
+     Owner: *"make the patern brighter"*. The dot colour lives here for the dark theme, in
+     the `html:not(.dark)` override just below for the light one, and again as a string in
+     `#fxParticles` (`colourFor()`) where the hover field draws the SAME dots to canvas.
+     ⛔ Move one and not the others and the pattern changes brightness the moment the pointer
+     arrives — the cross-fade is only invisible while both layers are the same colour.
+     ⛔ `.38` -> `.58` dark and `.30` -> `.48` light, both raised by the same proportion rather
+     than set to one shared value: white and the dark navy sit on opposite sides of their
+     backgrounds, so equalising them would make one of the two themes lighter than asked for.
+     ⛔ This is a SHARED layer — the Creating Shapekeys cards and the top bar carry the same
+     `.fx-dots`, so all of them brighten together. That is the "linking" the owner asked for
+     (*"use linking bcz if i ask you to update later it will update on the entire page"*). If
+     only the features section should change, scope this rule to `#workflow`. */
+  background-image: radial-gradient(circle, rgba(0, 150, 255, .95) 1.1px, transparent 1.5px);
   background-size: 10px 10px;
   -webkit-mask-image:
     radial-gradient(130% var(--fx-vh, 95%) at var(--fx-ax, 10%) var(--fx-ay, 0%), #000, transparent 70%),
@@ -3719,7 +3902,81 @@ html:not(.dark) .hero-copy-card .hero-sub { text-shadow: none; }
   animation: dotWave 3.6s linear infinite;
 }
 html:not(.dark) .card-fx > .fx-dots {
-  background-image: radial-gradient(circle, rgba(0, 60, 130, .30) 1.1px, transparent 1.5px);
+  /* ⛔ the light theme's brand azure — see the note on `.card-fx > .fx-dots` above */
+  background-image: radial-gradient(circle, rgba(11, 79, 143, .85) 1.1px, transparent 1.5px);
+}
+
+/* ------------------------------------------------------------ the cursor pool
+   Owner: *"implement the exact same as in pricing cards"*.
+
+   ⛔⛔ THIS IS `html.dark .price-card::after` VERBATIM, and it replaces a drifting canvas.
+   The whole effect is now a PLAIN SPAN, exactly as the pricing card does it: the same dot
+   grid, the same `200px circle ... transparent 74%` mask on `--mx`/`--my`, the same
+   `opacity: .75`, the same `animation: none`. No canvas, no `requestAnimationFrame`, no
+   script at all — the `#fxParticles` block that built and animated one is DELETED.
+   ⛔⛔ WHAT WAS DIFFERENT, and why "close" was not close enough:
+        pricing `::after`            this layer, before
+        static CSS dot grid          a canvas, redrawn every frame
+        opacity: .75                 opacity: 1
+        no animation                 every dot drifting ~10px/s
+   Three visible differences in one layer, and the drift is the one that reads: the pricing
+   card's pool is a still field that appears under the pointer, so dots that wander make it a
+   different effect however well the colours match.
+   ⛔ THE ONLY VALUE THAT IS NOT COPIED IS THE FALLBACK ANCHOR — `10% 0%` here against the
+   price card's `88% 0%`. That is not a deviation: the anchor matches the card's own corner
+   field, exactly as the pricing card's pool fallback (`88% 0%`) matches its own `::before`
+   (`130% 95% at 88% 0%`). Top-right there, top-left here, same relationship. Copying `88% 0%`
+   literally would park the pool in the corner this card's fade does not use.
+   ⛔ `--mx`/`--my` need no listener: `#pricingGlow` (~:4560) already sets both on every
+   `.card-fx`, which is what these cards are.
+   ⛔ DARK ONLY, as `html.dark .price-card::after` is. The pricing block has no light-theme
+   pool, so adding one would be the one place this card differs from it.
+   ⛔ `z-index: 0`, the same as `.fx-dots`, so the pool sits BEHIND the heading and copy —
+   the pricing card has the same layer order. That holds because the `#cardFx` content rule
+   excludes `.fx-pool` by name. */
+html.dark .card-fx > .fx-pool {
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none; display: block;
+  z-index: 0;
+  background-image: radial-gradient(circle, rgba(0, 150, 255, .95) 1.1px, transparent 1.5px);
+  background-size: 10px 10px;
+  background-repeat: repeat;
+  background-position: 0 0;
+  -webkit-mask-image: radial-gradient(200px circle at var(--mx, 10%) var(--my, 0%), #000, transparent 74%);
+          mask-image: radial-gradient(200px circle at var(--mx, 10%) var(--my, 0%), #000, transparent 74%);
+  opacity: .75;
+  animation: none;
+}
+/* ⛔⛔ THE STATIC GRID STAYS. It used to fade to 0 as the old canvas faded in, which is right
+   for a HANDOVER and wrong for a REVEAL: the pool adds more of the same pattern under the
+   pointer, exactly as the price card's `::before` corner field and `::after` pool sit on top
+   of each other. Fading the grid out would leave the card looking emptier on hover than
+   off it. */
+.card-fx > .fx-dots { transition: opacity .3s ease; }
+
+/* ⛔⛔ THE INTRO CARD'S SURFACE — the same treatment as the hero copy card and the feature
+   text cards. Owner: *"the background blur too"*, one step after adding the pattern to it.
+   ⛔⛔ IT ALREADY HAD A BLUR, AND THAT IS WHY THIS IS NOT JUST A `backdrop-filter` LINE.
+   `.afmp-intro-card` is a `.quickfog-outer`, so the LIQUID GLASS rule (~:2395) was giving it
+   `blur(30px) saturate(1.8)` plus four inset highlights plus a 7%-white fill. Left in place,
+   a 1.5px blur behind that fill and those highlights is invisible — the owner would have
+   looked at a card that had "had the blur added" and seen no change at all. Matching the
+   other two cards means matching all of it: fill, image, highlights and blur radius.
+   ⛔ `saturate(1.8)` goes too — the hero copy card and the feature text cards carry blur
+   alone, and "too" means the same as them.
+   ⛔ The pattern is unaffected: `.fx-dots`, `.fx-pool` and `.fx-ring` are real children
+   painted above this element's backdrop, so the dots stay sharp while the page behind them
+   frosts.
+   ⛔ `backdrop-filter` creates a stacking context and a containing block. Nothing inside this
+   card is `position: fixed`, so neither matters.
+   ⚠ Re-measure the copy's contrast if the page behind it ever lightens — this card is long
+   and its three paragraphs run the full width. */
+#workflow .afmp-intro-card {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(1.5px) !important;
+          backdrop-filter: blur(1.5px) !important;
 }
 
 /* ------------------------------------------------------- the travelling outline
@@ -3814,6 +4071,363 @@ html:not(.dark) .card-fx > .fx-dots {
   .card-fx > .fx-dots { animation: none; opacity: .55; }
   .card-fx > .fx-ring { animation: none; --fxA: 40deg; }
 }
+</style>
+
+<!-- ============================================================ -->
+<!-- `#featuresCards` — the features section: main cards removed,    -->
+<!-- text cards at 30%, pricing pattern added.                       -->
+<!-- Owner: "remove the main cards that's behind all the clip and    -->
+<!-- text cards in the features section and make the text cards 30%  -->
+<!-- opacity and add the patern effect you added on the creating     -->
+<!-- shape keys is easy texts card".                                 -->
+<!-- Delete this block AND the `#workflow` entry in `#cardFxLayers`   -->
+<!-- TARGETS to put the section back.                                -->
+<!-- ============================================================ -->
+<style id="featuresCards">
+/* ⛔⛔ THE STRUCTURE, because the two "cards" are the SAME class and the request names
+   three different things. Measured, not read:
+     #workflow .quickfog-outer:has(.feature-row)   11   <- THE MAIN CARD. It holds the
+                                                            text card AND the clip card
+                                                            AND, on the first row, a second
+                                                            clip row (1180 x 1101px).
+     #workflow .feature-text > .quickfog-outer     11   <- THE TEXT CARD (346 x 454).
+     #workflow .feature-media                      13   <- THE CLIP CELLS. NOT `.quickfog-outer`,
+                                                            and deliberately untouched: each
+                                                            carries four absolutely positioned
+                                                            children (video, .media-tag,
+                                                            .clip-bar, .clip-load) and the
+                                                            `.card-fx > *` rule would pull
+                                                            them into the flow.
+   ⛔ The two selectors below are DISJOINT — a text card does not contain a `.feature-row` —
+   so they cannot fight each other, which is why both can carry `!important`.
+   ⛔ `#workflow .feature-row .quickfog-outer` (line ~2765) also matches the TEXT card and
+   sets `background: var(--card-bg)`. These rules sit later and carry `!important`. */
+
+/* ---------------------------------------------- 1. the main card, removed
+   ⛔⛔ WHAT MAKES IT READ AS A CARD IS NOT THE BACKGROUND. Measured: `background-color` is
+   `rgba(255,255,255,.07)` — seven percent — and `background-image` is already `none` on
+   both card types (line ~2765 sets it). Seven percent of white over a dark page is a barely
+   visible tint; what the eye actually sees is the LIQUID GLASS on top of it: a 30px
+   backdrop blur with 1.8x saturation plus four inset white highlights. Strip the
+   background alone and the card is still there. All four declarations have to go.
+   ⛔ `border-width` already computes to `0px` on `.quickfog-outer`, so there is no border
+   to remove — an earlier attempt to override `border-color` on the Shapekeys cards was a
+   silent no-op for exactly this reason. */
+#workflow .quickfog-outer:has(.feature-row) {
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+}
+
+/* ------------------------------------- 2. the text card at 30%
+   ⛔⛔ THE SURFACE MOVES TO A `::before`, AND THAT IS THE WHOLE POINT.
+   The literal reading of "make the text cards 30% opacity" is `opacity:.3` on the element.
+   That CANNOT be what is wanted here, because the same sentence asks for the dot pattern
+   to be added — and `opacity` is not inherited, it is a COMPOSITING GROUP: every descendant
+   is flattened into it and dimmed together. At .3 the heading and copy drop to roughly
+   2.2:1 contrast, and the dot field (already only `rgba(255,255,255,.38)`) falls to an
+   effective .11 — the pattern would be invisible, i.e. the third instruction would be
+   cancelled by the second.
+   So the SURFACE is what fades, on its own layer, and the text and the pattern stay crisp.
+   ⛔ The declarations below are not invented — they are the LIQUID GLASS block (line ~2395)
+   copied onto the pseudo. `opacity` on a `backdrop-filter` element composites the BLURRED
+   backdrop at 30% over the real one, which is what "the glass at 30%" means; there is no
+   `backdrop-filter: 30%`.
+   ⛔ `border-radius: inherit` — the radius shapes the surface, the dot mask and the ring
+   together. Hard-coding 22px here would drift the moment line ~2655 changes.
+   ⛔ z-index: the surface is 0, `.fx-dots` is 0 and comes later in DOM order so the dots
+   land on top, the `.fx-ring` is 3, and the text is 1 — all set in the `#cardFx` block.
+   ⚠ If the owner wanted the WHOLE card including its text faded, this is the one line to
+   change: `#workflow .feature-text > .quickfog-outer { opacity: .3 }` and delete this
+   pseudo. Measured against the dark page, a #f5f5f5 heading at 30% lands at about 2.2:1. */
+#workflow .feature-text > .quickfog-outer {
+  background-color: transparent !important;
+  background-image: none !important;
+  /* ⛔ this stays for the LIGHT theme, which has no ring of its own — see the dark rule
+     below, which is more specific and replaces it there. Without it the page-wide glass
+     rule (~:2395) would put its four inset highlights back and the card would read as a
+     solid panel again in light mode. */
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+}
+
+/* ⛔⛔ THE PRICING CARD'S RING AND GLOW. Owner: *"hover over effect is not same as in the
+   pricing cards"*.
+   ⛔ FOUND BY PUTTING THE TWO HOVER STATES SIDE BY SIDE at the same `--mx`/`--my`
+   (`_hover_compare.js`), not by reading rules and guessing which one was missing. The
+   pricing card changes THREE things on hover and only one of them was here:
+       1. the dot pool reveals around the pointer      <- had it
+       2. the border goes azure                         <- missing
+       3. an azure glow blooms around the card          <- missing
+   ⛔⛔ THE VALUES ARE `html.dark .price-card` / `:hover` VERBATIM, including BOTH box-shadow
+   states. Rest matters as much as hover here: the ring is already faintly there before the
+   pointer arrives, so the hover reads as it BRIGHTENING rather than appearing from nothing —
+   which is the whole difference the owner is pointing at.
+   ⛔ `box-shadow` IS ONE PROPERTY, so every layer has to be listed together. The glass
+   rule's four inset highlights are deliberately NOT restored; the pricing card replaces its
+   glass the same way, keeping only `inset 0 1px 0` as the top highlight.
+   ⛔ `!important` because rule 2 above sets `box-shadow: none !important` for the light
+   theme. Both are important, so SPECIFICITY decides — `html.dark #workflow .feature-text >
+   .quickfog-outer` is (1,3,1) against that rule's (1,2,0), so this wins in dark and the
+   light theme is untouched.
+   ⛔ DARK ONLY, matching the pricing block exactly. `.quickfog-outer` computes
+   `border-width: 0`, so the 1px border is added here; the page sets `box-sizing: border-box`,
+   so the card's outer size does not move — verified, not assumed.
+   ⚠ The transition is what makes it read as a hover rather than a jump; the card's own
+   `transition` list already covers `box-shadow`, so no new timing is introduced. */
+html.dark #workflow .feature-text > .quickfog-outer {
+  border: 1px solid rgba(255, 255, 255, .10);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .20),
+    0 0 0 1px color-mix(in srgb, #0096ff 10%, transparent),
+    0 0 44px -14px color-mix(in srgb, #0096ff 38%, transparent) !important;
+  transition: border-color .3s ease, box-shadow .3s ease;
+}
+html.dark #workflow .feature-text > .quickfog-outer:hover {
+  border-color: color-mix(in srgb, #0096ff 40%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .26),
+    0 0 0 1px color-mix(in srgb, #0096ff 24%, transparent),
+    0 0 62px -12px color-mix(in srgb, #0096ff 62%, transparent) !important;
+}
+#workflow .feature-text > .quickfog-outer::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  /* ⛔⛔ FULLY TRANSPARENT FILL, AND NO `opacity` ON THE LAYER EITHER.
+     Owner: *"make the background fully alpha and blur it a tiny bit"*. Both halves of that
+     sentence have to land together, which is why `opacity: .30` is gone rather than kept:
+     `opacity` is a compositing group, so at .30 it would dim the BACKDROP FILTER along with
+     the fill — a 6px blur composited at 30% is roughly a 2px blur, and the second half of
+     the instruction would be quietly cancelled by the first. With the fill transparent and
+     no opacity, the entire layer is the blur and nothing else.
+     ⛔ `background: none` clears BOTH the colour and the three-layer gradient in one line —
+     listing `background-color`/`background-image` separately is how a leftover layer
+     survives. Same for the four inset highlights: they were the card's edge definition, and
+     "the background" being fully alpha means the surface paints nothing at all. What is
+     left is a frosted panel with no fill, which is the Shapekeys treatment plus the blur.
+     ⛔ 1.5px, walked down from the liquid glass's 30px in three steps on the owner's word:
+     *"a tiny bit"* (6px) -> *"lower the blur amount"* (3px) -> *"reduce the blur amount even
+     more"* (1.5px). Keep `border-radius: inherit`: the radius still shapes the blur, the dot
+     mask and the travelling ring.
+     ⚠ At 1.5px this is near the floor of what a backdrop blur can show — below roughly 2px
+     it stops reading as "frosted" and starts reading as "the page, very slightly soft".
+     The next step down is not 1px, it is DELETING this pseudo-element: the Shapekeys cards
+     already ship with no surface at all (`#shapekeys .quickfog-outer`), and that is the look
+     "no blur" actually means here. A 0px blur would leave a dead layer that still costs a
+     compositing pass for every one of the 11 cards.
+     ⛔ There is deliberately NO `opacity` on this layer. `opacity` is a compositing group, so
+     dimming it would dim the BACKDROP FILTER with it — the blur composited at 30% would be
+     roughly a third of whatever radius is set here, and the instruction would quietly cancel
+     itself. The fill is transparent and the blur is at full strength. */
+  background: none;
+  -webkit-backdrop-filter: blur(1.5px);
+          backdrop-filter: blur(1.5px);
+}
+
+/* ⛔⛔ THE PRICING CARD'S BLUE. Owner: *"also add the blue color just like in the pricing
+   cards"*.
+   It is not a fill — it is layer 1 of `html.dark .price-card`'s `background-image`, a 300px
+   azure pool that FOLLOWS THE CURSOR, and this is the same declaration verbatim (same 300px,
+   same 22%, same 68% stop, same fallback anchor at 50% / 0%). Copying it rather than
+   approximating it is the whole point of "just like".
+   ⛔⛔ `--mx`/`--my` ARE ALREADY BEING SET ON THESE CARDS. The page's `#pricingGlow` listener
+   (~:4530) is `e.target.closest('.price-card, .offer-band, .card-fx')` and every features
+   text card carries `.card-fx` — so the variables were arriving all along and simply had
+   nothing reading them. No new listener.
+   ⛔ `var(--mx, 50%) var(--my, 0%)`, NOT `88% 0%`: the price card's `::before` anchors its
+   own dots top-RIGHT to match its reference, but this pool's fallback is top-CENTRE, and the
+   fallback is what paints before the first pointer event. Matching the wrong one would put
+   the resting blue in a different corner from the pricing cards'.
+   ⛔ DARK ONLY, exactly as `html.dark .price-card` is. The pricing block has no light-theme
+   pool, so adding one here would make the two disagree in light mode — which is the opposite
+   of "just like". ⚠ If a light variant is wanted, it needs its own colour: `#0096ff` at 22%
+   on a near-white card is about 3:1 and would read as a smudge.
+   ⛔ It lives on `::before` (z-index 0), so the pool sits BEHIND the heading and copy — the
+   same layer order as the pricing card, where `::after` is the pool and `.card-fx > *` lifts
+   the text above it. */
+html.dark #workflow .feature-text > .quickfog-outer::before {
+  background-image: radial-gradient(300px circle at var(--mx, 50%) var(--my, 0%),
+    color-mix(in srgb, #0096ff 22%, transparent), transparent 68%);
+}
+
+/* ------------------------------------- 3. the OLD hover, off every card in the section
+   ⛔⛔ FOUND BY MEASUREMENT, NOT BY GREPPING FOR WHAT I REMEMBERED. Owner: *"there are still
+   hover over effects leftovers from the older stuff"* — after two rules here had already
+   killed what I *believed* was the whole old hover. `_hover_audit.js` forces `:hover` on the
+   whole ancestor chain and diffs the computed style, and it named the survivors:
+
+     #workflow .feature-media   animationName  none -> ringOut
+                                animationDuration 0s -> 1s
+                                backgroundPosition 120% 0 -> -20% 0   (the sheen sweep)
+                                outlineOffset   0px -> 11px
+
+   ⛔⛔ THE RING IS AN ANIMATION, SO `transform: none` NEVER TOUCHED IT. The page's own
+   no-hover block at ~:2942 already lists `.feature-media:hover { transform: none }` — and the
+   cell still lit up, because `ringOut` paints through `@keyframes` and `transform` is not what
+   drives it. `animation: none` is the only line that stops it. This is the third time this
+   exact trap has cost a round: it was the accordion hover and the Shapekeys cards before.
+   ⛔ `background-position` is frozen at the cell's REST value (`120% 0, 0 0, 0 0`, set at
+   ~:2403), not at `0 0` like the text card — the two cards have different rest positions and
+   copying the text card's value here would have snapped the sheen to a new place on hover
+   instead of holding it still.
+   ⛔ SCOPED TO `#workflow`. The same `.feature-media` class is used elsewhere and the ring is
+   a page-wide system; this removes it from the features section only.
+   ⚠ The owner previously said *"don't do anything for the clip cards"* — that was about NOT
+   giving them the transparency treatment and the dot pattern, and those are still untouched.
+   The hover is a separate axis, and it is the only thing left in the section that moves, so
+   it is read as the leftover. Say the word and this selector comes straight back out. */
+#workflow .quickfog-outer:has(.feature-row):hover,
+#workflow .feature-text > .quickfog-outer:hover,
+#workflow .feature-media:hover,
+#workflow .feature-media:hover .media-tag,
+#workflow .feature-media .media-tag:hover {
+  animation: none !important;
+  outline: 0 !important;
+  outline-color: transparent !important;
+  outline-offset: 0 !important;
+  transform: none !important;
+  text-shadow: none !important;
+}
+#workflow .quickfog-outer:has(.feature-row):hover,
+#workflow .feature-text > .quickfog-outer:hover {
+  background-position: 0 0, 0 0, 0 0 !important;
+}
+#workflow .feature-media:hover {
+  background-position: 120% 0, 0 0, 0 0 !important;
+}
+
+/* ------------------------------------- 4. the REST of the ring-carriers in the section
+   Owner: *"remove the left over hover effects first"*, on the Workflow & Features cards.
+   ⛔⛔ THE SET WAS ENUMERATED, NOT REMEMBERED — the same discipline as rule 3, because rule 3
+   was written from memory and missed `.feature-media` entirely. A DOM sweep of the section
+   (`_wf_cards.js`) lists 65 card-ish elements; these are the classes among them that are in
+   the page-wide ring lists and were NOT already covered by rules 1-3:
+       .step-num   x9      .seam-label x2      .media-tag x12      .quickfog-outer (the rest)
+   ⛔ `#workflow .quickfog-outer:hover` is deliberately broad: it catches the row wrappers,
+   the text cards AND `.afmp-intro-card`, all of which already have narrower rules — re-stating
+   them is harmless, and it stops a future `.quickfog-outer` added to this section from being
+   the one that still lights up.
+   ⛔ `background-position` is frozen at `120% 0` — the LIQUID GLASS rest value (~:2403), not
+   at `0 0`. The page's hover rule sweeps it to `-20% 0`; freezing at the wrong end would snap
+   the sheen somewhere new on hover instead of holding it still, which is the trap rule 3
+   already documented for the clip cell.
+   ⛔ `.feature-media` is NOT in this rule's new selectors — it is rule 3's, and it still owns
+   its own `120% 0` line.
+   ⚠ This rule was accidentally deleted for one edit while rules 5 and 6 were appended; it is
+   restored here verbatim. `_hover_audit.js` is what would have caught it, and it is the
+   reason that probe exists. */
+#workflow .step-num:hover,
+#workflow .seam-label:hover,
+#workflow .media-tag:hover,
+#workflow .quickfog-outer:hover {
+  animation: none !important;
+  outline: 0 !important;
+  outline-color: transparent !important;
+  outline-offset: 0 !important;
+  transform: none !important;
+  background-position: 120% 0, 0 0, 0 0 !important;
+}
+
+/* ------------------------------------- 5. the COMPARE pair (The old way / With AFMP)
+   Owner: *"for do for this [the OLD WAY / WITH AUTO FACE MOCAP PRO copy]"*.
+   ⛔ The pair is already surface-less on the owner's earlier word — `background: transparent
+   !important; background-image: none !important; box-shadow: none !important` at ~:3253 on
+   `.compare-card`, `.compare-card.old` and `.compare-card.new`, plus the WRAPPER via
+   `:has(.compare-grid)` at ~:3274. So this adds the blur and the hover colour and nothing
+   else; there is no fill to remove.
+   ⛔ `backdrop-filter: none !important` is already set there, so the blur needs BOTH higher
+   specificity AND `!important` to land — `#workflow .compare-card` (1,1,0) against (0,1,0).
+   ⛔ 0 positioned children (measured): `.vs-badge` static, `h3` static, `ul` static,
+   `.time-chip` relative — so no `.fx-abs` snapshot, unlike the hero clip. */
+#workflow .compare-card {
+  -webkit-backdrop-filter: blur(1.5px) !important;
+          backdrop-filter: blur(1.5px) !important;
+}
+/* the pair's own old hover, off — same shape as rules 3 and 4 */
+#workflow .compare-card:hover,
+#workflow .compare-card .vs-badge:hover,
+#workflow .compare-card .step-num:hover,
+#workflow .compare-card .time-chip:hover {
+  animation: none !important;
+  outline: 0 !important;
+  outline-color: transparent !important;
+  outline-offset: 0 !important;
+  transform: none !important;
+  background-position: 120% 0, 0 0, 0 0 !important;
+}
+
+/* ------------------------------------- 7. the two TIME CHIPS, onto the page theme
+   Owner: *"also update these two to match the page theme"*, and on being asked which two:
+   **the two time chips** — "~ 6 hours" and "~ 2 minutes".
+   ⛔⛔ THE COLOURS ARE NOT INVENTED. `.time-chip` (~:985) is a NEUTRAL pill —
+   `background: var(--card-bg-strong)` with `border: 1px solid var(--border-strong)` and an
+   inherited colour — which is why both read grey. The azure values below are
+   `.compare-card.old .vs-badge`'s (~:3322) VERBATIM: the same 12% azure wash, the same 45%
+   azure border, the same `#8fd0ff` text. Copying the rule that already sits inside this very
+   block is what "match the page theme" means here; picking a new blue would have made these
+   two pills a third shade next to the badges.
+   ⛔ SCOPED TO `#workflow .compare-card`, so the pair the owner pointed at changes and the
+   `.time-chip` in the workflow cards elsewhere does not — "these two", not the class.
+   ⛔ Both get the SAME treatment. The first pass considered giving each chip its own
+   column's badge colour (subtle for OLD WAY, the solid `linear-gradient(135deg,#0096ff,
+   #0065e2)` for WITH AFMP, matching the badges directly above them), and that was rejected:
+   the owner asked for one change to two elements, and splitting them is a design decision
+   they did not ask for. The before/after contrast the block exists to make is already
+   carried by the badges. ⚠ If the columns SHOULD each match their own badge, that is one
+   extra rule — the solid gradient is the `.new` badge's value.
+   ⛔ The chip's hover ring is already off (rule 5), so this is the resting colour only. */
+#workflow .compare-card .time-chip {
+  background: color-mix(in srgb, #0096ff 12%, transparent);
+  border-color: color-mix(in srgb, #0096ff 45%, transparent);
+  color: #8fd0ff;
+}
+
+/* ------------------------------------- 6. the hover COLOUR, on the rest of the cards
+   Owner: *"the hover over color does not show also add that"*.
+   ⛔⛔ THE FEATURES TEXT CARDS GOT THIS AND THE OTHERS DID NOT. When the pricing-card match
+   was requested it was applied to `#workflow .feature-text > .quickfog-outer` alone; the hero
+   copy card, the workflow intro card and this compare pair were all added later and each
+   inherited the pattern WITHOUT the ring. Hovering them shows dots and no colour — which is
+   exactly what the owner is reporting.
+   ⛔ THE VALUES ARE `html.dark .price-card` / `:hover` VERBATIM and identical to the block on
+   the features text cards, so all four now brighten the same way. Both states are listed:
+   the ring is faintly present at REST and BRIGHTENS on hover, which is what makes it read as
+   a hover rather than something appearing from nothing.
+   ⛔ `box-shadow` is one property, so every layer is listed together. The glass's four inset
+   highlights are deliberately NOT restored — only `inset 0 1px 0` — matching the pricing card.
+   ⛔ `!important` because each of these cards carries `box-shadow: none !important` from its
+   own transparency rule. All important, so specificity decides, and every selector here
+   outranks those. */
+html.dark #workflow .compare-card,
+html.dark #workflow .afmp-intro-card,
+html.dark .hero-copy-card {
+  border: 1px solid rgba(255, 255, 255, .10);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .20),
+    0 0 0 1px color-mix(in srgb, #0096ff 10%, transparent),
+    0 0 44px -14px color-mix(in srgb, #0096ff 38%, transparent) !important;
+  transition: border-color .3s ease, box-shadow .3s ease;
+}
+html.dark #workflow .compare-card:hover,
+html.dark #workflow .afmp-intro-card:hover,
+html.dark .hero-copy-card:hover {
+  border-color: color-mix(in srgb, #0096ff 40%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .26),
+    0 0 0 1px color-mix(in srgb, #0096ff 24%, transparent),
+    0 0 62px -12px color-mix(in srgb, #0096ff 62%, transparent) !important;
+}
+
+/* ⛔ There is deliberately NO `prefers-reduced-motion` rule for the surface any more. It
+   used to pin `opacity: .30`, which no longer exists — and a blur is not motion, so there
+   is nothing here for that query to suppress. The dot field and the ring keep theirs in the
+   `#cardFx` block. */
 </style>
 <style id="heroHorizon">
 /* ============================================================ */
@@ -3989,6 +4603,277 @@ html:not(.dark) .card-fx > .fx-dots {
    the base rule keeps the height in step, so there is nothing left to override here. */
 }
 </style>
+<style id="accordionChat">
+/* ============================================================ */
+/* CHAT-STYLE ACCORDION — Specs & FAQ.                            */
+/* Owner: "update the Specs & FAQ to this style", with a         */
+/* reference whose questions are muted pills and whose answers    */
+/* are brand-coloured CHAT BUBBLES indented under them.           */
+/* Delete this block and the accordions go back to the glass card.*/
+/* ============================================================ */
+/* ⛔⛔ WHAT ACTUALLY CARRIES THE STYLE, read off the reference's markup:
+     question row  `rounded-xl p-2 bg-muted hover:bg-primary/10` + a `+` on the right
+     answer        `rounded-2xl bg-primary px-4 py-2 text-primary-foreground`, inside a
+                   wrapper with `ml-7 md:ml-16`, and `max-w-xs`
+   So the answer is not styled text — it is a BUBBLE, filled with the brand colour, with
+   white text on it, sitting under and to the right of its question.
+   ⛔ The reference's leading timestamp ("Every day, 9:01 AM") is CONTENT, not style —
+   there is nothing on a product page it could truthfully say, so it is not reproduced.
+
+   ⛔⛔ THE BUBBLE HAS TO ADAPT, and that is the one place this departs from the
+   reference. Of the five items only two are FAQ-shaped; the rest carry a
+   `.spec-table` and bullet lists, and `max-w-xs` around a two-column table is unusable.
+   `:has()` widens exactly those, so the FAQ items get the reference's narrow bubble and
+   the content items get a readable one — one look, two widths. */
+/* ⛔⛔ THE GLASS HAD TO BE FOUGHT FOR. `:2671` carries
+     `#specs .accordion,#specs .acc-item{background-image:none!important;background:var(--card-bg)!important}`
+   — an `!important` rule from earlier work on this page. A plain `background: transparent`
+   here has the SAME specificity (1,1,0) and no `!important`, so it silently lost and the
+   panel stayed. `:root` adds one class-level step (1,2,0), which beats it outright and
+   does not depend on this block staying below line 2671 in source order.
+   ⛔ All FOUR surface properties go, not just the fill — same lesson as the Shapekeys
+   cards: `box-shadow` and `backdrop-filter` are what make a panel read as glass, and
+   clearing only `background` leaves the edge and the blur.
+   ⛔ `#changelog` is included because `:2671` only ever covered `#specs`, so without it
+   the two accordions would have been styled differently. */
+:root #specs .accordion, :root #specs .acc-item,
+:root #changelog .accordion, :root #changelog .acc-item {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+  border: 0 !important;
+}
+/* ⛔ LEFT-ALIGNED, NOT CENTRED — owner: *"put it on the left side"*, after the centring
+   asked for a few turns earlier. ⛔ `max-width` STAYS: the complaint was about where the
+   column sits, not how wide it is, and dropping the cap would stretch the pills and the
+   spec table back across the full 1180px container — the thing the width was added to
+   stop. Only `margin-inline` changes. */
+#specs .accordion, #changelog .accordion {
+  max-width: 48rem;
+  margin-inline: 0;
+  overflow: visible;
+}
+#specs .acc-item, #changelog .acc-item { border-top: 0; margin-bottom: .5rem; }
+
+/* ---- the question pill ----
+   ⛔⛔ THE PILL IS ON THE QUESTION TEXT, NOT ON THE BUTTON. That is the whole difference
+   between the reference and a first pass at it that read the classes but not the render:
+   a full-width tinted row looks like an accordion, whereas a pill that HUGS its own text
+   with the `+` sitting outside it to the right looks like a chat message. The reference's
+   `rounded-xl p-2 bg-muted` is on the inner `<div>` that wraps the question span — the
+   button itself is `flex w-full items-center justify-start gap-x-4` with NO background.
+   ⛔ So `justify-content` becomes `flex-start` (it was `space-between`, which is what
+   pushed the `+` to the far edge) and the gap is the reference's `gap-x-4` = 1rem. */
+#specs .acc-head, #changelog .acc-head {
+  justify-content: flex-start;
+  gap: 1rem;
+  padding: 0;
+  background: transparent;
+  /* ⛔⛔ CLEARING `background` IS NOT ENOUGH — AND THE LEFTOVERS PAINT A WHOLE RECTANGLE.
+     `.acc-head` is in the LIQUID GLASS selector list at ~:2336, which also gives it
+     `backdrop-filter: blur(30px) saturate(1.8)` and a four-layer inset `box-shadow`.
+     A `backdrop-filter` filters what is BEHIND the element, so it draws a visible box
+     even when the element's own background is fully transparent — that rectangle, edge
+     to edge across the row, is exactly the "extra stuff" that looked like a leftover
+     panel. The inset shadows add a bright 1px line along its top and bottom, which reads
+     as the band's borders.
+     ⛔ Same lesson as the Shapekeys cards and the offer band, one property further out:
+     on this page "the surface" is background + background-image + box-shadow +
+     backdrop-filter, and clearing anything less than all four leaves a visible ghost. */
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+  transition: none;
+  font-weight: 500;
+}
+#specs .acc-head > span:first-child, #changelog .acc-head > span:first-child {
+  /* ⛔ BIGGER — owner: *"make the [question pill] bigger"*. The reference's `p-2` is sized
+     for a 14px label; at this page's scale it read as a cramped chip. The padding and the
+     type size move TOGETHER (see `font-size` on `.acc-head` below) or the pill stays
+     squat however much air is added around it. */
+  padding: .75rem 1.1rem;
+  border-radius: .75rem;                   /* …and its rounded-xl */
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  transition: background .2s ease;
+}
+#specs .acc-head:hover > span:first-child,
+#changelog .acc-head:hover > span:first-child {
+  background: color-mix(in srgb, #0096ff 14%, transparent);
+}
+/* ⛔⛔ THE OLD HOVER SURVIVED, AND IT WAS TWO RULES — owner: *"the hover over effect is still
+   there that was on thr old vversion"*. Styling the resting state does not remove a hover
+   state; both of these are `:hover`-scoped and neither was touched by the rules above:
+     1. `.acc-head:hover { background-color: … }`          — a tint on the button itself
+     2. `… .acc-head:hover { animation: ringOut …; outline-offset: 12px }`  — the page-wide
+        EXPANDING OUTLINE RING. This is the one that reads as "the old hover": a ring that
+        grows out of the row over 1s on a repeating delay.
+   ⛔ `animation: none` is what stops the ring — `outline: 0` alone does not, because the
+   keyframes are what animate the outline's colour and offset.
+   ⛔ The hover the redesign WANTS is on the question pill (`> span:first-child` above), so
+   the button itself is left completely inert. */
+#specs .acc-head:hover, #changelog .acc-head:hover {
+  background-color: transparent !important;
+  animation: none !important;
+  outline: 0 !important;
+  outline-offset: 0 !important;
+  transform: none !important;
+}
+/* ⛔⛔ AND THE CONTAINER HAS ONE TOO — owner: *"also the main hover effect is there too"*.
+   `.accordion` is in the SAME two page-wide hover lists as `.acc-head`: the `ringOut`
+   outline block and the glass sheen (`.quickfog-outer:hover,…,.accordion:hover{…}`).
+   So hovering ANYWHERE inside the accordion — including the answer bubbles — drew a ring
+   around the whole 768px column. That is the "main" one: it is the largest thing that
+   fires, and it was invisible to a check that only forced `:hover` on `.acc-head`.
+   ⛔ `animation: none` stops the ring; `background-position` is reset as well because the
+   sheen is a `background-position` sweep, and a transparent background does not stop the
+   element from having a background-position animated on it. */
+#specs .accordion:hover, #changelog .accordion:hover {
+  animation: none !important;
+  outline: 0 !important;
+  outline-offset: 0 !important;
+  transform: none !important;
+  background-position: 0 0, 0 0, 0 0 !important;
+}
+/* ⛔ the reference's `+` is bare, not a tinted chip — and it already rotates 45deg when
+   open, which is the reference's own open/close gesture. Only the chip goes. */
+#specs .acc-head .icon, #changelog .acc-head .icon {
+  width: 22px; height: 22px; background: transparent;
+  color: color-mix(in srgb, var(--ink) 62%, transparent);
+}
+#specs .acc-item.open .acc-head .icon, #changelog .acc-item.open .acc-head .icon {
+  background: transparent; color: #0096ff;
+}
+
+/* ---- the answer bubble ---- */
+#specs .acc-inner, #changelog .acc-inner {
+  margin: .35rem 0 .2rem 1.75rem;          /* the reference's ml-7 */
+  /* ⛔⛔ ONE WIDTH FOR EVERY BUBBLE — owner: *"make all of them this long"*, pointing at the
+     wide 42rem one. The reference caps its answer at `max-w-xs` (20rem), and an earlier
+     pass followed that: the two FAQ answers got 20rem and the table/list answers got
+     42rem. **The owner wants the 42rem one everywhere.**
+     ⛔ That drops the `:has()` widening below entirely — with every bubble at the same
+     width there is nothing left to widen, and leaving the rule in would be dead code
+     that reads as if the two widths were still in play.
+     ⛔ 42rem is also what the accordion's own `max-width: 48rem` was sized around, so the
+     bubbles still sit inside it with room to spare. */
+  max-width: min(100%, 42rem);
+  padding: .55rem 1rem;
+  border-radius: 1rem;                     /* rounded-2xl */
+  /* ⛔⛔ THE BUBBLE IS LIGHT WITH DARK TEXT — NOT the brand colour. The reference says
+     `bg-primary text-primary-foreground`, and in ITS dark theme `--primary` is a
+     near-white, so it renders as a white bubble with near-black text. A first pass here
+     read `bg-primary` as "the brand colour" and painted it azure, which is both unlike
+     the reference and (white on #0096ff = 3.09:1) below AA for body text.
+     ⛔ Using the page's OWN high-contrast pair — fill `--ink`, text `--bg` — reproduces
+     the reference exactly in the dark theme and inverts correctly in the light one,
+     because the two tokens are near-white/near-black and near-black/near-white. It is
+     high contrast BY CONSTRUCTION in both, with no number to re-check. */
+  background: var(--ink);
+  color: var(--bg);
+  font-size: .94rem;
+  line-height: 1.5;
+}
+/* ⛔ a two-column table or a bulleted list does not fit `max-w-xs` — widen only those */
+/* ⛔ the `:has()` widening that used to live here is DELETED, not disabled — every
+   bubble is now 42rem, so it had nothing left to do. It is written up in the memory
+   note rather than left in as a rule that silently no longer matches anything. */
+
+/* ⛔⛔ THE COMPACTION IS REMOVED — UNCOMPACTED. Owner: *"uncompact this [spec table]"*.
+   What was here (kept in the backup `index.html.bak-20261007-220529-PREPATTERN`) was:
+       #specs .acc-inner .spec-table { margin-top: .3rem; font-size: .85rem; line-height: 1.25; }
+       #specs .acc-inner .spec-table td { padding: .15rem .45rem; }
+       #specs .acc-inner:has(.spec-table) { padding: .4rem .8rem; }
+   ⛔⛔ IT IS DELETED RATHER THAN SET BACK TO SOME NEW NUMBER, SO THE TABLE RETURNS TO THE
+   PAGE'S OWN `.spec-table` (~:1030) — `font-size: .92rem`, `td { padding: .55rem .4rem }`,
+   and the bubble's normal padding. "Uncompact" means undo the compaction, and the base rule
+   is the only definition of what this table is supposed to look like; inventing a
+   half-way value here would be a second opinion nobody asked for and one more number to
+   keep in step. It also means a future change to `.spec-table` reaches this table again,
+   which the override had quietly cut it off from.
+   ⛔ Scoped to `#specs` throughout, so the FAQ prose and the changelog bullets were never
+   touched by the compaction and are not touched by its removal.
+   ⛔ The two COLOUR overrides further down (~:4552) stay: they repaint the dividers and the
+   label column for the bubble's light fill, and have nothing to do with density. */
+
+/* ⛔ the question type, lifted with the pill's padding above */
+#specs .acc-head, #changelog .acc-head { font-size: 1.2rem; }
+
+/* ============================================================ */
+/* "Still have questions?" — the support footer under the FAQ.    */
+/* Owner: "also add this below it", with a reference whose stack   */
+/* is overlapping avatars + heading + copy + CTA.                  */
+/* ============================================================ */
+/* ⛔⛔ CENTRED ON THE PAGE, NOT ON THE ACCORDION'S COLUMN — owner: *"center this"*.
+   An earlier pass aligned it to the accordion (`margin: 3rem 0 0`, same 48rem) so it read
+   as part of the same list. The owner wants it centred in the container instead, so
+   `margin-inline` goes back to `auto`.
+   ⛔ `text-align` and `align-items` were ALREADY centring the block's CONTENTS — that is
+   not what this fixes. The box itself was sitting at the container's left edge, so the
+   contents looked centred within a column that was itself off to the left.
+   ⚠ Consequence: this block no longer shares a left edge with the accordion above it.
+   That is the request, not an oversight. */
+.faq-support {
+  max-width: 48rem;
+  margin: 3rem auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.05rem;
+  text-align: center;
+}
+.faq-avs { display: flex; }
+.faq-av {
+  width: 40px; height: 40px; flex: none;
+  border-radius: 50%; overflow: hidden;
+  /* the reference's `ring-2 ring-background` — the ring is what makes the overlap read
+     as a STACK rather than as three circles colliding */
+  box-shadow: 0 0 0 2px var(--bg);
+}
+.faq-av + .faq-av { margin-left: -8px; }   /* the reference's -space-x-2 */
+.faq-av svg { display: block; width: 100%; height: 100%; }
+
+.faq-support h3 {
+  font-family: 'Outfit', sans-serif; font-weight: 600; margin: 0;
+  font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+  letter-spacing: -.01em;
+}
+.faq-support p { margin: 0; max-width: 46ch; color: var(--muted); font-size: .95rem; }
+
+.faq-cta {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 2.25rem; padding: 0 .95rem;
+  border-radius: .5rem;
+  /* ⛔ `#0072d6`, NOT the brand `#0096ff` — white on the brand azure is 3.09:1 and this
+     is 14px text, which needs 4.5:1. Same call as the answer bubbles. */
+  background: #0072d6; color: #fff;
+  font-size: .88rem; font-weight: 500;
+  text-decoration: none;
+  transition: background .2s ease, transform .2s ease;
+}
+.faq-cta:hover { background: #0065e2; }
+.faq-cta:active { transform: translateY(1px); }
+.faq-cta:focus-visible { outline: 2px solid #8fd8ff; outline-offset: 2px; }
+
+/* ---- re-tint everything that assumed it was sitting on a dark card ----
+   ⛔ with a light bubble these go the OTHER way: the bullets and the table's rules were
+   `--color-tertiary` and `--border`, tuned for a dark panel, and are now sitting on a
+   near-white fill in the dark theme. Both take the bubble's own text colour at reduced
+   strength, so they follow the theme instead of fighting it. */
+#specs .acc-inner li::before, #changelog .acc-inner li::before {
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+}
+#specs .acc-inner a, #changelog .acc-inner a { color: inherit; text-decoration: underline; }
+#specs .acc-inner .spec-table td { border-bottom-color: color-mix(in srgb, var(--bg) 22%, transparent); }
+#specs .acc-inner .spec-table td:first-child { color: color-mix(in srgb, var(--bg) 68%, transparent); }
+/* ⛔ `#specs .acc-inner *` already forces `text-align: left !important` at ~:2673 and
+   `#specs .acc-inner p` caps at 78ch; a 42rem bubble is narrower than that, so neither
+   needs touching. */
+@media (max-width: 640px) {
+  #specs .acc-inner, #changelog .acc-inner { margin-left: .75rem; max-width: 100%; }
+}
+</style>
 <script id="pricingGlow">
 /* Drives --mx/--my for the pricing cards AND the two offer bands (owner: "add mouse
    hover to show the glow and the patern where the mouse is on the pricing cards",
@@ -4046,6 +4931,70 @@ html:not(.dark) .card-fx > .fx-dots {
   var TARGETS = [
     '#shapekeys .quickfog-outer',   // the Creating Shapekeys cards
     '.site-header',                 // the top bar
+    /* ⛔ THE FEATURES TEXT CARDS. Owner: *"add the patern effect you added on the creating
+       shape keys is easy texts card"*, on the text cards of the features section.
+       ⛔ NESTING: a text card sits inside `#workflow .quickfog-outer:has(.feature-row)`,
+       the MAIN card — which is deliberately NOT in this list, so there is no ring inside a
+       ring today and the guard described at the end of this block is not needed. **If that
+       main card is ever added here, the guard becomes mandatory** or every text card gets
+       two rings.
+       ⛔ `.feature-media` (13 of them) is also deliberately absent: each carries four
+       absolutely positioned children (video, .media-tag, .clip-bar, .clip-load) and the
+       `.card-fx > *` rule pulls them into the flow.
+       ⛔ No `.fx-abs` snapshot is needed for these cards: measured, the text card has TWO
+       children (`h3.feature-title`, `p.feature-copy`) and **neither is positioned**, so
+       `position: relative` on them is a no-op. Re-measure before assuming that still holds. */
+    '#workflow .feature-text > .quickfog-outer',
+    /* ⛔ THE HERO COPY CARD. Owner: *"add the patren system to this card too with card
+       transparancy"* — heading "Facial Motion Capture Made Super Easy!".
+       ⛔ CHECKED FOR POSITIONED CHILDREN BEFORE ADDING IT, because `.card-fx > *` pulls them
+       into the flow. Measured: this card has exactly TWO children, `h1` and `p.hero-sub`,
+       and **neither is positioned** — so no `.fx-abs` snapshot is needed and the guard
+       described at the end of this block stays unnecessary. Re-measure before assuming that
+       still holds; the hero badges elsewhere on the page ARE absolutely positioned and would
+       need it.
+       ⛔ Not nested in another `card-fx`, so no ring-inside-a-ring. */
+    '.hero-copy-card',
+    /* ⛔ THE HERO CLIP. Owner: *"add the new outline animation on the hero clip too"*.
+       ⛔ THIS IS THE ONE THAT NEEDS THE `.fx-abs` SNAPSHOT, and it is why the snapshot now
+       exists: 12 direct children, all absolutely positioned. See the loop in `#cardFxLayers`.
+       ⛔ `overflow: visible` here, unlike the other targets — so the `.hm-tips` bubble that
+       hangs 62px ABOVE the card is not clipped by anything and the ring, which is `inset: 0`
+       on the border band, never comes near it.
+       ⚠ The two `.hero-side` rail clips and `.hero-video-card` are safe to add the same way
+       (1 and 2 direct children, none positioned) but are NOT added: the owner said "the hero
+       clip", singular, and this is the one with the video and the play button. */
+    '.hero-media',
+    /* ⛔ THE WORKFLOW INTRO CARD — "What is Auto Face MoCap Pro". Owner: *"add the parten
+       system on the 'Workflow & Features' cards"*.
+       ⛔ IT IS THE ONLY REAL CARD IN THAT SECTION WITHOUT THE PATTERN, and that was
+       established by INVENTORY rather than by reading the markup: a DOM sweep lists 65
+       card-ish elements in the section, and the candidates sort out as —
+         11  `.quickfog-outer.card-fx`   the feature TEXT cards — already done
+         12  `.quickfog-outer`           the main row cards — owner had these EMPTIED, so no
+         13  `.feature-media`            the clip cells — 4 positioned children each, and the
+                                         owner said leave them alone
+         9   `.step-num`                 a 17x17 badge, not a card
+         2   `.seam-label`               the section divider
+         1   `.afmp-intro-card`          <- this one, 1180x238, ZERO positioned children
+       ⛔ 0 positioned children, so no `.fx-abs` snapshot is needed. The card is an `h3` and
+       three `p`, all static.
+       ⚠ "cards" plural, and only one card qualified. The other candidates are all either
+       already patterned, deliberately emptied, or explicitly excluded — say the word if a
+       different set was meant and this is one line. */
+    '.afmp-intro-card',
+    /* ⛔ THE COMPARE PAIR — "The old way" / "With Auto Face MoCap Pro". Owner: *"for do for
+       this"*, quoting that block.
+       ⛔ Adds BOTH columns (`.compare-card.old` and `.new` — the base class matches both).
+       ⛔ 0 positioned children, measured: `.vs-badge` static, `h3` static, `ul.compare-steps`
+       static, `.time-chip` relative. No `.fx-abs` snapshot needed.
+       ⛔ `::after` is free on these (`.compare-card::after { content: none }`, ~:3287, because
+       the sheen was switched off when the surfaces went) — but `#cardFxLayers` uses real spans
+       anyway, so nothing depends on that being true.
+       ⛔ The WRAPPER around them (`#workflow .quickfog-outer:has(.compare-grid)`) is NOT a
+       target: it is the empty main card, the same role the row wrappers play in the features
+       section, and those were deliberately left unpatterned. */
+    '.compare-card',
   ];
 
   function build() {
@@ -4055,16 +5004,40 @@ html:not(.dark) .card-fx > .fx-dots {
       for (var j = 0; j < nodes.length; j++) {
         var el = nodes[j];
         if (el.classList.contains('card-fx')) continue;    // already done
-        /* ⛔ the ring is FIRST and the dots SECOND only for readability — the stacking
-           is set in CSS by z-index, not by DOM order, so a card that reorders its own
-           children cannot break it. */
+        /* ⛔⛔ THE `.fx-abs` SNAPSHOT — AND IT MUST RUN BEFORE THE CLASS GOES ON.
+           Owner: *"add the new outline animation on the hero clip too"*. The hero clip
+           (`.hero-media`) has **12 direct children and ALL 12 ARE ABSOLUTELY POSITIONED** —
+           the video, `.grid-lines`, three `.hm-badge` pills, both `.hm-nav` arrows,
+           `.hm-tips`, `.hm-dots`, `.play-btn`, `.clip-bar` and `.clip-load`. This is exactly
+           the case the note at the end of this block describes: `.card-fx > *` sets
+           `position: relative`, which would rip every one of them into the flow.
+           ⛔ It is read BEFORE `card-fx` is added, because afterwards every child computes as
+           `relative` and the information is gone — the one-shot nature is why this is the
+           first thing in the loop body rather than near the CSS it feeds. */
+        for (var c = 0; c < el.children.length; c++) {
+          var kid = el.children[c];
+          var kp = window.getComputedStyle(kid).position;
+          if (kp === 'absolute' || kp === 'fixed') kid.classList.add('fx-abs');
+        }
+        /* ⛔ three layers now, and they stack by `z-index` in CSS, never by DOM order, so a
+           card that reorders its own children cannot break it: `.fx-dots` and `.fx-pool` at
+           0 (the pool after the field, so it rides on top), `.fx-ring` at 3, content at 1. */
         var ring = document.createElement('span');
         ring.className = 'fx-ring';
         ring.setAttribute('aria-hidden', 'true');
         var dots = document.createElement('span');
         dots.className = 'fx-dots';
         dots.setAttribute('aria-hidden', 'true');
+        /* ⛔ the cursor pool is a PLAIN SPAN, exactly as `html.dark .price-card::after` is a
+           pseudo-element — it is a static dot layer behind a mask, so it needs no canvas and
+           no animation. The `.fx-particles` canvas and the whole `#fxParticles` script that
+           drove it are DELETED; the owner asked for the pricing card's effect exactly, and
+           that effect is entirely CSS. */
+        var pool = document.createElement('span');
+        pool.className = 'fx-pool';
+        pool.setAttribute('aria-hidden', 'true');
         el.appendChild(dots);
+        el.appendChild(pool);
         el.appendChild(ring);
         el.classList.add('card-fx');
         aimPattern(el);
@@ -4141,7 +5114,7 @@ html:not(.dark) .card-fx > .fx-dots {
 <!-- ============================================================ -->
 <!-- INTERACTIVE BACKGROUND — procedural canvas, first in the body  -->
 <!-- so it paints behind everything. See #interactiveBg for the      -->
-<!-- stacking, and assets/js/interactive-bg.js for the module.       -->
+<!-- stacking, and assets/js/particle-field.js for the module.       -->
 <!-- ⛔ aria-hidden: purely decorative, and the brief keeps it out    -->
 <!-- of the accessibility tree.                                     -->
 <!-- ============================================================ -->
@@ -4163,6 +5136,7 @@ html:not(.dark) .card-fx > .fx-dots {
 <!-- ============================================================ -->
 <!-- 1. STICKY HEADER -->
 <!-- ============================================================ -->
+<div class="topbar-backing" aria-hidden="true"></div>
 <header class="site-header" id="header">
   <div class="container header-inner">
     <div class="brand-group">
@@ -4590,7 +5564,7 @@ html:not(.dark) .card-fx > .fx-dots {
          reaches 20px below the seam, so a first child with NO margin would start 24px down and
          sit almost on the label. -->
     <div class="quickfog-outer afmp-intro-card">
-      <h3>What is Auto Face MoCap Pro</h3>
+      <h3>What is Auto Face MoCap Pro?</h3>
       <!-- ⛔ House rules for this copy, from the owner: no dashes or hyphens at all (his "AR-Kit"
            spelling is the one exception), no "bakes it to your rig in two clicks", never the
            number 52, and the summary runs to about 500 characters. The gate enforces all four. -->
@@ -4605,7 +5579,19 @@ html:not(.dark) .card-fx > .fx-dots {
     <style>
       /* the intro card, in the same compact scale as the pair below it */
       .afmp-intro-card { margin-top: 1rem; padding: 1rem .9rem; border-radius: 14px; }
-      .afmp-intro-card h3 { font-size: 1.05rem; margin-bottom: .5rem; }
+      /* ⛔⛔ 1.5rem, UP FROM 1.05rem. Owner: *"make this heading text bigger and add ? at the
+         end"*. The compact value was deliberate — this rule's own comment says the intro card
+         is kept "in the same compact scale as the pair below it" — and the owner is overriding
+         that on purpose, so the heading now reads as the section's own title rather than as a
+         third card in the row. It is also deliberately LARGER than the compare pair's 1.19rem,
+         which is what makes it read as a heading over them instead of a sibling.
+         ⚠ `margin-bottom: .5rem` is unchanged: the owner asked for the text to be bigger, not
+         for the space under it to move, and growing one without the other is exactly the
+         "one control moves one thing" trap. If the bigger line box crowds the first paragraph,
+         that is a separate request.
+         ⛔ The heading is GRADIENT TEXT (`background-clip: text`, ~:3295) — changing its size
+         does not touch the gradient, which is painted across the glyph box. */
+      .afmp-intro-card h3 { font-size: 1.5rem; margin-bottom: .5rem; }
       /* paragraph gap: the copy is three paragraphs now, and this margin is the "line space"
          between them (the last one must not add a trailing gap inside the card) */
       .afmp-intro-card p { font-size: .85rem; line-height: 1.6; color: var(--muted); margin: 0 0 .6rem; }
@@ -5245,6 +6231,35 @@ html:not(.dark) .card-fx > .fx-dots {
         </div>
       </div>
 
+    </div>
+
+    <!-- "Still have questions?" — owner: *"also add this below it"*, pasting a support
+         footer (overlapping avatar stack + heading + line of copy + a CTA).
+         ⛔ THE AVATARS ARE DRAWN INLINE, NOT HOTLINKED. The reference's stack points at
+         `cdn.21st.dev` and a base64 Notion placeholder — neither is this product's, and
+         a support block showing three strangers' faces (or another site's asset) is worse
+         than no faces. These are three small inline SVGs in the page's own palette:
+         no request, nothing to age out, and they read as placeholders that are MEANT to
+         be replaced with the real team.
+         ⛔ The CTA goes to the owner's Superhive CREATOR page — owner supplied the exact
+         URL. This is where a buyer actually messages the creator, which is what the copy
+         promises ("please chat to our support team"), and it beats the `#showcase` anchor
+         this first pointed at.
+         ⛔ The `?ref=473` token goes in VERBATIM — it is the owner's affiliate ref and the
+         page's other Superhive links all carry it. ⛔ `target="_blank" rel="noopener
+         noreferrer"` because it leaves the site; every other outbound link on this page
+         does the same.
+         ⛔ Copy is the reference's, kept verbatim: "Still have questions?" and the
+         support-team line. -->
+    <div class="faq-support reveal">
+      <div class="faq-avs" aria-hidden="true">
+        <span class="faq-av"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#0b2a52"/><circle cx="14.6" cy="17" r="2.1" fill="#8fd8ff"/><circle cx="25.4" cy="17" r="2.1" fill="#8fd8ff"/><path d="M13.4 25.4c3.3 3.5 9.9 3.5 13.2 0" stroke="#8fd8ff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></span>
+        <span class="faq-av"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#0a3f86"/><circle cx="14.6" cy="17" r="2.1" fill="#cdeeff"/><circle cx="25.4" cy="17" r="2.1" fill="#cdeeff"/><path d="M13.4 25.4c3.3 3.5 9.9 3.5 13.2 0" stroke="#cdeeff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></span>
+        <span class="faq-av"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#0065e2"/><circle cx="14.6" cy="17" r="2.1" fill="#eaf6ff"/><circle cx="25.4" cy="17" r="2.1" fill="#eaf6ff"/><path d="M13.4 25.4c3.3 3.5 9.9 3.5 13.2 0" stroke="#eaf6ff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></span>
+      </div>
+      <h3>Still have questions?</h3>
+      <p>If you can&rsquo;t find the answer you&rsquo;re looking for, please chat to our support team.</p>
+      <a class="faq-cta" href="https://superhivemarket.com/creators/mr3d?ref=473" target="_blank" rel="noopener noreferrer">Get in touch</a>
     </div>
 
     <div class="purchase-warning reveal">
@@ -6853,7 +7868,36 @@ html:not(.dark) .card-fx > .fx-dots {
 <!-- Interactive procedural background. Deferred so it can never delay the page's
      own scripts, and kept as a FILE rather than inline: it is ~450 lines of
      self-contained module with no dependency on anything in this document. -->
-<script src="assets/js/interactive-bg.js" defer></script>
+<!-- ⛔ THE PARTICLE FIELD WAS REPLACED, owner: *"replace the animated live mouse
+     reactive particles with this"*. `assets/js/particle-field.js` is a port of the
+     supplied AetherFlow particle system — violet nodes, violet links, links turning
+     WHITE inside the cursor's 200px radius. The previous module
+     (`assets/js/interactive-bg.js`) is still on disk, UNREFERENCED, like
+     `brand-assemble.js` and `brand-title.js`. **Do not assume it is running.**
+     ⛔ The canvas element and its `#interactiveBg` id are unchanged — the CSS
+     (`position:fixed; z-index:-2`) is what places it, and it is the same element. -->
+<script src="assets/js/particle-field.js" defer></script>
+
+<!-- ⛔ REMOVED: the `#fxParticles` script. It built a <canvas> per card, seeded it on the
+     10px dot grid, animated it with requestAnimationFrame, phase-locked its mask to the
+     static layer's, and gated the whole thing behind a `.fx-live` class.
+     ⛔ Owner: *"implement the exact same as in pricing cards"*. The pricing card's cursor
+     pool is `html.dark .price-card::after` — a static dot grid behind a
+     `radial-gradient(200px circle at var(--mx) …)` mask at `opacity: .75`. That is entirely
+     CSS, so the pool on these cards is now `html.dark .card-fx > .fx-pool`, injected as a
+     plain span by `#cardFxLayers` next to `.fx-dots` and `.fx-ring`.
+     ⛔ Nothing here is left switched off: no canvas is created, no rAF runs, and there is no
+     `.fx-live` class any more — `grep -c fxParticles` on this file should find only
+     comments. Re-adding the block would put a SECOND pool on every card.
+     🗑 The page background's own field (`assets/js/particle-field.js`, `#interactiveBg`) is
+     untouched and still runs — it is a different element with different behaviour. -->
+
+<!-- ⛔ NO SCRIPT SIZES `.topbar-backing`. It is a fixed 20px strip holding two corner
+     tiles, so it is independent of the bar's height — the bar can wrap to two rows on a
+     phone and the white still ends exactly at the corner arc, with no white band below.
+     An earlier version sized a full-width white rectangle to the header's measured height
+     and needed a `ResizeObserver` to keep up; painting the NOTCH SHAPE instead removed
+     both the measurement and the failure mode. -->
 <!-- ⛔ REMOVED: `<script src="assets/js/brand-title.js" defer></script>` — the
      wordmark letter-by-letter entrance and its scribble. Owner: *"remove the
      animation"*. The CSS went with it (see the note by `.brand-title-grad`); the
