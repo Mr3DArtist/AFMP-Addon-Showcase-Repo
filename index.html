@@ -9,9 +9,43 @@
 <!-- Fonts (graceful fallback to system stack offline) -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<!-- ⛔⛔ ONE FAMILY FOR THE WHOLE PAGE — Outfit (owner: *"use the same font on the
+     whole pages texts depanding on where the bold is need add it there and where
+     ever the thin version is needed add it there"*).
+     ⛔ This link REPLACES four families: Inter, Space Grotesk, Manrope and Sora. That
+     is a net payload CUT — six Outfit weights ship as roughly one variable file,
+     where the four families were ten static ones.
+     ⛔ The full 300–800 range is requested because the page already asks for these
+     weights per element; the family swap alone lets each one land. Without 300 the
+     few thin contexts would snap to 400 and read as a weight change nobody asked for.
+     ⚠ HISTORY, and a mistake worth not repeating: an earlier edit of mine replaced
+     the Manrope+Sora <link> in place while swapping the display face, so the body and
+     heading text silently fell back to system sans. Nothing logged it — a missing
+     family is not an error, it just renders something else. Caught only by reading
+     the painted families back out of a render. -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet" />
+<!-- ⛔ OUTFIT 700/800 — the brand title face. Owner replaced the reference twice;
+     the second ("N-Panel Master") is a HEAVY GEOMETRIC DISPLAY whose letterforms are
+     unambiguous:
+       • SINGLE-STOREY `a` — a circle with a stem, no upper arch
+       • `o`, `e`, `c` near-perfect circles with small counters
+       • `M` with straight outer stems, vertex STOPPING ABOVE the baseline
+       • Black-weight strokes, very tight sidebearings
+     ⛔⛔ THAT REVERSES THE SATOSHI CALL, and the correction matters: Satoshi was picked
+     because the PREVIOUS reference read as a DOUBLE-STOREY `a`, which is exactly what
+     ruled this genre out. This reference contradicts that read. The earlier note
+     calling Poppins "the easy wrong answer" was written against the wrong reference.
+     ⛔ Outfit RATHER THAN POPPINS, on the owner's "similar or even better": the same
+     single-storey geometric skeleton, but tighter apertures, cleaner terminals and a
+     less circular `e` — closer to the reference's sturdy, slightly squared feel, and
+     not the single most-used geometric on the web.
+     ⛔ LICENCE: Outfit is SIL Open Font License 1.1 — free for commercial use.
+     ⚠ Google Fonts, the CDN the page already uses, so the Fontshare origin Satoshi
+     needed is GONE: one less third-party host inside the Superhive iframe.
+     Space Grotesk stays as the fallback — already loaded, so a failed request degrades
+     to an existing face rather than to system sans. -->
+<!-- (the Outfit request is merged into the single link above — one family, one request) -->
 
 <style>
 /* ============================================================
@@ -64,7 +98,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--ink);
   line-height: 1.6;
@@ -144,7 +178,7 @@ section, #features, #character { scroll-margin-top: 132px; }
 }
 .section-kicker::before { content: ''; width: 26px; height: 2px; background: var(--grad-brand); border-radius: 2px; }
 .section-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Outfit', sans-serif;
   font-size: clamp(1.8rem, 4vw, 2.7rem);
   line-height: 1.12; letter-spacing: -.02em;
   margin: .6rem 0 .8rem;
@@ -166,7 +200,7 @@ section, #features, #character { scroll-margin-top: 132px; }
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   height: 68px;
 }
-.brand { display: flex; align-items: center; gap: .65rem; text-decoration: none; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.08rem; letter-spacing: -.01em; }
+.brand { display: flex; align-items: center; gap: .65rem; text-decoration: none; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.08rem; letter-spacing: -.01em; }
 .brand-mark {
   width: auto; height: auto; border-radius: 0; flex: none;
   background: transparent !important; color: var(--bg);
@@ -214,7 +248,7 @@ section, #features, #character { scroll-margin-top: 132px; }
 .hero { padding: 84px 0 30px; text-align: center; position: relative; }
 .hero-tags { display: flex; flex-wrap: wrap; gap: .65rem; justify-content: center; margin-bottom: 2rem; }
 .hero h1 {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Outfit', sans-serif;
   font-size: clamp(2.5rem, 6.5vw, 4.6rem);
   line-height: 1.04; letter-spacing: -.025em;
   max-width: 17ch; margin: 0 auto;
@@ -751,7 +785,7 @@ section, #features, #character { scroll-margin-top: 132px; }
 .spec-item { padding: 1.7rem 1rem; text-align: center; border-left: 1px solid var(--border); }
 .spec-item:first-child { border-left: 0; }
 .spec-value {
-  font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+  font-family: 'Outfit', sans-serif; font-weight: 700;
   font-size: clamp(1.6rem, 3vw, 2.3rem); letter-spacing: -.02em;
   color: var(--color-tertiary); line-height: 1.1;
 }
@@ -774,7 +808,7 @@ section, #features, #character { scroll-margin-top: 132px; }
 .feature-text { text-align: left; }
 .feature-tag { margin-bottom: 1rem; }
 .feature-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Outfit', sans-serif;
   font-size: clamp(1.5rem, 3vw, 2.1rem); line-height: 1.15; letter-spacing: -.02em;
   margin-bottom: .9rem;
 }
@@ -865,7 +899,7 @@ section, #features, #character { scroll-margin-top: 132px; }
 }
 .card-visual .v-icon svg { width: 22px; height: 22px; }
 .card-body { padding: 1.1rem 1.2rem 1.3rem; }
-.card-body h4 { font-family: 'Space Grotesk', sans-serif; font-size: 1.02rem; letter-spacing: -.01em; margin-bottom: .3rem; }
+.card-body h4 { font-family: 'Outfit', sans-serif; font-size: 1.02rem; letter-spacing: -.01em; margin-bottom: .3rem; }
 .card-body p { font-size: .86rem; color: var(--muted); }
 .card-body .mini-tag {
   display: inline-block; margin-top: .7rem; font-size: .68rem; font-weight: 700;
@@ -892,11 +926,11 @@ section, #features, #character { scroll-margin-top: 132px; }
 /* the 1.23rem gap used to live as an inline style on the two headings (it replaced the
    .meta line's margin when the subtitles were dropped) — it belongs in the rule, so the
    scoped .compact variant below can override it without !important */
-.compare-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.19rem; letter-spacing: -.02em; margin-bottom: 1.23rem; }
+.compare-card h3 { font-family: 'Outfit', sans-serif; font-size: 1.19rem; letter-spacing: -.02em; margin-bottom: 1.23rem; }
 .compare-card .meta { font-size: .76rem; color: var(--muted); margin-bottom: 1.23rem; }
 .time-chip {
   display: inline-flex; align-items: center; gap: .44rem; margin-top: auto; align-self: flex-start;
-  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: .92rem;
+  font-family: 'Outfit', sans-serif; font-weight: 700; font-size: .92rem;
   padding: .53rem .97rem; border-radius: 12px; background: var(--card-bg-strong);
   border: 1px solid var(--border-strong);
 }
@@ -918,7 +952,7 @@ section, #features, #character { scroll-margin-top: 132px; }
 .acc-head {
   width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 1rem;
   padding: 1.25rem 1.5rem; background: transparent; border: 0; cursor: pointer;
-  font-family: 'Space Grotesk', sans-serif; font-size: 1.02rem; font-weight: 600;
+  font-family: 'Outfit', sans-serif; font-size: 1.02rem; font-weight: 600;
   color: var(--ink); text-align: left; transition: background .2s ease;
 }
 /* ⚠ was `background:` (the SHORTHAND) until 2026-09-21. The shorthand resets
@@ -1022,8 +1056,8 @@ section, #features, #character { scroll-margin-top: 132px; }
   40%, 100% { background-position: -40% 0; }
 }
 .price-card .plan { font-size: .8rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-.price-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; letter-spacing: -.02em; margin: .35rem 0 .9rem; }
-.price { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 4rem; line-height: 1; letter-spacing: -.03em; }
+.price-card h3 { font-family: 'Outfit', sans-serif; font-size: 1.8rem; letter-spacing: -.02em; margin: .35rem 0 .9rem; }
+.price { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 4rem; line-height: 1; letter-spacing: -.03em; }
 .price sup { font-size: 1.05rem; font-weight: 600; top: -1em; color: var(--muted); }
 .price .per { font-size: .9rem; font-weight: 500; color: var(--muted); }
 .price-desc { margin-top: .7rem; font-size: .88rem; color: var(--muted); min-height: 2.6em; }
@@ -1077,7 +1111,7 @@ section, #features, #character { scroll-margin-top: 132px; }
 .offer-panel > * { position: relative; z-index: 2; }
 .offer-head { max-width: 760px; margin: 0 auto 26px; }
 .offer-head h3 {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Outfit', sans-serif;
   font-size: clamp(1.4rem, 3vw, 1.9rem); letter-spacing: -.02em; color: var(--ink);
 }
 .offer-head p { margin-top: .5rem; color: var(--muted); }
@@ -1100,14 +1134,14 @@ section, #features, #character { scroll-margin-top: 132px; }
   box-shadow: 0 18px 40px -20px var(--glow-tertiary);
 }
 .offer-card-top { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
-.offer-name { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--ink); }
+.offer-name { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--ink); }
 .offer-badge {
   font-size: .66rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
   padding: .25rem .65rem; border-radius: 999px;
   background: color-mix(in srgb, var(--color-accent) 12%, transparent);
   color: var(--color-accent);
 }
-.offer-price { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 1.9rem; line-height: 1; color: var(--color-tertiary); }
+.offer-price { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.9rem; line-height: 1; color: var(--color-tertiary); }
 .offer-price small { font-size: .7em; }
 .offer-price.small { font-size: 1.2rem; line-height: 1.3; }
 .offer-desc { font-size: .82rem; line-height: 1.6; color: var(--muted); }
@@ -1228,7 +1262,7 @@ section, #features, #character { scroll-margin-top: 132px; }
   margin-bottom: 1.5rem;
 }
 .g-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Outfit', sans-serif;
   font-size: clamp(1.15rem, 2.4vw, 1.6rem); letter-spacing: -.02em;
   margin: .4rem 0 .15rem;
 }
@@ -1332,7 +1366,7 @@ section, #features, #character { scroll-margin-top: 132px; }
 .g-caption {
   display: none; /* product names below gallery cards hidden */
 }
-.g-name { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g-name { font-family: 'Outfit', sans-serif; font-weight: 600; font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .g-cta {
   font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
   color: var(--color-tertiary); opacity: 0; transform: translateX(-4px);
@@ -1451,7 +1485,7 @@ html:not(.dark) .support-badge { color: #0096ff; }
   background: color-mix(in srgb, var(--color-accent) 12%, transparent);
   color: var(--color-accent);
 }
-.support-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; letter-spacing: -.01em; }
+.support-card h3 { font-family: 'Outfit', sans-serif; font-size: 1.15rem; letter-spacing: -.01em; }
 .support-card p { font-size: .9rem; color: var(--muted); line-height: 1.55; }
 .support-link {
   margin-top: .5rem;
@@ -1484,11 +1518,6 @@ html:not(.dark) .support-badge { color: #0096ff; }
 }
 @media (prefers-reduced-motion: reduce) { .mouse-glow { display: none; } }
 
-.hero-particles, .section-particles {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  z-index: 0; pointer-events: none;
-}
 .hero .container,
 .section > .container,
 .gallery-section .container,
@@ -1626,7 +1655,7 @@ html:not(.dark) .support-badge { color: #0096ff; }
   transition: transform .2s ease, border-color .2s ease;
 }
 .version-badge:hover { transform: translateY(-1px); border-color: var(--color-tertiary); }
-.ver-date { margin-left: .6rem; font-size: .8rem; font-weight: 500; color: var(--muted); font-family: 'Inter', sans-serif; letter-spacing: .02em; }
+.ver-date { margin-left: .6rem; font-size: .8rem; font-weight: 500; color: var(--muted); font-family: 'Outfit', sans-serif; letter-spacing: .02em; }
 
 /* 2-Click Workflow steps */
 /* ⛔⛔ This section's top band CANNOT be changed from here — try it and it silently does nothing.
@@ -1656,12 +1685,12 @@ html:not(.dark) .support-badge { color: #0096ff; }
 .workflow-num {
   width: 62px; height: 62px; border-radius: 18px; flex: none;
   display: grid; place-items: center;
-  font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 800;
+  font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 800;
   color: var(--bg);
   background: var(--grad-brand);
   box-shadow: 0 12px 24px -10px var(--glow-tertiary);
 }
-.workflow-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; letter-spacing: -.01em; }
+.workflow-card h3 { font-family: 'Outfit', sans-serif; font-size: 1.25rem; letter-spacing: -.01em; }
 .workflow-card p { font-size: .92rem; line-height: 1.65; color: var(--muted); max-width: 34ch; }
 
 /* Purchase warning box — amber gradient border + soft tinted fill */
@@ -1689,7 +1718,7 @@ html:not(.dark) .support-badge { color: #0096ff; }
 }
 .purchase-warning .pw-icon svg { width: 17px; height: 17px; }
 .purchase-warning .pw-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Outfit', sans-serif;
   font-size: 1.06rem; font-weight: 700; color: var(--ink);
 }
 .purchase-warning p { font-size: .9rem; line-height: 1.7; color: var(--muted); margin: 0; }
@@ -1711,10 +1740,10 @@ html:not(.dark) .support-badge { color: #0096ff; }
 }
 .special-offer .so-inner { position: relative; }
 .so-kicker { font-size: .78rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; opacity: .85; color: var(--color-accent); margin-bottom: .7rem; }
-.so-title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; letter-spacing: -.02em; margin-bottom: 1.2rem; color: var(--ink); }
+.so-title { font-family: 'Outfit', sans-serif; font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; letter-spacing: -.02em; margin-bottom: 1.2rem; color: var(--ink); }
 .so-prices { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1rem; }
 .so-old { text-decoration: line-through; opacity: .6; font-size: 1.1rem; color: var(--muted); }
-.so-new { font-family: 'Space Grotesk', sans-serif; font-size: clamp(2.3rem, 4vw, 2.7rem); font-weight: 900; color: #0096ff; text-shadow: 0 2px 14px color-mix(in srgb, #0096ff 40%, transparent); line-height: 1; }
+.so-new { font-family: 'Outfit', sans-serif; font-size: clamp(2.3rem, 4vw, 2.7rem); font-weight: 900; color: #0096ff; text-shadow: 0 2px 14px color-mix(in srgb, #0096ff 40%, transparent); line-height: 1; }
 .so-valid { display: inline-block; background: color-mix(in srgb, var(--ink) 12%, transparent); padding: .35rem 1rem; border-radius: 999px; font-size: .82rem; font-weight: 600; border: 1px solid var(--border-strong); color: var(--ink); }
 
 /* Coupon code */
@@ -1729,7 +1758,7 @@ html:not(.dark) .support-badge { color: #0096ff; }
 }
 .coupon-btn:hover { transform: translateY(-2px); border-color: var(--color-accent); box-shadow: var(--shadow); }
 .coupon-label { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-.coupon-code { font-family: 'Space Grotesk', monospace; font-size: 1.15rem; font-weight: 800; letter-spacing: .08em; color: var(--color-tertiary); }
+.coupon-code { font-family: 'Outfit', monospace; font-size: 1.15rem; font-weight: 800; letter-spacing: .08em; color: var(--color-tertiary); }
 .coupon-copy { font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--bg); background: var(--color-accent); padding: .32rem .75rem; border-radius: 999px; }
 .coupon-hint { margin-top: .6rem; font-size: .78rem; color: var(--muted); }
 
@@ -1821,11 +1850,22 @@ html:not(.dark) .support-badge { color: #0096ff; }
        0.88 x 88% = 77% of the width and 0.88 x 60% = 53% down, so it stays visible to
        roughly 70% - just short of the character at ~71% - and dissolves there. */
     radial-gradient(88% 60% at 0% 0%, rgba(56, 224, 255, .74) 0%, rgba(0, 178, 255, .62) 20%, rgba(0, 150, 255, .48) 38%, rgba(0, 112, 235, .33) 54%, rgba(0, 74, 195, .19) 68%, rgba(0, 52, 170, .08) 80%, rgba(0, 40, 140, 0) 90%),
-    /* the band's original gradient, unchanged, underneath */
-    linear-gradient(100deg,
-      color-mix(in srgb, #0096ff 16%, var(--bg)),
-      color-mix(in srgb, var(--color-accent) 9%, var(--bg)) 52%,
-      color-mix(in srgb, #0096ff 16%, var(--bg)));
+    /* ⛔⛔ THE BAND HAS NO FILL ANY MORE. Owner: *"remove the background coloring of this
+       card"*, then *"make it transperat but keep the colors on the left and right
+       sides"*.
+       What was colouring it was NOT `background-color` — that already computed to
+       `rgba(0,0,0,0)`. It was the second layer: an OPAQUE `linear-gradient(100deg, …)`
+       whose three stops were each `color-mix(… , var(--bg))`, i.e. the page background
+       mixed with blue. Mixing with an opaque colour produces an opaque colour, so that
+       layer WAS the dark navy panel. Removing it is what makes the band see-through.
+       ⛔ The right-hand wash below is NEW, and it is what "keep the colors on the left
+       and right sides" asks for: the old fill carried a blue tint at BOTH ends of its
+       ramp, so dropping it would have left the right side bare. This mirrors the left
+       wash, deliberately weaker and shorter — the character art sits at ~71% and a
+       full-strength wash there would sit behind her face.
+       ⚠ The border and the box-shadow are untouched: they are the band's EDGE, not its
+       fill. Say the word if the edge should go too. */
+    radial-gradient(88% 60% at 100% 0%, rgba(56, 224, 255, .30) 0%, rgba(0, 178, 255, .24) 22%, rgba(0, 150, 255, .17) 40%, rgba(0, 112, 235, .10) 58%, rgba(0, 74, 195, .04) 74%, rgba(0, 40, 140, 0) 88%);
   border: 1px solid color-mix(in srgb, #0096ff 34%, transparent);
   box-shadow: 0 12px 32px -16px color-mix(in srgb, #0096ff 45%, transparent);
 }
@@ -2059,7 +2099,7 @@ html:not(.dark) .support-badge { color: #0096ff; }
 .promo-banner .pb-hole-l { left: -22px; }
 .promo-banner .pb-hole-r { right: -22px; }
 .pb-kicker { font-size: .95rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .9; color: #011a60; }
-.pb-title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.9rem, 4vw, 2.5rem); font-weight: 900; line-height: 1.2; color: #011a60; }
+.pb-title { font-family: 'Outfit', sans-serif; font-size: clamp(1.9rem, 4vw, 2.5rem); font-weight: 900; line-height: 1.2; color: #011a60; }
 .pb-code {
   display: inline-flex; align-items: center;
   background: #0065e2; color: #fff;
@@ -2072,7 +2112,7 @@ html:not(.dark) .support-badge { color: #0096ff; }
 .pb-valid { font-size: .74rem; opacity: .75; font-weight: 600; color: #011a60; }
 .pb-prices { display: flex; align-items: center; justify-content: center; gap: 1rem; }
 .pb-old { text-decoration: line-through; opacity: .6; font-size: 1.1rem; color: #011a60; }
-.pb-new { font-family: 'Space Grotesk', sans-serif; font-size: clamp(2rem, 4vw, 2.4rem); font-weight: 900; color: #ef4444; line-height: 1; text-shadow: 0 2px 10px rgba(0, 0, 0, .15); }
+.pb-new { font-family: 'Outfit', sans-serif; font-size: clamp(2rem, 4vw, 2.4rem); font-weight: 900; color: #ef4444; line-height: 1; text-shadow: 0 2px 10px rgba(0, 0, 0, .15); }
 /* Dark mode: dark green fill + light text + bright gradient button */
 .dark .promo-banner {
   background:
@@ -2114,7 +2154,7 @@ html:not(.dark) .support-badge { color: #0096ff; }
   animation: pulse 1.6s ease-in-out infinite;
 }
 .vb-version {
-  font-family: 'Space Grotesk', monospace;
+  font-family: 'Outfit', monospace;
   font-size: .82rem; font-weight: 700; letter-spacing: .02em;
   color: var(--ink);
 }
@@ -2208,7 +2248,7 @@ html:not(.dark) .support-badge { color: #0096ff; }
 .latest-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(0,150,255,.2);padding:2px 7px;border-radius:20px;font-weight:600;color:rgb(0,150,255);white-space:nowrap;font-size:.68rem}
 .latest-dot{width:6px;height:6px;border-radius:50%;background:rgb(0,150,255);animation:latestBlink 1.2s ease-in-out infinite}
 @keyframes latestBlink{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,150,255,.6)}50%{opacity:.4;box-shadow:0 0 0 6px rgba(0,150,255,0)}}
-.vb-version{font-family:'Space Grotesk',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.02em;color:var(--ink)}
+.vb-version{font-family:'Outfit',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.02em;color:var(--ink)}
 @keyframes badgeSpin{to{--badge-angle:360deg}}
 @property --badge-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
 .vb-changelog{position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:.4rem;font-weight:600;letter-spacing:.01em;color:var(--muted);white-space:nowrap;text-decoration:none;background:var(--card-bg);border:1px solid var(--border-strong);padding:3px 7px;border-radius:6px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,visibility .2s ease;z-index:5}
@@ -2286,9 +2326,9 @@ html:not(.dark) .site-header .brand-mark img{filter:invert(1)}
   --shadow-light:0 14px 34px -20px rgba(0,0,0,.5);
   --grad-brand:linear-gradient(120deg,#fafafa,#737373);
 }
-body{font-family:'Manrope',system-ui,sans-serif}
-h1,h2,h3,h4,.site-header .brand,.section-title,.g-title,.g-name,.acc-head,.vb-version,.step-num{font-family:'Sora',system-ui,sans-serif}
-.seam-label{font-family:'Sora',system-ui,sans-serif}
+body{font-family:'Outfit',system-ui,sans-serif}
+h1,h2,h3,h4,.site-header .brand,.section-title,.g-title,.g-name,.acc-head,.vb-version,.step-num{font-family:'Outfit',system-ui,sans-serif}
+.seam-label{font-family:'Outfit',system-ui,sans-serif}
 
 /* ============================================================
    LIQUID GLASS — everything glass (Gobos Master style)
@@ -2593,7 +2633,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 .wf-wrap .workflow-grid{gap:.55rem!important}
 .wf-wrap .workflow-card{margin:0}
 .workflow-card{display:flex;flex-direction:column;gap:.5rem;border-radius:22px;padding:1.5rem}
-.workflow-num{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:1.15rem;font-weight:800;font-family:'Sora',system-ui,sans-serif;background:color-mix(in srgb,var(--color-tertiary) 16%,transparent);color:var(--color-tertiary);margin-bottom:.3rem}
+.workflow-num{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:1.15rem;font-weight:800;font-family:'Outfit',system-ui,sans-serif;background:color-mix(in srgb,var(--color-tertiary) 16%,transparent);color:var(--color-tertiary);margin-bottom:.3rem}
 .workflow-card .compare-steps{margin:.4rem 0 0}
 .workflow-card .time-chip{margin-top:auto;align-self:flex-start}
 /* Divider bar — azure, matching the button azure (#0096ff).
@@ -2654,6 +2694,13 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   background:linear-gradient(105deg,transparent 45%,rgba(255,255,255,.9) 45%,rgba(255,255,255,.9) 60%,transparent 60%);
   transform:translateX(-170%) skewX(-20deg);animation:btnShine 3s linear infinite;
 }
+/* Slower sweep on the COMPARE PAIR ONLY — owner, 2026-10-01: "the sheen is too fast on these".
+   These two cards are compact (576×262), so the shared 3s beat crossed them in 1.2s and read as
+   a flicker. ⛔ This is a LONGHAND override of the shorthand above: same specificity, later in
+   source, so it wins here and the 3s btnShine beat is untouched everywhere else (buttons, coupon,
+   hero copy card, support cards, accordions). ⛔ Do NOT slow @keyframes btnShine itself — it is
+   shared by all of those. Sweep is 40% of the beat, so 6s = 2.4s across + 3.6s rest. */
+#workflow .compare-card::after{animation-duration:6s}
 /* Feature cards — no sheen */
 #workflow .quickfog-outer:has(.feature-row),
 #workflow .feature-row .quickfog-outer{background-image:none;background:var(--card-bg)}
@@ -2890,8 +2937,1175 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
    .acc-head:hover `background` shorthand wiping the glass gradient, fixed at
    that rule. Nothing in #specs has a sweeping background-position on hover. */
 </style>
+
+<!-- ============================================================ -->
+<!-- #bgRampStyles — THE PAGE-WIDE GRADIENT                          -->
+<!-- Owner, 2026-10-07: "update the pages background to a gradient   -->
+<!-- that matches the coloring of the background gradient of this    -->
+<!-- imag [MAIN SH Thumbnail.png] and also add the gradient to every -->
+<!-- section and it should merge smoothly and should not be looked   -->
+<!-- to view instead make it build into the sections"                -->
+<!--                                                                -->
+<!-- ⛔⛔ THE COLOURS ARE SAMPLED FROM THE IMAGE, NOT EYEBALLED.      -->
+<!-- `_thumb_sample.js` draws MAIN SH Thumbnail.png to a canvas and  -->
+<!-- reads the real pixels. Its background is a HORIZONTAL ramp:     -->
+<!--   #011144 → #012171 → #00319d → #0053d6 → #0066eb → #027ffc     -->
+<!--   → #0ba6fd → #15c6fd → #3de6fd → #5af5fd                      -->
+<!-- and it is nearly CONSTANT vertically (left edge stays ~#011044  -->
+<!-- top to bottom), so the hue journey is what is being borrowed,   -->
+<!-- not the direction.                                              -->
+<!--                                                                -->
+<!-- ⛔⛔ WHY THE RAMP IS CAPPED AT PEAK #012160. Three passes, and    -->
+<!-- each cap was found by MEASURING, because no contrast figure on   -->
+<!-- white text predicts the real limit.                              -->
+<!--                                                                  -->
+<!-- Pass 1 — cap #0066eb (white = 5.12:1), taken from the sampled    -->
+<!-- ramp alone:  #0066eb ok · #027ffc 3.86:1 · #0ba6fd 2.66:1 ·      -->
+<!-- #3de6fd 1.51:1 · #5af5fd 1.32:1.                                 -->
+<!-- Pass 2 — cap #0041ad (white = 8.9:1). Still WRONG, and only a    -->
+<!-- viewport- sized render showed it: the glass cards stop reading   -->
+<!-- as surfaces, and .prod-link / the badges wash out. White passed;  -->
+<!-- the page's other colours did not.                                -->
+<!-- Pass 3 — THIS one. `_ramp_sweep.js` applies candidate peaks for  -->
+<!-- real and samples the rendered card. The binding constraint is    -->
+<!-- .prod-link #4db4ff ON a card, because a card is white-overlay on -->
+<!-- top of the page colour:                                          -->
+<!--   peak #01123a → card #2a355a → 5.29:1 ok                        -->
+<!--   peak #012160 → card #2a3b71 → 4.73:1 ok   ← BRIGHTEST THAT     -->
+<!--   peak #012874 → card #2a3f7e → 4.40:1 FAIL    PASSES            -->
+<!--   peak #013088 → card #2a428a → 4.14:1 FAIL                      -->
+<!-- ⚠ Also tested and REJECTED: neutralising the glass                -->
+<!-- `backdrop-filter: saturate(1.8)`, on the theory that it was       -->
+<!-- tuned against a near-black page (where it had no colour to       -->
+<!-- amplify) and so was never really exercised. It buys ONE step:     -->
+<!-- the ceiling moves #012160 → #012874. Not worth changing a        -->
+<!-- page-wide surface token for one step.                            -->
+<!--                                                                  -->
+<!-- So the field stays in the ramp's DARK range — which is also what -->
+<!-- the thumbnail itself does: in it every word sits on the dark     -->
+<!-- half and the bright cyan is only ever behind the character art,  -->
+<!-- used here as corner GLOWS and never as the field behind copy.    -->
+<!--                                                                -->
+<!-- ⛔ ONE gradient on <body>, not one per section. That is what     -->
+<!-- makes it merge smoothly: every section is transparent, so        -->
+<!-- adjacent sections sample the SAME continuous ramp and their      -->
+<!-- shared edge is seamless BY CONSTRUCTION. Per-section gradients   -->
+<!-- would have to be hand-matched and would band at every seam.      -->
+<!-- Verified: no section carries an opaque background (checked       -->
+<!-- `section`, `.section`, `.hero`, `.gallery-section`,              -->
+<!-- `.catalog-section` — all padding/scroll-margin only).            -->
+<!-- ============================================================ -->
+<style id="bgRampStyles">
+/* ---------- DARK (the page's default) ----------
+   A slow arc: the thumbnail's deepest navy at the top, building through its
+   royal blues to the brightest text-safe stop around 72%, then easing back so
+   the page does not end on its loudest note. 17 stops over a ~15.6k document
+   is roughly one colour change per 900px — too gradual to band. */
+html.dark body {
+  background-image:
+    /* the thumbnail's bright cyan, kept to the corner it occupies in the image
+       itself — the one part of the ramp that cannot sit behind copy */
+    radial-gradient(118rem 60rem at 96% -10%, rgba(90, 245, 253, .10), transparent 58%),
+    radial-gradient(72rem 46rem at 2% 3%, rgba(2, 127, 252, .12), transparent 60%),
+    /* the field — the sampled ramp, building downward to its measured ceiling */
+    linear-gradient(180deg,
+      #01030b 0%,
+      #01040d 8%,
+      #01060f 16%,
+      #010711 24%,
+      #010914 32%,
+      #010a18 40%,
+      #010c1d 48%,
+      #010e23 56%,
+      #01102a 64%,
+      #011231 72%,
+      #011439 80%,
+      #011643 88%,
+      #011a4d 94%,
+      #011845 100%);
+}
+/* ---------- LIGHT — the same hue journey at paper luminance ---------- */
+html:not(.dark) body {
+  background-image:
+    radial-gradient(118rem 60rem at 96% -10%, rgba(61, 230, 253, .20), transparent 58%),
+    radial-gradient(72rem 46rem at 2% 3%, rgba(2, 127, 252, .10), transparent 60%),
+    linear-gradient(180deg,
+      #f6faff 0%,
+      #eff6fe 12%,
+      #e8f1fd 24%,
+      #e1edfc 36%,
+      #d9e8fc 48%,
+      #d0e3fb 60%,
+      #c8e0fb 72%,
+      #d0e3fb 84%,
+      #dfeafd 92%,
+      #edf4fe 100%);
+}
+/* ⛔ `background-attachment` is deliberately left at its default `scroll` so the
+   ramp spans the DOCUMENT and builds as you descend. `fixed` would pin it to the
+   viewport and it would stop being a ramp through the sections at all — the
+   mistake this page already made once. */
+</style>
+
+<!-- ============================================================ -->
+<!-- #fourChanges — four owner requests, 2026-10-07                  -->
+<!--   1. animate the clip progress gradient                         -->
+<!--   2. strip the card chrome from the intro + compare pair        -->
+<!--   3. colour that section's text to the page theme               -->
+<!--   4. restyle the pricing cards to the supplied reference        -->
+<!-- Delete this one block to undo all four.                         -->
+<!-- ============================================================ -->
+<style id="fourChanges">
+
+/* ============ 1. CLIP PROGRESS — animated gradient ============
+   ⛔ The fill was ALREADY animated (`animation: glowing 20s …`), which is why
+   "make it animated" is the right complaint: `glowing` ping-pongs
+   background-position 0 → 400% → 0 over TWENTY seconds, so on a 4px bar the
+   movement is imperceptible — it reads as a static gradient. The keyframes are
+   shared with the hero glow, so `glowing` itself is NOT touched; the bar gets
+   its own one-directional flow at a speed the eye can actually catch.
+   ⛔ The GRADIENT ITSELF IS UNCHANGED ON PURPOSE — same five stops in the same
+   order, first and last identical (#0096ff) so the 400% tile loops seamlessly.
+   That is what makes the bar and the hero halo read as ONE element, and it is
+   kept so only the motion changes. */
+@keyframes clipFlow { from { background-position: 0% 0; } to { background-position: -400% 0; } }
+.clip-bar-fill {
+  background-size: 400% 100%;
+  animation: clipFlow 2.6s linear infinite;
+  box-shadow: 0 0 10px color-mix(in srgb, #0096ff 80%, transparent),
+              0 0 22px color-mix(in srgb, #22d3ee 45%, transparent);
+}
+/* A travelling sheen on the TRACK too, so the control still reads as alive on a
+   clip that has not started — the fill is 0-width until then, and an animated
+   gradient inside a 0-width box is invisible, which is the one case this request
+   would otherwise silently fail. */
+@keyframes clipTrack { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.clip-bar::before {
+  background-image: linear-gradient(90deg,
+    transparent 30%, color-mix(in srgb, #0096ff 30%, transparent) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: clipTrack 2.6s linear infinite;
+  background-color: color-mix(in srgb, var(--bg) 62%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .clip-bar-fill, .clip-bar::before { animation: none; }
+}
+
+/* ============ 2. INTRO + COMPARE — card chrome removed ============
+   Owner: "remove the cards from this image not from the OLD WAY and
+   HOurs/Mins" — the SURFACES go; `.vs-badge` (THE OLD WAY / WITH AUTO FACE
+   MOCAP PRO) and `.time-chip` (~ 6 hours / ~ 2 minutes) STAY.
+   ⛔ `background-image: none` is the one that matters. These are `.quickfog-outer`
+   glass, and the glass is a three-layer background-IMAGE, not a background-colour
+   — killing only the colour leaves the whole surface intact. That is the trap. */
+/* ⛔⛔ `!important` IS REQUIRED HERE, and it is not laziness — the glass rule at
+   ~:2296 and the compare rule at ~:2559 set `background-color: var(--card-bg)`
+   and the pair's own selector list includes `.compare-card.old` / `.new` (0,2,0),
+   so specificity alone does not settle it. This is the page's own idiom for the
+   same problem — `.btn-primary` uses `!important` for exactly this reason.
+   Verified by reading back getComputedStyle, not by eyeballing the CSS. */
+.afmp-intro-card,
+.afmp-intro-card:hover,
+.compare-card,
+.compare-card.old,
+.compare-card.new,
+.compare-card:hover {
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  outline-color: transparent;
+}
+/* ⛔⛔ THE WRAPPER IS ITSELF A `.quickfog-outer` GLASS PANEL and it was the LAST
+   box still showing — the pair sits in `<div class="quickfog-outer"
+   style="margin-top:1rem;padding:.6rem;">`, so removing the chrome from
+   `.compare-card` alone left a rounded panel around both columns. Targeted by
+   `:has()` because it carries no class of its own.
+   ⚠ Its own `.6rem` padding is deliberately NOT zeroed: the owner protected that
+   value explicitly ("not the outter padding undo it now"). Only the surface goes. */
+#workflow .quickfog-outer:has(.compare-grid),
+#workflow .quickfog-outer:has(.compare-grid):hover {
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  outline-color: transparent;
+}
+/* The sheen was tuned to 6s when these were surfaces. With no card under it, a
+   white band sweeping across loose text is a defect, so it is off — reported,
+   because the 6s value was itself an explicit earlier request. */
+#workflow .compare-card::after { content: none; }
+/* the pair still needs column separation now the boxes are gone */
+.compare-grid { gap: 3.4rem; }
+
+/* ============ 3. that section's text — themed colour ============
+   Azure gradient on the headings, azure on the step numbers and badges.
+   ⛔ `-webkit-text-fill-color: transparent` is paired with a solid `color`
+   fallback for anything that cannot do background-clip. */
+.afmp-intro-card h3,
+.compare-card h3 {
+  background-image: linear-gradient(115deg, #ffffff 6%, #8fd0ff 52%, #0096ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: #0096ff;
+  -webkit-text-fill-color: transparent;
+}
+html:not(.dark) .afmp-intro-card h3,
+html:not(.dark) .compare-card h3 {
+  background-image: linear-gradient(115deg, #0b1a2b 6%, #0d5ea8 52%, #0096ff 100%);
+  color: #0d5ea8;
+}
+.afmp-intro-card p { color: color-mix(in srgb, var(--ink) 88%, #0096ff); }
+.compare-steps li { color: color-mix(in srgb, var(--ink) 90%, #0096ff); }
+/* the number chips take the page's own azure button gradient, not --color-accent
+   (which the 2nd token block resolves to flat grey) */
+.compare-card .step-num,
+.compare-card.old .step-num {
+  background: linear-gradient(135deg, #0096ff, #0065e2);
+  color: #fff;
+}
+.compare-card.new .vs-badge {
+  background: linear-gradient(135deg, #0096ff, #0065e2);
+  color: #fff;
+  border-color: transparent;
+}
+.compare-card.old .vs-badge {
+  border-color: color-mix(in srgb, #0096ff 45%, transparent);
+  color: #8fd0ff;
+  background: color-mix(in srgb, #0096ff 12%, transparent);
+}
+
+/* ============ 4. PRICING CARDS — rebuilt from the supplied reference code ====
+   The owner pasted the actual source of the reference (a Novu pricing section),
+   so the values below are READ OFF THAT CODE rather than guessed from the
+   screenshot: card `rounded-xl` (12px) / `p-6` (24px) / `min-h-[394px]`,
+   plan name `text-[20px] font-medium tracking-tighter`, price `text-[40px]` with
+   a `text-[15px]` suffix, CTA `h-[46px] w-full rounded-md text-[14px] uppercase`,
+   a `border-dashed` rule above the feature list, and — the structural one —
+   **the CTA sits UNDER THE PRICE, above the description and the list**.
+   ⛔ That order is the opposite of this page's earlier instruction ("put the
+   buttons at the very bottom", see .price-card's own comments), so it is done
+   with flex `order` ONLY — the markup is untouched and one property per item
+   puts it back.
+   ⛔ The reference's teal/pink is NOT imported; the page's own azure carries it.
+   ⛔⛔ NEVER leave text between two comment terminators — an orphaned comment
+   body is a CSS PARSE ERROR, and the parser recovers by swallowing the NEXT RULE
+   WHOLE. That is exactly what happened here: `html.dark .price-card` vanished
+   from the CSSOM while later rules were fine, so the cards silently kept their
+   old surface. The fix is this deletion; the rule below is now the first thing
+   after the comment.
+   ⛔ AND DO NOT TYPE THE TERMINATOR SEQUENCE INSIDE A COMMENT — the first draft
+   of this very warning contained it, which ended the comment early and produced
+   the identical bug one layer down. `_orphan_css_check.js` catches it. */
+html.dark .price-card {
+  background-color: transparent;
+  /* layer 1 is the CURSOR GLOW — --mx/--my come from #pricingGlow */
+  background-image:
+    radial-gradient(300px circle at var(--mx, 50%) var(--my, 0%),
+      color-mix(in srgb, #0096ff 22%, transparent), transparent 68%),
+    linear-gradient(180deg, #121722 0%, #0b0e14 100%);
+  border: 1px solid rgba(255, 255, 255, .10);
+  border-radius: 12px;
+  padding: 1.5rem;
+  /* ⛔ OUTER GLOW — owner, 2026-10-07: *"also add the outter glow to the pricing
+     cards"*. Every layer is listed because `box-shadow` is ONE property: setting
+     only the glow would drop the glass rule's inset highlights (~:2715) and the
+     cards would go flat. Order is inset highlight first, then a hairline azure
+     ring, then the halo.
+     ⚠ `spread` is negative on the halo (-14px) so it reads as light BLEEDING out
+     of the card rather than a hard second border. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .20),
+    0 0 0 1px color-mix(in srgb, #0096ff 10%, transparent),
+    0 0 44px -14px color-mix(in srgb, #0096ff 38%, transparent);
+  transition: border-color .3s ease, box-shadow .3s ease;
+}
+html.dark .price-card:hover {
+  border-color: color-mix(in srgb, #0096ff 40%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .26),
+    0 0 0 1px color-mix(in srgb, #0096ff 24%, transparent),
+    0 0 62px -12px color-mix(in srgb, #0096ff 62%, transparent);
+}
+/* ⛔⛔ NO HOVER SHEEN — owner, 2026-10-07: *"remove the hover over sheen only"*.
+   The base rules sweep the glass on hover with
+   `background-position: -20% 0, 0 0, 0 0` (`:hover`) and `120% 0, 0 0, 0 0`
+   (`.featured:hover`).
+   ⛔⛔ THIS ALSO HAD TO BE FIXED FOR CORRECTNESS, not just taste: those same base
+   rules carry `background-size: 200% 100%, auto, auto`. My background-image
+   replaced the three glass layers, so the sweep was stretching MY cursor-glow
+   layer to 200% and shoving it to 120% — the glow was being drawn in the wrong
+   place before hover and jumping on it. Resetting size AND position is what makes
+   the glow land on the pointer at all.
+   ⚠ Specificity: `.price-card.featured:hover` is 0,3,0, so the featured case needs
+   `html.dark .price-card.featured:hover` (0,3,1) to be held still. */
+html.dark .price-card,
+html.dark .price-card:hover,
+html.dark .price-card.featured:hover {
+  background-size: auto, auto, auto;
+  background-position: 0 0, 0 0, 0 0;
+}
+/* ⛔⛔ THE CURSOR POOL IS A SEPARATE ELEMENT AND DOES NOT BLINK — owner,
+   2026-10-07: *"should not blink for the mouse hover patern"*. Both patterns had
+   been two MASK LAYERS of one `::before`, and a mask layer cannot carry its own
+   opacity — the blink animates the whole box, so the pool pulsed with the corner
+   dots. Splitting them across two pseudo-elements is the only way to blink one and
+   hold the other.
+   ⛔ `::after` is free because the "Most popular" sheen is off — and this rule has
+   to UNDO that sheen anyway: `.price-card.featured::after` (0,2,0) sets its own
+   background-image/size/position/repeat and `animation: cardSheen`. `html.dark
+   .price-card::after` (0,2,1) outranks it, and every one of those properties is
+   re-declared here so the white band cannot leak onto the pool.
+   ⚠ Keep the pool's dot grid IDENTICAL to the corner's (same 10px tile, same dot),
+   or the two layers visibly disagree where they overlap. */
+html.dark .price-card::after {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none; z-index: 0;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, .38) 1.1px, transparent 1.5px);
+  background-size: 10px 10px;
+  background-repeat: repeat;
+  background-position: 0 0;
+  -webkit-mask-image: radial-gradient(200px circle at var(--mx, 88%) var(--my, 0%), #000, transparent 74%);
+          mask-image: radial-gradient(200px circle at var(--mx, 88%) var(--my, 0%), #000, transparent 74%);
+  opacity: .75;
+  animation: none;
+}
+
+/* ============ 5. THE SAME PATTERN ON THE TWO OFFER BANDS (2026-10-07) ============
+   Owner: *"implement the same patern effect for the banner at the top and below the
+   pricing and the patern should show where there is most color in the banner's
+   background"*.
+   ⛔⛔ WHERE "MOST COLOUR" IS, MEASURED — not guessed. The band's background is a
+   `radial-gradient(88% 60% at 0% 0%, …)` (see ~:1818), i.e. anchored at the
+   TOP-LEFT. Sampled across the rendered band:
+     x2%  #1287b6 (lum .208)   <- brightest, the wash's own centre
+     x18% #1274a7 (.154)
+     x45% #22456a (.056)
+     x60% #233043 (.029)       <- effectively the plain page background
+   So the mask is anchored at `0% 0%` and dies by ~50%, tracking the wash instead of
+   sitting in a corner that happens to look tidy.
+   ⛔ White dots are readable THERE because the wash is bright (lum .15–.21 gives
+   ~5:1 against white); over the dark right-hand half they would be invisible, which
+   is the second reason the mask must follow the colour.
+   ⛔ Same two-element split as the cards: `::before` blinks, `::after` is the steady
+   cursor pool — a mask layer cannot carry its own opacity, so one element cannot do
+   both. `.ob-inner` sits at z-index 1, so both stay behind the copy. */
+.offer-band::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none; z-index: 0;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, .45) 1.1px, transparent 1.5px);
+  background-size: 10px 10px;
+  /* same wave as the cards — see `@keyframes dotWave`. The only difference is the
+     corner: this band's wash is anchored TOP-LEFT, so the fade is `0% 0%`. */
+  -webkit-mask-image:
+    radial-gradient(52% 125% at 0% 0%, #000, transparent 78%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .15) 0px, #000 80px, rgba(0, 0, 0, .15) 160px);
+          mask-image:
+    radial-gradient(52% 125% at 0% 0%, #000, transparent 78%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .15) 0px, #000 80px, rgba(0, 0, 0, .15) 160px);
+  -webkit-mask-composite: source-in;
+          mask-composite: intersect;
+  animation: dotWave 3.6s linear infinite;
+}
+.offer-band::after {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none; z-index: 0;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, .45) 1.1px, transparent 1.5px);
+  background-size: 10px 10px;
+  background-repeat: repeat;
+  background-position: 0 0;
+  /* ⛔ the fallback is 26% 0% — inside the wash — so the pool is somewhere sensible
+     before the first pointer event instead of stranded at the top centre. */
+  -webkit-mask-image: radial-gradient(220px circle at var(--mx, 26%) var(--my, 0%), #000, transparent 74%);
+          mask-image: radial-gradient(220px circle at var(--mx, 26%) var(--my, 0%), #000, transparent 74%);
+  opacity: .8;
+  animation: none;
+}
+/* the light theme keeps the SAME cyan wash, so white dots would vanish — the dots
+   invert instead of the mask moving */
+html:not(.dark) .offer-band::before,
+html:not(.dark) .offer-band::after {
+  background-image: radial-gradient(circle, color-mix(in srgb, #062a44 42%, transparent) 1.1px, transparent 1.5px);
+}
+
+/* ============ 6. INTERACTIVE BACKGROUND — replaces the SVG topology tile ============
+   Owner: *"the background sapose to look like this"* + a full procedural brief
+   (drifting nodes, connection lines, wireframe waves, grid fragments, mouse
+   influence with 150-250px falloff, click ripple, reduced-motion support).
+   ⛔ The SVG tile and its drift/breath animation are REMOVED — a static tiled
+   image cannot do any of that. The generator (_gen_topology_bg.js) and
+   assets/images/topology-bg.svg are kept on disk but are no longer referenced.
+   ⛔ The canvas carries `pointer-events: none` and the listeners are attached to
+   `window`, so it can never swallow a click meant for a card or a button — the
+   brief is explicit that the website content stays fully clickable.
+   ⛔ z-index -2: above the canvas background (the body gradient ramp), below
+   body::before (ambient glows) and body::after (film grain), both at -1. */
+#interactiveBg {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  z-index: -2; pointer-events: none;
+  display: block;
+}
+/* ============ 7. THE BRAND TITLE (owner: "create a big text 'Auto Face Mocap
+   Pro' Right below the Top banner and make it a gradient text") ============
+   ⛔ `background-clip: text` + `-webkit-text-fill-color: transparent` is the only
+   way to gradient TEXT — `color` cannot take a gradient. The solid `color` above the
+   `text-fill-color` is the fallback for anything without the clip, and it is the
+   page's azure, not an arbitrary blue.
+   ⛔ The stops run white -> pale cyan -> azure -> cyan, i.e. across the SAME ramp the
+   page's background is built from (~:#bgRampStyles), so the wordmark belongs to the
+   page rather than sitting on it.
+   ⛔ `drop-shadow` rather than `text-shadow`: with the fill transparent a text-shadow
+   would be cast by nothing and never appear. `drop-shadow` works off the rendered
+   alpha, so it follows the glyphs.
+   ⚠ `clamp()` keeps it big on a desktop and still fitting at a phone width — the
+   string is long and would otherwise wrap mid-word. */
+.brand-title {
+  position: relative;          /* anchors the assembly canvas */
+  text-align: center;
+  max-width: 1180px;
+  margin: 0 auto;
+  /* ⛔ PADDING ON BOTH SIDES NOW, on the owner's word (*"add a bit of padding top and
+     bottom"*). It was top-only before, and that was deliberate: the line box already
+     carries ~13px of ascent above the cap height and ~13px of descender room below the
+     baseline, and `.hero-cards` adds its own 16px `margin-top`, so the bottom was
+     already getting ~30px of visual air for free while the top got 13px. The bottom
+     value is therefore deliberately SMALLER than the top — equal numbers would not
+     look equal.
+     ⚠ These are tuned against the type size below. If the font-size changes again,
+     re-measure with `_hero_layout.js`; the two move together. */
+  padding: 6rem 4% 2.25rem;
+}
+/* ⛔⛔ THE WORDMARK ASSEMBLY IS REMOVED (owner: *"remove the text animation"*).
+   The <canvas class="brand-title-fx">, the <script src=brand-assemble.js> and this
+   block all went together — restoring any one alone leaves a dead element or a
+   rule for an element that no longer exists. The module is still on disk at
+   assets/js/brand-assemble.js, unreferenced, like the topology SVG tile.
+   ⚠  keeps  — harmless, and the canvas needs it
+   again if this ever comes back. */
+.brand-title-text {
+  /* ⛔ `position: relative` and the mask rule that used to sit here went with the
+     assembly — the wordmark is plain static text again, so nothing needs to stack
+     above the (now removed) canvas and nothing masks it. */
+  position: relative;
+  display: inline-block;
+  /* ⛔ Outfit first, Space Grotesk as the fallback — Space Grotesk is ALREADY loaded
+     by the page, so a failed request degrades to an existing face rather than to
+     system sans and the wordmark never looks broken. */
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  /* ⛔⛔ THE SIZE IS CAPPED BY THE WIDTH OF THE LINE, NOT BY TASTE. "Auto Face MoCap Pro"
+     is ~9.46em wide at Outfit 800 with -.03em tracking, so inside `.brand-title`
+     (max-width 1180px minus its 4% side padding) the widest the type can go before it
+     WRAPS to two lines is ~114px. The clamp max stops short of that deliberately, and
+     the `vw` middle term keeps the same ratio at every width between the bounds.
+     Owner: *"increase the text size"* — this is a ~22% step up from the previous
+     clamp(2.1rem, 6.4vw, 5.4rem), which rendered 86.4px at 1440.
+     ⚠ Raising the max, lowering the min, or narrowing `.brand-title` can each make the
+     wordmark wrap, which reads as broken. `_hero_layout.js` reports the rendered line
+     count and the box width at several viewports for exactly that. */
+  font-size: clamp(1.7rem, 7.6vw, 6.6rem);
+  font-weight: 800;              /* the reference is a Black-weight display */
+  line-height: 1.0;
+  /* ⛔ -.035em was tuned for Space Grotesk, -.022em for Satoshi. Outfit is tighter
+     still than either at 800, and this value is set from a render, not a guess. */
+  letter-spacing: -.03em;
+  /* ⛔ SOLID here, not gradient — the gradient moved to `.brand-title-grad` so only
+     "Face MoCap" carries it (owner: "add gradient only to Face Mocap Text"). The
+     two-tone treatment matches the supplied reference, which sets "N-Panel" solid
+     and "Master" gradient. */
+  color: #f2f7fd;
+  filter: drop-shadow(0 8px 34px color-mix(in srgb, #0096ff 38%, transparent));
+}
+/* ⛔ The gradient span. It is `display: inline` on purpose — `background-clip: text`
+   paints inside THIS box, so making it a block would widen the gradient's area to the
+   whole line and slide the colours off the words.
+   ⛔ The gradient lives in a custom property so the letter-by-letter rule below can
+   reference THE SAME STOPS. Writing them out twice is how this file previously lost a
+   font and a whole rule to a half-edited duplicate. */
+.brand-title-grad {
+  --brand-grad: linear-gradient(100deg, #b8e2ff 0%, #0096ff 48%, #38e0ff 100%);
+  background-image: var(--brand-grad);
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: #0096ff;                        /* fallback where background-clip is absent */
+  -webkit-text-fill-color: transparent;
+}
+html:not(.dark) .brand-title-grad {
+  --brand-grad: linear-gradient(100deg, #0b4f8f 0%, #0096ff 52%, #22b8e6 100%);
+  background-image: var(--brand-grad);
+  color: #0b4f8a;
+}
+/* ⛔⛔ THE WORDMARK ANIMATION IS REMOVED (owner: *"remove the animation"*).
+   Three things went together, and all three must come back together or the
+   wordmark is left in a half-state:
+     1. the `<script src="assets/js/brand-title.js" defer>` tag,
+     2. this CSS block (`.brand-title.is-typing .brand-letter`, the `brandLetterIn`
+        keyframe, the two `.is-split-grad` gradient rules, and `.brand-scribble`),
+     3. `assets/js/brand-title.js` itself, which is STILL ON DISK and UNREFERENCED.
+   ⛔ The wordmark is now plain static text again: `Auto <span>Face MoCap</span> Pro`,
+   Outfit 800, gradient on the middle span. **No `.brand-letter` spans, no scribble.**
+   ⛔ `--brand-grad` on `.brand-title-grad` STAYS — `.brand-title-grad` uses it, and
+   it is what lets the light theme override the stops in one place.
+   ⚠ This is the SECOND wordmark animation removed on this page; the particle build
+   (`assets/js/brand-assemble.js`) was removed the same day for the same reason. Both
+   modules sit on disk unreferenced. **Do not assume either is running.** */
+
+html:not(.dark) .brand-title-text { color: #0b1a2b; }
+/* the halftone. `::before` is free on .price-card — only .featured uses ::after,
+   for the sheen. Masked to a soft corner so it fades rather than stopping. */
+/* the halftone — ⛔ VISIBLE AT REST, and it follows the pointer when there is one.
+   Owner: *"add mouse hover to show the glow and the patern where the mouse is on
+   the pricing cards"*, then *"also show the patern even when the mouse is not
+   hovering over"*. The first pass hid it until hover; it no longer does.
+   ⛔ TWO MASK LAYERS, and that is the whole trick: mask layers UNION by default
+   (unlike multiple `background-image` layers, which stack), so layer 1 is the
+   corner fade that is ALWAYS there — matching where the reference puts its dots —
+   and layer 2 is the pool that follows the cursor. Neither cancels the other.
+   ⛔ The `var()` fallback is 88% 0%, not 50% 0%: before the first pointer event
+   there is no --mx, and the rest state must match the reference's top-right corner,
+   not the top centre. */
+html.dark .price-card::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none; z-index: 0;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, .38) 1.1px, transparent 1.5px);
+  background-size: 10px 10px;
+  /* ⛔⛔ A WAVE, NOT A BLINK — owner, 2026-10-07: *"make it aniamte in wave"*,
+     then *"instead of blinking"*. The blink is gone.
+     ⛔ It is a MASK animation, not an opacity one, and that is the whole point:
+     opacity can only pulse the field uniformly, whereas sliding a repeating band
+     through the corner fade makes the brightness TRAVEL across the dots.
+     ⛔⛔ TWO MASK LAYERS WITH `intersect`. The corner fade stays put; the wave band
+     slides through it; a dot is drawn only where BOTH are opaque. That is what
+     keeps the pattern concentrated on the coloured area — if the layers UNIONed
+     (the default, and what the cursor pool in `::after` still relies on) the wave
+     would light the whole card instead of sweeping the corner.
+     ⛔ The band is `90deg` and travels EXACTLY one period (160px) so the loop is
+     seamless. An angled gradient's period is measured along its own axis, so a
+     160px horizontal shift would not land on the next crest and would visibly jump
+     each cycle.
+     ⛔ Layer 1 is pinned at `0 0` in the keyframes; only layer 2 moves. */
+  -webkit-mask-image:
+    radial-gradient(130% 95% at 88% 0%, #000, transparent 70%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .15) 0px, #000 80px, rgba(0, 0, 0, .15) 160px);
+          mask-image:
+    radial-gradient(130% 95% at 88% 0%, #000, transparent 70%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .15) 0px, #000 80px, rgba(0, 0, 0, .15) 160px);
+  -webkit-mask-composite: source-in;
+          mask-composite: intersect;
+  animation: dotWave 3.6s linear infinite;
+}
+/* ⛔ Travel is one full period (160px), which is what makes it seamless. */
+@keyframes dotWave {
+  from { -webkit-mask-position: 0 0, 0 0;      mask-position: 0 0, 0 0; }
+  to   { -webkit-mask-position: 0 0, 160px 0;  mask-position: 0 0, 160px 0; }
+}
+/* ⛔ Phase-offset on purpose: three cards waving in lockstep reads as the whole
+   SECTION pumping. Shifting them puts the crests at different points across the
+   row, so it reads as one slow wave moving through the pricing block. */
+.pricing-grid .price-card:nth-child(2)::before { animation-delay: -.35s; }
+.pricing-grid .price-card:nth-child(3)::before { animation-delay: -.7s; }
+@media (prefers-reduced-motion: reduce) {
+  html.dark .price-card::before,
+  .offer-band::before { animation: none; opacity: .55; }
+}
+html.dark .price-card.featured {
+  background-image:
+    radial-gradient(300px circle at var(--mx, 50%) var(--my, 0%),
+      color-mix(in srgb, #0096ff 34%, transparent), transparent 68%),
+    radial-gradient(135% 88% at 50% -14%, rgba(0, 150, 255, .22), transparent 62%),
+    linear-gradient(180deg, #121722 0%, #0b0e14 100%);
+  border-color: color-mix(in srgb, #0096ff 45%, transparent);
+  /* the featured card carries the SAME three layers, brighter, so all three glow
+     alike and only the intensity separates "Most popular" */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .28),
+    0 0 0 1px color-mix(in srgb, #0096ff 22%, transparent),
+    0 0 58px -12px color-mix(in srgb, #0096ff 55%, transparent);
+}
+/* keep the content above the halftone layer.
+   ⛔ `:not(.pop-badge)` is REQUIRED — a bare `> *` sets position:relative on the
+   badge too and would rip an absolutely-positioned pill back into the flow. */
+html.dark .price-card > *:not(.pop-badge) { position: relative; z-index: 1; }
+
+/* ⛔⛔ ORDER IS THE PAGE'S OWN AND MUST STAY THAT WAY — the owner, 2026-10-07:
+   *"i wanted just the design design don't change the text and button placements"*.
+   The reference puts the CTA under the price and the list last; that reordering was
+   applied and then explicitly rejected. So there are NO `order` overrides here, and
+   the CTA keeps its original `margin-top: auto` pin to the bottom of the card
+   (`.price-card .btn` further down) — the seat line stays under the plan name and
+   the list stays where it was. Only the SURFACE, TYPE SIZES and COLOURS change. */
+
+/* ⛔⛔ TYPOGRAPHY IS THE PAGE'S OWN — owner, 2026-10-07: *"also keep the old font"*.
+   The reference's type scale was applied here and is now REMOVED: the plan name
+   goes back to the uppercase .8rem muted kicker, the seat line back to Space
+   Grotesk at 1.8rem, the price back to 4rem. Only the SURFACE, the halftone and
+   the CTA styling come from the reference — its type scale does not.
+   ⚠ That means no `.price-card .plan`, `.price-card h3`, `.price-card .price`,
+   `sup` or `.per` overrides live in this block at all; the base rules at
+   ~:1024-1029 own every one of them. */
+/* the dashed rule from the reference — kept as DESIGN only. It sits above the list
+   wherever the list already is; it does not move anything, and the list keeps its
+   own margins from the base rule (~:.plan-list). */
+.price-card .plan-list {
+  border-top: 1px dashed rgba(255, 255, 255, .16);
+  padding-top: .75rem;
+}
+
+/* ⛔⛔ THE BUTTONS ARE THE PAGE'S OWN — owner, 2026-10-07: *"as well as keep the old
+   button gradient"*. The reference's CTA (`h-[46px] w-full rounded-md
+   text-[14px] uppercase`, white on the featured card and a thin outline on the
+   others) was applied here and is now REMOVED IN FULL — colour, shape and size.
+   ⛔ Reverted whole, not just the gradient: `.btn-primary`'s azure is
+   `linear-gradient(135deg,#0096ff,#0065e2)` (~:2378) and `.btn-ghost` is glass, so
+   restoring only the gradient would have left a 46px uppercase hybrid that is
+   neither the page's button nor the reference's. "Keep the old" is read as the old
+   control, not the old paint.
+   ⚠ The base `.btn-primary` / `.btn-ghost` rules own these again; nothing here
+   overrides them, and the `!important` that used to be needed is gone with them. */
+
+/* ⛔⛔ "Most popular" IS BACK TO ITS ORIGINAL — the owner, 2026-10-07: *"put the
+   most popular to what it was before"*. The reference moves it inside the card at
+   the top-right; that was applied and rejected. The base `.pop-badge` rule owns it
+   again (top:-13px, centred, solid fill, uppercase). No override lives here.
+   ⚠ It hangs 13px ABOVE the card edge, so `.price-card` must never take
+   `overflow: hidden` — that would clip it. It does not; the halftone is a
+   rounded pseudo-element precisely so the card can stay unclipped. */
+</style>
+
+<!-- ============================================================ -->
+<!-- HERO TEXT GLOW — the hero heading + subtitle carry an azure     -->
+<!-- halo. Owner: "just add the glow around the text". Removable:    -->
+<!-- delete this one block to return the hero copy to flat text.     -->
+<!-- ============================================================ -->
+<style id="heroTextGlow">
+/* ⛔⛔ THE GLOW HAS TO SURVIVE `.hero-copy-card { overflow: hidden }`. That overflow is
+   load-bearing (the card's `::before` sheen is a skewed bar that would otherwise paint
+   outside the rounded corners), so it cannot be lifted to let the halo spill. The outer
+   blur radii below are therefore sized against the card's own padding — see the
+   measurement note at the foot of this block before widening them.
+   ⛔ `text-shadow`, not `filter: drop-shadow()`. Drop-shadow costs one filter pass PER
+   LAYER; text-shadow stacks all three in a single pass, and the three-layer falloff
+   (tight bright core, medium body, wide haze) is what reads as a GLOW rather than as a
+   blur. The page already uses this idiom at ~:1625.
+   ⛔ Azure is a LITERAL. `--grad-brand` resolves to a neutral grayscale in this page's
+   second token block, so a glow built from it would come out grey. */
+/* ⛔⛔ THIS RULE IS THE DARK-THEME ONE AND IT IS UNSCOPED ON PURPOSE — but that means
+   every LIGHT-theme element it matches MUST be overridden below, and the subtitle
+   originally was not. A probe reading the computed `text-shadow` per theme caught it:
+   light theme gave the heading 55%@12px and the SUBTITLE the full 62%@10px dark value,
+   i.e. the paragraph was carrying the strongest glow of all on the theme it can least
+   afford. **Check every selector in a shared rule has a counterpart in the theme
+   override, not just the first one.** */
+.hero-copy-card h1,
+.hero-copy-card .hero-sub {
+  text-shadow:
+    0 0 10px color-mix(in srgb, #0096ff 62%, transparent),
+    0 0 22px color-mix(in srgb, #0096ff 34%, transparent),
+    0 0 38px color-mix(in srgb, #0096ff 18%, transparent);
+}
+/* ⛔⛔ IN THE LIGHT THEME THE SUBTITLE IS DELIBERATELY LEFT FLAT — the heading glows,
+   the paragraph does not. That is a measurement, not a shortcut.
+   A glow is painted on the very surface WCAG contrast is measured against. The dark
+   theme's subtitle is `#e2e2e2` on a near-black card, so a halo costs it 13.57 → 12.89
+   and there is headroom to burn. The light theme's subtitle is `#737373` on a near-white
+   card and starts at **4.59:1 — already only 0.09 above AA**. There is not enough room
+   between 4.59 and 4.5 to make a halo visible without crossing it, and `_glow_sweep.js`
+   measured every strength from 62% down to 40% landing between 4.33 and 4.48.
+   ⛔ Do not "finish the job" by adding the subtitle back here without re-running
+   `_hero_glow_check.js`. The fix, if it is ever wanted, is a DARKER subtitle colour in
+   this theme — a design change — not a fainter glow, because a fainter one does not read.
+   ⚠ The halo gets tighter here for the same reason (7/15/22, not the dark theme's
+   10/22/38): the heading's own glow spills down onto the paragraph. Measured with the
+   tight values: subtitle **4.53:1** against AA's 4.5 — passing, but by 0.03. It was
+   4.59 before the glow went on, so this theme has almost nothing left to give.
+   **Re-measure before touching hero type sizes or the card's padding.** */
+html:not(.dark) .hero-copy-card h1 {
+  text-shadow:
+    0 0 7px color-mix(in srgb, #0096ff 44%, transparent),
+    0 0 15px color-mix(in srgb, #0096ff 20%, transparent),
+    0 0 22px color-mix(in srgb, #0096ff 9%, transparent);
+}
+html:not(.dark) .hero-copy-card .hero-sub { text-shadow: none; }
+/* ⛔ THE HEADING IS THE BINDING CONSTRAINT — it is the card's first line, so its glyph
+   tops are the closest thing to the card's top edge and the only place the halo can be
+   cut. Measured with `_hero_glow_check.js`, which walks the rendered pixels ABOVE the
+   heading's cap line and confirms the glow fades to nothing before the card's padding
+   box ends: no lit column reaching the edge, i.e. no flat cut. ⚠ Re-run that probe
+   after any change to this block, to `.hero-copy-card`'s padding, or to the hero type
+   sizes. */
+</style>
+
+<!-- ============================================================ -->
+<!-- `#cardFx` — the pricing card's dot pattern + the travelling     -->
+<!-- outline, as a reusable pair of layers.                          -->
+<!-- Owner: "implement the pricing card patern and the hover over     -->
+<!-- parten effects on all the cards in creating shapekeys section    -->
+<!-- and for the cards that are there make them transparent", then    -->
+<!-- "apply this outline animation … every where on the page … what   -->
+<!-- it's needed", then "also apply on the top bar and the patern     -->
+<!-- should be on the left side".                                     -->
+<!-- Delete this block AND the #cardFxLayers script and every target   -->
+<!-- goes back to a plain card.                                       -->
+<!-- ============================================================ -->
+
+<style id="cardFx">
+/* ⛔⛔ THE LAYERS ARE REAL ELEMENTS, INJECTED BY SCRIPT — NOT `::before`/`::after`.
+   On `.quickfog-outer` BOTH pseudos are already spoken for: `::after` is the glass
+   idiom (the page explicitly sets `content:none` on it in two places at ~:2696/:2699,
+   which is proof it is otherwise live) and `.hero-copy-card::before` is the sheen.
+   `.price-card` has `::before` (halftone) and `::after` (cursor pool) taken too.
+   Overwriting a pseudo here would silently delete the glass or the sheen, so the
+   effect carries its own spans instead. */
+@property --fxA { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+
+.card-fx { position: relative; }
+.card-fx > .fx-dots,
+.card-fx > .fx-ring {
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none; display: block;
+}
+.card-fx > .fx-dots { z-index: 0; }
+/* ⛔ the ring rides ABOVE the card's content, not below it: it draws on the border
+   band, where nothing else paints, so it cannot cover text — but at z-index 0 it
+   would be hidden by the card's own background layer. */
+.card-fx > .fx-ring { z-index: 3; }
+/* ⛔ content must sit above the dot field, and `> *` alone would rip an absolutely
+   positioned child (a badge, a nav pill) back into the flow — the page learned this
+   on `.price-card` (`> *:not(.pop-badge)`). Here the injected spans are excluded by
+   class instead, which is the same guard without depending on a specific child.
+   ⚠ This is safe at the CURRENT scope — three Shapekeys cards and the top bar. It was
+   rolled out page-wide to 59 surfaces and REVERTED on the owner's word (*"undo last
+   prompt"*); doing so again needs the `.fx-abs` snapshot described at the end of this
+   block, because at that scope it pulls `.pop-badge` and the hero badges out of
+   position. Do not widen `TARGETS` without reading that note. */
+.card-fx > *:not(.fx-dots):not(.fx-ring) { position: relative; z-index: 1; }
+
+/* ---------------------------------------------------------- the dot pattern
+   ⛔ SAME FIELD AND SAME WAVE as `html.dark .price-card::before` — the two must stay
+   identical, or the pricing block and the new cards read as two different patterns.
+   ⛔ THE RESTING CORNER IS THE LEFT, on the owner's word ("the patern should be on
+   the left side"): the fade anchor is `10% 0%` where the pricing cards use `88% 0%`.
+   The wave band is unchanged — it is `90deg` and travels exactly one 160px period,
+   which is what makes the loop seamless.
+   ⛔⛔ `--fx-ay` / `--fx-vh` MOVE THE FADE ONTO THE PART OF THE CARD THAT HAS NO IMAGE.
+   Owner: *"for the cards where the image is placed then show the patren where there is
+   no image in the card"*. The top-left anchor is fine on a text-only card, but two of
+   the three Shapekeys cards carry a banner image across the top — which is EXACTLY
+   where the fade was centred, so the image simply covered the pattern and the rest of
+   the card got the faded-out tail. Measured by toggling the layer off in the same run:
+   only **0.64%** of the pixels outside the image changed on one card and **0.04%** on
+   the other — the pattern was effectively absent. `#cardFxLayers` measures where the
+   image ends and writes these two, so the fade sits in the empty band instead.
+   ⛔ Both fall back to the text-only anchor, so a card with no image is unchanged. */
+.card-fx > .fx-dots {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, .38) 1.1px, transparent 1.5px);
+  background-size: 10px 10px;
+  -webkit-mask-image:
+    radial-gradient(130% var(--fx-vh, 95%) at var(--fx-ax, 10%) var(--fx-ay, 0%), #000, transparent 70%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .15) 0px, #000 80px, rgba(0, 0, 0, .15) 160px);
+          mask-image:
+    radial-gradient(130% var(--fx-vh, 95%) at var(--fx-ax, 10%) var(--fx-ay, 0%), #000, transparent 70%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .15) 0px, #000 80px, rgba(0, 0, 0, .15) 160px);
+  -webkit-mask-composite: source-in;
+          mask-composite: intersect;
+  animation: dotWave 3.6s linear infinite;
+}
+html:not(.dark) .card-fx > .fx-dots {
+  background-image: radial-gradient(circle, rgba(0, 60, 130, .30) 1.1px, transparent 1.5px);
+}
+
+/* ------------------------------------------------------- the travelling outline
+   ⛔⛔ A CONIC GRADIENT ON A 1px RING, NOT A ROTATED ELEMENT. The ring is produced by
+   `padding: 1px` plus `mask-composite: exclude`, which paints the gradient only in
+   the padding band — so the glow follows the border EXACTLY, including the corner
+   radius. Rotating a clipped pseudo instead would swing the corners out of line.
+   ⛔ `@property --fxA` is what makes the angle animatable at all: an unregistered
+   custom property is a string, and a string cannot tween — the ring would jump 0 →
+   360 in one frame. This is the whole reason the effect needs `@property`. */
+.card-fx > .fx-ring {
+  padding: 1px;
+  /* ⛔⛔ THE ARC NOW FOLLOWS THE SUPPLIED REFERENCE'S OWN GRADIENT.
+     Owner: *"make the outline exactly like this but keep the current animation"*, with
+     the reference's markup. Its active-item bar is
+       linear-gradient(90deg, transparent, #ae8df9, #8b5cf6, #ae8df9, transparent)
+     i.e. FIVE stops and SYMMETRIC — transparent at both ends, and the SATURATED brand
+     colour at the centre with LIGHTER stops either side of it. The previous conic was
+     not symmetric: it ran transparent -> #0096ff -> a near-white head (#bdeaff) and
+     then cut to transparent in the last 8 degrees, so it read as a comet with a hard
+     tail rather than as a bar. The head is gone; the falloff is mirrored.
+     ⛔ It is a conic because the ring is round — the reference's `90deg` is the straight
+     equivalent along a 16px bar, and the five-stop shape is what transfers, not the
+     axis.
+     ⛔ The hue is the PAGE'S azure, not the reference's violet (#8b5cf6 / #ae8df9). The
+     reference is a different product's purple navbar; importing its violet would put a
+     colour on this page that appears nowhere else. Everything else — stop count,
+     stop ORDER (light / brand / light), relative weights, and the three shadow layers
+     below — is the reference's. To go violet anyway, swap the two literals here and
+     the one in the filter below. */
+  background: conic-gradient(from var(--fxA),
+    transparent 0deg,
+    transparent 298deg,
+    color-mix(in srgb, #7dd3ff 62%, transparent) 318deg,
+    #0096ff 338deg,
+    color-mix(in srgb, #7dd3ff 62%, transparent) 352deg,
+    transparent 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  /* ⛔⛔ THE REFERENCE'S THREE SHADOW LAYERS, at its own geometry and alphas:
+       rgba(139,92,246,.6)  0 0 4px 1px
+       rgba(139,92,246,.3)  0 0 12px 3px
+       rgba(139,92,246,.15) 0 -4px 16px 4px
+     — a tight bright rim, a medium halo, and a WIDE one pushed UPWARD, which is what
+     makes the reference read as light coming off the top of the bar.
+     ⛔ `filter: drop-shadow()`, not `box-shadow`: the mask keeps only the padding band,
+     and a mask clips an element's box-shadow with everything else, so a box-shadow here
+     would be masked to nothing. drop-shadow runs AFTER the mask and so survives.
+     ⛔ drop-shadow has NO spread parameter, so the reference's 1px/3px/4px spreads
+     cannot be reproduced exactly — the blur radius is nudged up to compensate, which
+     is why the numbers read 5/14/18 rather than 4/12/16. That is the one place this is
+     an approximation rather than a copy. */
+  filter:
+    drop-shadow(0 0 5px color-mix(in srgb, #0096ff 60%, transparent))
+    drop-shadow(0 0 14px color-mix(in srgb, #0096ff 30%, transparent))
+    drop-shadow(0 -4px 18px color-mix(in srgb, #0096ff 15%, transparent));
+  animation: fxOrbit 4.2s linear infinite;
+}
+@keyframes fxOrbit { to { --fxA: 360deg; } }
+/* ⛔ Phase-offset, same reason the pricing cards are offset: a row of rings turning in
+   lockstep reads as the whole section pulsing. */
+.card-fx:nth-of-type(2n) > .fx-ring { animation-delay: -1.4s; }
+.card-fx:nth-of-type(3n) > .fx-ring { animation-delay: -2.8s; }
+.card-fx:nth-of-type(2n) > .fx-dots { animation-delay: -.9s; }
+.card-fx:nth-of-type(3n) > .fx-dots { animation-delay: -1.8s; }
+
+/* ------------------------------------------- the transparent Shapekeys cards
+   Owner: *"make the card and it's coloring transparent only show the patren"*.
+   ⛔⛔ MEASURED FIRST, BECAUSE THE OBVIOUS TWO PROPERTIES ARE NOT THE ONES THAT SHOW.
+   On these cards `background` was ALREADY `rgba(0,0,0,0)` and `background-image` was
+   already `none` — and the card still read as a card, because what is left is the
+   GLASS: a multi-layer `box-shadow` (an inset white top highlight plus outer rings)
+   and `backdrop-filter: blur(30px) saturate(1.8)`. Those two ARE the colouring.
+   ⛔ There is also NO BORDER to remove — `border-width` computes to `0px` on
+   `.quickfog-outer`, so an earlier `border-color` override here was a silent no-op.
+   `border-radius: 22px` STAYS: it shapes the dot field's mask and the travelling ring,
+   and it is not colour.
+   ⚠ `backdrop-filter` was frosting whatever is behind the card, including the
+   `#interactiveBg` canvas. With it gone the text sits directly on the page gradient —
+   its contrast is re-measured in `_surface_probe.js`, not assumed. */
+#shapekeys .quickfog-outer {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-fx > .fx-dots { animation: none; opacity: .55; }
+  .card-fx > .fx-ring { animation: none; --fxA: 40deg; }
+}
+</style>
+<style id="heroHorizon">
+/* ============================================================ */
+/* HERO HORIZON — the dome from the supplied reference.           */
+/* Owner: "can you add this background where you thing it will    */
+/* look best and fit in somewhere in hero". Delete this block AND */
+/* the .hero-horizon-clip div in the hero to remove it.           */
+/* ============================================================ */
+/* ⛔⛔ WHAT THE REFERENCE ACTUALLY IS, because it is not an image. It is ONE div with
+   `rounded-[100%]` — a full ellipse — and
+   `bg-[radial-gradient(closest-side,#000_82%,#fff)]`: a SOLID silhouette out to 82%,
+   then a bright rim. It is placed at `top: calc(100% - 150px)` inside a hero carrying
+   `overflow-hidden`, so only the ellipse's TOP ARC is ever on screen. That arc is the
+   horizon; the bright rim is light catching it. Two colours and a border radius.
+   ⛔ THE COLOURS ARE RE-DERIVED FOR THIS PAGE. The reference runs black/white on a
+   greyscale hero; this page is azure on a dark navy ramp, so the interior is a shade
+   DARKER than the page (that is what makes it read as a silhouette rather than as a
+   smudge) and the rim is the brand azure. Same structure, this page's palette.
+   ⛔⛔ THE CLIP WRAPPER IS NOT OPTIONAL, AND IT IS NOT `overflow: hidden` ON `.hero`.
+   `.hero` cannot take `overflow: hidden`: the clip's label bubbles (`.hm-tips`) sit
+   61px ABOVE its top edge — measured, bubbles at y872 against a hero top of y933 — and
+   hiding the overflow would slice them off. So the dome gets its OWN clipping layer,
+   `inset: 0` on the hero, which clips the dome exactly as intended and does not touch
+   any sibling. The bubbles live in `.container`, not in this wrapper.
+   ⛔ The wrapper must never take pointer events — it covers the whole hero. */
+/* ⛔⛔ A ZERO-HEIGHT MARKER IN NORMAL FLOW, NOT A FULL-HERO OVERLAY.
+   Owner: *"move it to below the hero clip"*. It sits immediately after `.hero-media`
+   inside `.container`, so the arc begins at the clip's bottom edge at EVERY viewport
+   width — there is no offset to measure and nothing to re-tune when the clip's height
+   changes with the container width. The first version was `inset: 0` on `.hero` with
+   the dome pushed down by a hand-tuned `bottom: -560px`; that value only held at one
+   width.
+   ⛔ The wrapper is `height: 0` and out of the layout: the row below it must not move.
+   ⛔ `.hero { overflow-x: clip }` is what stops the 150%-wide dome creating a sideways
+   scrollbar. It is `clip`, NOT `hidden`, and that distinction is load-bearing —
+   `overflow-x: hidden` forces the OTHER axis to `auto`, which would clip the clip's
+   label bubbles sitting 61px above the hero's top. `clip` leaves the vertical axis
+   `visible`, so only the horizontal overflow is cut. */
+.hero { overflow-x: clip; }
+.hero-horizon-clip {
+  position: relative;
+  height: 0;
+  width: 100%;
+  pointer-events: none;
+}
+/* ⛔ the hero's content has to sit ABOVE the dome. Without this the dome is an
+   absolutely-positioned element and would paint over the static cards. */
+.hero > .container { position: relative; z-index: 1; }
+
+.hero-horizon {
+  position: absolute;
+  /* ⛔ SITS JUST ABOVE THE WORDMARK. Owner: *"lower the image so it sits right above
+     the text"*, then *"move it a tiny bit up"* → **58**, which puts the peak at 1516,
+     60px above the wordmark text box at 1554.
+     `top` is measured from the anchor at the clip's bottom (1458), so the useful values
+     read as: **-90** = peak hidden 90px BEHIND the clip, so the arc emerges already
+     curving; **0** = peak exactly on the clip's bottom edge; **36** = where it is now;
+     higher pushes the dome down over the wordmark.
+     ⛔ This is the knob that MOVES THE FADE AS WELL AS THE SHAPE — the mask stops below
+     are percentages of `height`, so **`height` scales it while `top` translates it**.
+     Changing the height leaves the fade on the same pixels; changing `top` carries the
+     fade along with the shape. That is why the squash could reshape the dome without
+     disturbing the fade, and why this nudge moved both together. */
+  top: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150%;
+  /* ⛔ SQUASHED VERTICALLY — owner: *"squash the image from the top and bottom sides a
+     bit"*. The WIDTH is what sets how wide the horizon is, so only the height moves:
+     750 → 520 flattens the ellipse into a gentler arc without narrowing it.
+     ⛔ The fade below is expressed in PERCENTAGES of this height, so it lands on the
+     same absolute pixels at 520 as it did at 750 — 22% is still ~1482 and 48% is still
+     ~1618. Changing the height does not move the fade; changing the TOP does. */
+  height: 520px;
+  border-radius: 100%;
+  /* ⛔ behind the clip, wordmark and cards, but inside `.container`'s stacking
+     context so it stays above the page background and the live canvas */
+  z-index: -1;
+  /* closest-side, like the reference: the interior is solid out to 74% and the last
+     quarter is the rim. The intermediate stops are what keep the rim from banding on
+     a gradient this wide. */
+  background: radial-gradient(closest-side,
+    #01030c 74%,
+    #04173a 84%,
+    #0a3f86 91%,
+    #2179d6 96%,
+    #7fcfff 99%,
+    #cdeeff 100%);
+  /* ⛔⛔ THE LOWER HALF IS FADED OUT, because the ellipse has a BOTTOM RIM TOO.
+     Owner: *"remove from the bottom side the image you just added"*. A `border-radius:
+     100%` box is a closed ellipse, so its rim runs all the way round — and the bottom
+     rim was visible as a bright arc dipping low in the middle, just above the
+     WORKFLOW & FEATURES seam. The top arc is the horizon; the bottom one is a stray
+     shape with nothing above it.
+     ⛔ A MASK, not a shorter box: shortening the ellipse would tighten the top arc and
+     lose the horizon. This keeps the geometry and simply fades the shape out before its
+     lower rim is reached. The stops are in the DOME's own coordinates, so 22% is
+     ~1503 and 48% is ~1713 — the fade completes just as the hero card row begins.
+     ⛔ The side rims sit at the ellipse's vertical middle (50%), i.e. past the end of
+     the fade, which is what removes them too. */
+  /* ⛔⛔ LEFT AND RIGHT NOW FADE TOO — owner: *"make it fade into tranparent from the
+     left and right edges for superhive embeding"*. The dome is 150% of the container
+     and was relying on `.hero { overflow-x: clip }` to cut it, which leaves a HARD
+     vertical edge wherever the clip line lands. In the store's iframe the column is
+     narrower, so that edge sits in the middle of the artwork. A second mask layer turns
+     the cut into a fade.
+     ⛔⛔ TWO MASK LAYERS MUST BE COMPOSITED WITH `intersect`. Mask layers UNION by
+     default — unlike `background-image` layers, which simply stack — so without this
+     the top fade and the side fade would each apply where the OTHER is transparent and
+     the whole ellipse would come straight back. Same trap as `.fx-dots` in `#cardFx`. */
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000 0%, #000 22%, transparent 48%),
+    linear-gradient(to right, transparent 0%, #000 20%, #000 86%, transparent 100%);
+          mask-image:
+    linear-gradient(to bottom, #000 0%, #000 22%, transparent 48%),
+    linear-gradient(to right, transparent 0%, #000 20%, #000 86%, transparent 100%);
+  -webkit-mask-composite: source-in;
+          mask-composite: intersect;
+}
+/* ⛔ the reference animates this in (`animate-fade-up`) and so does this — one run, no
+   loop. Under `prefers-reduced-motion` it is simply present. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-horizon { animation: horizonRise 1.4s cubic-bezier(.22,.61,.36,1) both; }
+}
+@keyframes horizonRise {
+  from { opacity: 0; transform: translateX(-50%) translateY(90px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+/* ⛔ NARROW SCREENS: the arc would otherwise be a near-flat line and read as a stray
+   band. Shorter and lower keeps it a horizon rather than a stripe. */
+@media (max-width: 900px) {
+  .hero-horizon { height: 360px; width: 190%; }
+}
+</style>
+<script id="pricingGlow">
+/* Drives --mx/--my for the pricing cards AND the two offer bands (owner: "add mouse
+   hover to show the glow and the patern where the mouse is on the pricing cards",
+   then "implement the same patern effect for the banner at the top and below the
+   pricing").
+   ⛔ ONE listener covers both: the selector list is the only thing that changed when
+   the bands were added, so a band can never be forgotten and go dead while the cards
+   track.
+   ⛔ DELEGATED on document, one listener for all three cards — the glow and the
+   halftone mask both resolve their centre in the card's OWN box, so the offset
+   has to be measured per card, and doing it per-element would mean three
+   listeners for the same work.
+   ⛔ passive — this never calls preventDefault and must not add scroll jank.
+   Returns early under `prefers-reduced-motion`. */
+(function () {
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.addEventListener('pointermove', function (e) {
+    var el = e.target && e.target.closest
+      ? e.target.closest('.price-card, .offer-band, .card-fx') : null;
+    if (!el) return;
+    var r = el.getBoundingClientRect();
+    el.style.setProperty('--mx', Math.round(e.clientX - r.left) + 'px');
+    el.style.setProperty('--my', Math.round(e.clientY - r.top) + 'px');
+  }, { passive: true });
+})();
+</script>
+<!-- ============================================================ -->
+<!-- #cardFxLayers — builds the pattern + outline layers.           -->
+<!-- ⛔ The target list is the ONE thing to edit to widen this:      -->
+<!-- every selector here gets the dot field and the travelling ring. -->
+<!-- ============================================================ -->
+<script id="cardFxLayers">
+(function () {
+  'use strict';
+  /* ⛔⛔ ONE LIST, AND IT IS THE WHOLE CHANGE. Owner: *"add outline effect every where on
+     the page where ever it's needed"*, then *"on the pricing cards too"*.
+     ⛔ The obvious list — the union of every selector the page already styles as a
+     surface — comes to **115 boxes**, and several are NESTED inside others (13
+     `.feature-media` and 6 `.g-frame` sit inside a `.quickfog-outer`; 5 `.acc-head`
+     inside a `.accordion`). A ring inside a ring both doubles the per-frame cost and
+     reads as a double border, so the nesting guard below is not optional.
+     ⛔ Order matters only for the guard: a container listed BEFORE its children is the
+     one that wins the ring. */
+  /* ⛔⛔ ONE LIST, AND IT IS THE WHOLE CHANGE — but READ THE NOTE AT THE END OF THIS
+     BLOCK BEFORE ADDING TO IT.
+     Owner: *"implement the pricing card patern and the hover over parten effects on all
+     the cards in creating shapekeys section"*, then *"also apply on the top bar and the
+     patern should be on the left side"*. It was then widened to ~20 selectors / 59
+     surfaces (*"add outline effect every where on the page"*, *"on the pricing cards
+     too"*) and **REVERTED on the owner's word: *"undo last prompt"***. Four selectors
+     were tried and are known-good individually if a narrower widening is ever wanted:
+     `.price-card`, `.c-card`, `.support-card`, `.m3-wrap`.
+     ⛔ Widening is NOT just adding a string — see the `.fx-abs` note below and the
+     `TARGETS`-audit probe `_fx_abs.js`, which is what caught the damage last time. */
+  var TARGETS = [
+    '#shapekeys .quickfog-outer',   // the Creating Shapekeys cards
+    '.site-header',                 // the top bar
+  ];
+
+  function build() {
+    for (var i = 0; i < TARGETS.length; i++) {
+      var nodes;
+      try { nodes = document.querySelectorAll(TARGETS[i]); } catch (e) { continue; }
+      for (var j = 0; j < nodes.length; j++) {
+        var el = nodes[j];
+        if (el.classList.contains('card-fx')) continue;    // already done
+        /* ⛔ the ring is FIRST and the dots SECOND only for readability — the stacking
+           is set in CSS by z-index, not by DOM order, so a card that reorders its own
+           children cannot break it. */
+        var ring = document.createElement('span');
+        ring.className = 'fx-ring';
+        ring.setAttribute('aria-hidden', 'true');
+        var dots = document.createElement('span');
+        dots.className = 'fx-dots';
+        dots.setAttribute('aria-hidden', 'true');
+        el.appendChild(dots);
+        el.appendChild(ring);
+        el.classList.add('card-fx');
+        aimPattern(el);
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------------
+     ⛔⛔ IF `TARGETS` IS EVER WIDENED AGAIN, TWO THINGS ARE REQUIRED FIRST.
+     Both were learned by widening it to 20 selectors / 59 surfaces and then reverting
+     the whole thing at the owner's request ("undo last prompt"). The reverted build is
+     on disk as `index.html.bak-20260707-*-ROLLOUT59` if the effect is wanted back.
+
+     1. A NESTING GUARD. Several candidates sit inside others — 13 `.feature-media`
+        and 6 `.g-frame` inside a `.quickfog-outer`, 5 `.acc-head` inside an
+        `.accordion`. A ring inside a ring doubles the per-frame cost and reads as a
+        double border: `if (el.parentElement && el.parentElement.closest('.card-fx')) continue;`
+
+     2. AN `.fx-abs` SNAPSHOT, BEFORE `card-fx` IS ADDED. The rule
+        `.card-fx > *:not(.fx-dots):not(.fx-ring) { position: relative }` is fine at
+        three cards, but at 59 it also covers `.price-card` and `.hero-media`, and a
+        probe measured **136 of 137 direct children pulled to `relative`** — including
+        `.pop-badge`, which hangs 13px ABOVE its card, and both hero badge pills:
+          for (var c = 0; c < el.children.length; c++) {
+            var kid = el.children[c], kp = getComputedStyle(kid).position;
+            if (kp === 'absolute' || kp === 'fixed') kid.classList.add('fx-abs');
+          }
+        ⛔ It MUST run before the class goes on — afterwards every child computes as
+        `relative` and the information is gone. With it, also add
+        `.card-fx > *:not(.fx-abs)` to the content rule and `.card-fx > .fx-abs { z-index: 2 }`.
+        ⛔ And re-run `_fx_abs.js` either way: it is the probe that caught this.
+
+     3. A VISIBILITY GATE. `@property --fxA` repaints the gradient every frame, so the
+        number that matters is how many run AT ONCE. An IntersectionObserver toggling a
+        `.fx-live` class held the full rollout to 2–12 live at any scroll position
+        (fps 57.9 live vs 60.1 off). At the current two targets it is unnecessary.
+     --------------------------------------------------------------------------- */
+
+  /* ⛔⛔ PUT THE PATTERN WHERE THE CARD HAS NO IMAGE. See the long note on
+     `.card-fx > .fx-dots` — the fade is anchored top-left, and on a card whose top is
+     a banner image that anchor is spent behind the picture. Measuring the image and
+     moving the anchor into the band below it is the whole fix.
+     ⛔ The images on this page all carry explicit `width`/`height` attributes, so their
+     boxes are correct at DOMContentLoaded and this does not have to wait for the CDN.
+     ⛔ It re-runs on `load` anyway, because that is a cheap guard against a card whose
+     image has no dimensions in the markup: a wrong measurement just means the old
+     anchor, which is what the page had before this existed. */
+  function aimPattern(el) {
+    var img = el.querySelector('img');
+    if (!img) return;                             // no image: top-left anchor stands
+    var cr = el.getBoundingClientRect();
+    var ir = img.getBoundingClientRect();
+    if (!cr.height) return;
+    var bottom = (ir.bottom - cr.top) / cr.height;
+    if (!(bottom > 0.02 && bottom < 0.98)) return; // image missing or fills the card
+    /* the middle of what is left, and a fade tall enough to cover that band —
+       clamped so a sliver of empty card does not produce a dot-free smear */
+    var ay = (bottom + 1) / 2 * 100;
+    var vh = Math.min(140, Math.max(45, (1 - bottom) * 150));
+    el.style.setProperty('--fx-ay', ay.toFixed(1) + '%');
+    el.style.setProperty('--fx-vh', vh.toFixed(1) + '%');
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build);
+  else build();
+  window.addEventListener('load', function () {
+    var els = document.querySelectorAll('.card-fx');
+    for (var i = 0; i < els.length; i++) aimPattern(els[i]);
+  });
+})();
+</script>
 </head>
 <body>
+<!-- ============================================================ -->
+<!-- INTERACTIVE BACKGROUND — procedural canvas, first in the body  -->
+<!-- so it paints behind everything. See #interactiveBg for the      -->
+<!-- stacking, and assets/js/interactive-bg.js for the module.       -->
+<!-- ⛔ aria-hidden: purely decorative, and the brief keeps it out    -->
+<!-- of the accessibility tree.                                     -->
+<!-- ============================================================ -->
+<canvas id="interactiveBg" aria-hidden="true"></canvas>
+
 <!-- Interactive mouse-follow background glow -->
 <div class="mouse-glow" aria-hidden="true"></div>
 <noscript><style>.g-card{opacity:1;transform:none}.reveal{opacity:1;transform:none}</style></noscript>
@@ -2913,7 +4127,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
     <div class="brand-group">
       <a class="brand" href="#top" aria-label="Auto Face MoCap Pro home">
         <span class="brand-mark">
-          <img src="https://mr3dpageclips.carrd.co/assets/images/image11.png" alt="Auto Face MoCap Pro logo" style="width:auto;height:auto;max-width:44px;max-height:44px;object-fit:contain;display:block;" />
+          <img src="https://mr3dpageclips.carrd.co/assets/images/image11.png?v=9efd0633" alt="Auto Face MoCap Pro logo" style="width:auto;height:auto;max-width:44px;max-height:44px;object-fit:contain;display:block;" />
         </span>
         <!-- ⛔ The wordmark is SPLIT ACROSS SPANS — a grep and replace on the whole name does
              nothing visible (the same trap as the 09-29 renaming round). "Face MoCap" is now
@@ -2969,7 +4183,6 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 <!-- ============================================================ -->
 <section class="gallery-section" id="gallery" aria-label="More add ons by Mr3D">
   <span class="seam-label">More from Mr3D</span>
-  <canvas class="section-particles" data-pattern="drift" aria-hidden="true"></canvas>
   <div class="container">
     <div class="gallery-head">
       <div class="gallery-controls" style="margin-left:auto;">
@@ -2992,7 +4205,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
                   <!-- ⚠ the .gp-5 gradient stays behind this image: it is the fallback
                        that shows if the remote file fails, same as every other card.
                        Replace the caption name/alt when this slot gets a real product. -->
-                  <img src="https://mr3dpageclips.carrd.co/assets/images/image16.jpg" alt="Add on 05" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                  <img src="https://mr3dpageclips.carrd.co/assets/images/image16.jpg?v=a689dffb" alt="Add on 05" style="width:100%;height:100%;object-fit:cover;display:block;" />
                 </span>
                 <!-- badge renamed NEW → Star on the owner's word (2026-09-30); the .hot
                      styling is kept as-is, it is the same class the other two badges use. -->
@@ -3041,7 +4254,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
                 <span class="g-ph gp-6" role="img" aria-label="Add on 06">
                   <!-- ⚠ .gp-6 stays behind this image: it is the fallback that shows if
                        the remote file fails, same as every other card. -->
-                  <img src="https://mr3dpageclips.carrd.co/assets/images/image17.png" alt="Add on 06" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                  <img src="https://mr3dpageclips.carrd.co/assets/images/image17.png?v=008f65dd" alt="Add on 06" style="width:100%;height:100%;object-fit:cover;display:block;" />
                 </span>
                 <span class="g-ph-tag hot">Time-Saver</span>
               </span>
@@ -3107,13 +4320,15 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
     <!-- Right cell — the demo clip. This cell was deliberately EMPTY until now
          ("keep the right side empty"); it holds the clip instead. -->
     <div class="ob-media">
-      <!-- An <img>, not a <video>: the clip is an alpha-carrying animated GIF (782x391,
-           the box's own 2:1), so it loops by itself with no player. Being an <img> also
+      <!-- An <img>, not a <video>: the clip is an alpha-carrying animated GIF (453x391,
+           the box's own 453/391), so it loops by itself with no player. Being an <img> also
            makes it invisible to the clip-bar builder, which only walks <video> elements,
            so the old data-no-clip-bar opt-out is no longer needed here.
-           ⛔ GIF alpha is 1-BIT — the cut-out edges are hard, not feathered. -->
-      <img src="https://mr3dpageclips.carrd.co/assets/images/image18.gif"
-           alt="Auto Face MoCap Pro demo clip" width="782" height="391" />
+           ⛔ GIF alpha is 1-BIT — the cut-out edges are hard, not feathered.
+           The ?v= token is what keeps a replaced file from being pinned by carrd's 7-day
+           cache — it is the FILE's ETag, refreshed by /updateclips (see _updateclips.py). -->
+      <img src="https://mr3dpageclips.carrd.co/assets/images/image18.gif?v=74427475"
+           alt="Auto Face MoCap Pro demo clip" width="453" height="391" />
     </div>
   </div>
 </section>
@@ -3123,13 +4338,12 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 <!-- ============================================================ -->
 <section class="hero" id="demo" aria-label="Introduction">
   <!-- Antigravity-style particle pattern background -->
-  <canvas class="section-particles" data-pattern="orbit" aria-hidden="true"></canvas>
   <div class="container">
     <div class="hero-media" aria-label="Auto Face MoCap Pro demo preview">
       <!-- Hero clip — hosted on the Mr3D carrd CDN (was a placeholder pointing at
            assets/videos/hero-demo.mp4, which was never added). Swap the src to use
            a local file instead. -->
-      <video autoplay muted loop playsinline aria-label="Auto Face MoCap Pro demo preview" src="https://mr3dpageclips.carrd.co/assets/videos/video44.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+      <video autoplay muted loop playsinline aria-label="Auto Face MoCap Pro demo preview" src="https://mr3dpageclips.carrd.co/assets/videos/video44.mp4?v=f823f065" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
       <div class="grid-lines"></div>
       <!-- the progress bar is injected by the page script, for this clip and every
            other <video> on the page (see "Clip progress bars" in the CSS) -->
@@ -3158,6 +4372,54 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
       </button>
     </div>
 
+    <!-- Hero horizon — anchored to the BOTTOM OF THE CLIP, on the owner's word
+         ("move it to below the hero clip"). It is a zero-height marker sitting in
+         normal flow straight after `.hero-media`, so the arc starts exactly at the
+         clip's bottom edge at every viewport width — no measured offset and nothing
+         to re-tune when the clip's height changes.
+         ⛔ It is NOT in the hero's own clipping wrapper any more: the dome now fits
+         entirely inside the hero, so nothing needs vertical clipping, and the only
+         overflow left is horizontal — which `.hero { overflow-x: clip }` handles
+         WITHOUT touching the vertical axis. That matters: the clip's label bubbles
+         sit 61px above the hero's top and `overflow: hidden` would slice them.
+         ⛔ `z-index: -1` inside `.container` (which is `z-index: 1`, so it IS a
+         stacking context) puts the dome BEHIND the clip, wordmark and cards while
+         staying ABOVE the live `#interactiveBg` canvas at `z-index: -2`. -->
+    <div class="hero-horizon-clip" aria-hidden="true"><div class="hero-horizon"></div></div>
+
+    <!-- ============================================================ -->
+    <!-- 1b. BRAND TITLE — MOVED HERE, owner 2026-10-07: "move this    -->
+    <!-- below the hero clip". It used to sit ABOVE the whole hero      -->
+    <!-- section, between the offer band's </section> and <section       -->
+    <!-- class="hero">; it now sits directly under `.hero-media` (the    -->
+    <!-- big character clip, video44) and above `.hero-cards`.           -->
+    <!-- ⛔ INSIDE `.hero .container`, not beside it — same 1180px the   -->
+    <!-- wordmark already had as a MAIN child, so the type does not      -->
+    <!-- change size. The clip's own furniture (`.hm-tips` bubbles,      -->
+    <!-- `.hm-dots`) belongs to the CLIP, so it stays with the clip      -->
+    <!-- and the wordmark lands below all of it.                         -->
+    <!-- ⛔ <h2>, not <h1>: the hero already owns the page's one h1      -->
+    <!-- ("Facial Motion Capture Made Super Easy!"), and a second h1     -->
+    <!-- would break the document outline.                               -->
+    <!-- ============================================================ -->
+    <div class="brand-title" aria-label="Auto Face MoCap Pro">
+      <!-- ⛔ The particle-assembly canvas that used to sit here is REMOVED (owner:
+           "remove the text animation"). The wordmark is static again. The module is
+           still on disk at assets/js/brand-assemble.js but nothing references it — if
+           the animation is ever wanted back, the canvas element, the script tag and the
+           CSS block are the three things to restore together. -->
+      <!-- ⛔ The wordmark is SPLIT ACROSS SPANS on the owner's word: "add gradient only
+           to Face Mocap Text" — so "Auto" and "Pro" stay solid and only the middle two
+           words carry the gradient. This is the same shape as the supplied reference,
+           which sets "N-Panel" solid and "Master" gradient.
+           ⛔ The wrap is safe for assistive tech because the PARENT carries
+           aria-label="Auto Face MoCap Pro" — a screen reader reads the whole name once,
+           not two fragments. The RENDERED text is still the full wordmark.
+           ⚠ Do not "tidy" this into one span: `background-clip: text` paints inside the
+           span it is set on, so a single span would gradient the whole title again. -->
+      <span class="brand-title-text">Auto <span class="brand-title-grad">Face MoCap</span> Pro</span>
+    </div>
+
     <div class="hero-cards">
       <!-- Left rail clip — hosted on the Mr3D carrd CDN: video52.mp4 (replaced video50.mp4
            on 2026-09-30). HEVC, 540x1620, 24 fps, 13.83 s — exactly the 1:3 of the box, so
@@ -3170,7 +4432,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
            ⛔ The CARD is the invariant, the clip is not — it was pulled and swapped twice
            in one afternoon; never delete this .hero-side div, only its src changes. -->
       <div class="quickfog-outer hero-side reveal">
-        <video autoplay muted loop playsinline data-no-clip-bar data-fresh src="https://mr3dpageclips.carrd.co/assets/videos/video52.mp4" aria-label="Demo clip (left)"></video>
+        <video autoplay muted loop playsinline data-no-clip-bar src="https://mr3dpageclips.carrd.co/assets/videos/video52.mp4?v=95329a86" aria-label="Demo clip (left)"></video>
       </div>
       <div class="hero-center">
         <div class="quickfog-outer hero-copy-card">
@@ -3210,12 +4472,12 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
            the background" → "sorry add it to the right side …video51.mp4").
            It is PORTRAIT 540x1620, HEVC, 24 fps, 13.83 s — the 10:02 GMT upload that
            replaced the old landscape 256x136 concert loop — so this rail now draws with
-           ZERO crop too, and the edge's stale copy of the old file is exactly what
-           data-fresh defeats.
+           ZERO crop too. The ?v= token is what keeps the edge from re-serving the old
+           file — it is the FILE's ETag, refreshed by /updateclips.
            data-no-clip-bar: decorative loop, nothing to scrub.
            ⛔ The CARD is the invariant, the clip is not — do not delete this .hero-side. -->
       <div class="quickfog-outer hero-side reveal">
-        <video autoplay muted loop playsinline data-no-clip-bar data-fresh src="https://mr3dpageclips.carrd.co/assets/videos/video51.mp4" aria-label="Demo clip (right)"></video>
+        <video autoplay muted loop playsinline data-no-clip-bar src="https://mr3dpageclips.carrd.co/assets/videos/video51.mp4?v=5a2a2d09" aria-label="Demo clip (right)"></video>
       </div>
     </div>
   </div>
@@ -3397,7 +4659,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Video to character preview" style="margin:0;">
-          <video autoplay muted loop playsinline data-fresh src="https://mr3dpageclips.carrd.co/assets/videos/video54.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video54.mp4?v=18e0faa3" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Video to Character</span>
         </div>
       </div>
@@ -3437,12 +4699,12 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
              its "Rig Mapping" badge removed (it labelled a row that no longer exists). 16:9, so
              it is uncropped at whatever size it is given. -->
         <div class="feature-media" role="img" aria-label="Rig mapping preview" style="flex:0 1 70%;width:70%;min-width:0;margin:0;">
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video37.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video37.mp4?v=4b53155c" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
         </div>
         <!-- The Final Take clip, moved out of its own row. Its cell is the clip's own portrait
              shape, so it fills it: no letterbox bands and still never cropped. -->
         <div class="feature-media" role="img" aria-label="Finished performance preview" style="flex:0 1 30%;width:30%;min-width:0;margin:0;aspect-ratio:464/832">
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video42.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1"></video>
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video42.mp4?v=2ac0643f" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1"></video>
           <span class="media-tag">Final Take</span>
         </div>
       </div>
@@ -3462,7 +4724,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="ARKit shape keys preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video41.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video41.mp4?v=2983c6a1" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">ARKit Shape Keys</span>
         </div>
       </div>
@@ -3481,7 +4743,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Side by side preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video38.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video38.mp4?v=9bc7cfe1" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Side by Side</span>
         </div>
       </div>
@@ -3501,7 +4763,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Register character preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video39.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video39.mp4?v=91e84c89" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Register Character</span>
         </div>
       </div>
@@ -3520,7 +4782,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Lipsync preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video43.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video43.mp4?v=49f0fe46" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Lipsync</span>
         </div>
       </div>
@@ -3540,7 +4802,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Tracking preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video40.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video40.mp4?v=7fad27eb" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Tracking</span>
         </div>
       </div>
@@ -3569,9 +4831,9 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Facial tuning preview" style="margin:0;">
-          <!-- data-fresh: the owner swaps this clip, and carrd's 7-day cache (and its edge copy)
-               would otherwise pin the old one — same reason the hero rails carry it. -->
-          <video autoplay muted loop playsinline data-fresh src="https://mr3dpageclips.carrd.co/assets/videos/video50.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <!-- The owner swaps this clip; the ?v= token is what stops carrd's 7-day cache
+               (and its edge copy) pinning the old one — same reason the hero rails carry it. -->
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video50.mp4?v=b63d3f92" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Facial Tuning</span>
         </div>
       </div>
@@ -3603,9 +4865,9 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
                applied (`Hailuo_Video… F-360-704` and `First Mocap F-0-344`), `Adjust Mocap's Start
                Frame` at 360, `Follow Playhead` on, and the `Apply Mocap` button — i.e. layering
                and re-timing takes, not the bake-to-drivers story the copy below still tells.
-               `data-fresh`: the owner swaps these clips, and the CDN's 7-day cache would pin the
-               old bytes for a week. -->
-          <video autoplay muted loop playsinline data-fresh src="https://mr3dpageclips.carrd.co/assets/videos/video53.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+               The ?v= token is the file's ETag (refreshed by /updateclips) — the CDN's 7-day
+               cache would otherwise pin the old bytes for a week. -->
+          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video53.mp4?v=8ba541a2" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Layered Mocaps</span>
         </div>
       </div>
@@ -3684,7 +4946,6 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 <!-- ============================================================ -->
 <section class="section" id="shapekeys" aria-label="Creating Shapekeys">
   <span class="seam-label">Creating Shapekeys</span>
-  <canvas class="section-particles" data-pattern="grid" aria-hidden="true"></canvas>
   <div class="container">
     <div class="section-head reveal" style="text-align:center;">
       <span class="section-kicker" style="justify-content:center;">Creating Shapekeys</span>
@@ -3719,7 +4980,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
     <div class="quickfog-outer reveal" style="padding:.6rem;margin-top:1rem;">
       <a class="prod-banner" href="https://superhivemarket.com/products/faceit?ref=473"
          target="_blank" rel="noopener noreferrer" title="Faceit on Superhive">
-        <img src="https://mr3dpageclips.carrd.co/assets/images/image19.jpg"
+        <img src="https://mr3dpageclips.carrd.co/assets/images/image19.jpg?v=65f26d4e"
              alt="Faceit — quick and easy facial expressions in Blender" width="1200" height="320" />
       </a>
       <div style="padding:1.1rem 1.3rem 1.3rem;">
@@ -3776,7 +5037,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
     <div class="quickfog-outer reveal" id="character" style="padding:.6rem;margin-top:1rem;">
       <a class="prod-banner" href="https://superhivemarket.com/products/humgen3d?ref=473"
          target="_blank" rel="noopener noreferrer" title="Human Generator on Superhive">
-        <img src="https://mr3dpageclips.carrd.co/assets/images/image20.jpg"
+        <img src="https://mr3dpageclips.carrd.co/assets/images/image20.jpg?v=88038710"
              alt="Human Generator Ultimate — generated characters in Blender"
              width="1200" height="600" />
       </a>
@@ -3815,7 +5076,6 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 <!-- ============================================================ -->
 <section class="section support-section" id="showcase" style="padding-top:0;">
   <span class="seam-label">Support</span>
-  <canvas class="section-particles" data-pattern="pulse" aria-hidden="true"></canvas>
   <div class="container">
     <div class="section-head reveal" style="text-align:center;">
       <span class="section-kicker" style="justify-content:center;">Dedicated Support</span>
@@ -3878,7 +5138,6 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 <!-- ============================================================ -->
 <section class="section" id="specs" style="padding-top:0;">
   <span class="seam-label">Specs &amp; FAQ</span>
-  <canvas class="section-particles" data-pattern="twinkle" aria-hidden="true"></canvas>
   <div class="container">
     <div class="section-head reveal">
       <span class="section-kicker">Specs &amp; FAQ</span>
@@ -3962,9 +5221,17 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 <!-- ============================================================ -->
 <!-- 8. PRICING & LICENSE TIERS -->
 <!-- ============================================================ -->
-<section class="section" id="pricing">
+<!-- ⛔ padding-bottom trimmed 72px -> 2rem (owner, 2026-10-01: "i want tighter", after the band's
+     own bottom margin went to 0). The space under the band is the SUM of the two, so trimming
+     only the band still left 72px of section padding holding it open; both trimmed = 32px to the
+     #howto seam, matching the 32px above the band.
+     ⛔⛔ `!important` IS REQUIRED HERE, and the first attempt without it was silently DEAD
+     (measured: still 72px). `#workflow, #showcase, … .section { padding-top:72px!important;
+     padding-bottom:72px!important }` (~line 1541) is an author !important declaration, and an
+     author !important beats a plain inline style. Same reason `#workflow` carries
+     `padding-top:24px!important` and `#showcase`/`#specs`/`#howto`'s `padding-top:0` is DEAD. -->
+<section class="section" id="pricing" style="padding-bottom:2rem!important;">
   <span class="seam-label">Pricing</span>
-  <canvas class="section-particles" data-pattern="network" aria-hidden="true"></canvas>
   <div class="container">
     <div class="section-head reveal" style="text-align:center;">
       <span class="section-kicker" style="justify-content:center;">Pricing</span>
@@ -4046,7 +5313,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
        Now 2rem/2rem: 32px of air above, and the space below is the band's 32px + the section's
        own 72px = 104px. ⛔ Only THIS band — the one under #gallery has no text above it and was
        not asked about. -->
-  <section class="offer-band reveal" aria-label="Special offer" style="margin-top:2rem;margin-bottom:2rem;">
+  <section class="offer-band reveal" aria-label="Special offer" style="margin-top:2rem;margin-bottom:0;">
     <div class="ob-shine"></div>
     <div class="ob-inner">
       <div class="so-kicker">Special Offer</div>
@@ -4074,8 +5341,10 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
       </div>
 
       <div class="ob-media">
-        <img src="https://mr3dpageclips.carrd.co/assets/images/image18.gif"
-             alt="Auto Face MoCap Pro demo clip" width="782" height="391" />
+        <!-- Same file, same URL, replaced in place — the ?v= token carries the version
+             (see _updateclips.py / the /updateclips command). -->
+        <img src="https://mr3dpageclips.carrd.co/assets/images/image18.gif?v=74427475"
+             alt="Auto Face MoCap Pro demo clip" width="453" height="391" />
       </div>
     </div>
   </section>
@@ -4088,7 +5357,6 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 <!-- ============================================================ -->
 <section class="section" id="howto" style="padding-top:0;">
   <span class="seam-label">How to</span>
-  <canvas class="section-particles" data-pattern="drift" aria-hidden="true"></canvas>
   <div class="container">
     <div class="section-head reveal" style="text-align:center;">
       <span class="section-kicker" style="justify-content:center;">Tutorials</span>
@@ -4170,7 +5438,6 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 <!-- ============================================================ -->
 <section class="catalog-section" id="catalog" aria-label="Complete product catalog">
   <span class="seam-label">Full Catalog</span>
-  <canvas class="section-particles" data-pattern="grid" aria-hidden="true"></canvas>
   <div class="container">
     <div class="catalog-head reveal">
       <div>
@@ -4514,28 +5781,42 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
     gUpdateDots();
   });
 
-  /* ---------- Fresh clip URLs — always show what the LINK serves ----------
-     carrd serves every asset with `Cache-Control: public, max-age=604800` (SEVEN DAYS)
-     and these clip URLs carry no version, so a clip REPLACED at the same URL stays
-     frozen in the browser for a week — its ETag does change, but inside max-age it is
-     never consulted, and the page cannot look it up (the CDN sends no CORS header).
-     So a <video data-fresh> gets a per-load token instead: a NEW url every load, which
-     forces the browser to fetch whatever the link serves right now.
-     ⚠ The price is a re-download of those clips on EVERY load, so `data-fresh` belongs
-     on the small decorative loops (the two hero rails, ~3.9 MB together). The feature
-     and character clips are ~58 MB in total and stay cached ON PURPOSE — to opt one in,
-     add the attribute to its <video> and measure the file size first. */
+  /* ---------- Fresh clip URLs — the per-load token OPT-IN ----------
+     ⛔ CURRENTLY UNUSED — no element on the page carries `data-fresh` any more (removed
+     2026-10-01 on the owner's word: "then remove it"). The page now relies on the `?v=`
+     token in each carrd URL, which is the FILE's own ETag, refreshed by the /updateclips
+     command (_updateclips.py). The mechanism is kept because it is the only way to make an
+     element update with NO action at all — but read the price below before re-arming it.
+
+     Why it exists: carrd serves every asset with `Cache-Control: public, max-age=604800`
+     (SEVEN DAYS), so a clip REPLACED at the same URL stays frozen for a week — its ETag
+     does change, but inside max-age it is never consulted, and the page cannot look it up
+     (the CDN sends no CORS header).
+     ⛔⛔ The stale copy sits at CLOUDFLARE'S EDGE, not just in the browser — measured
+     2026-10-01 on the banner GIF after the owner replaced it: the bare URL answered
+     `cf-cache-status: HIT, Age: 141326` (39 h) with the OLD 2,511,388-byte file, while a
+     cache-busted URL returned the NEW 2,391,940-byte one. A hard refresh cannot clear that,
+     and a first-time visitor sees the old file too.
+     So a `data-fresh` element gets a per-load token instead: a NEW url every load, which
+     forces BOTH the browser and the edge to fetch whatever the link serves right now.
+     ⚠ ⚠ ⚠ THE PRICE IS A RE-DOWNLOAD ON EVERY LOAD. It was on the 5 swapped clips plus the
+     banner GIF = ~12.6 MB per visit; that is exactly why it was dropped. Only re-arm it on a
+     SMALL decorative loop, and measure the file size first. And it is pointless alongside a
+     `?v=` token — the per-load `t=` changes every time, so the cache key is new regardless
+     and the `v=` does nothing.
+     ⛔ <img> as well as <video>: an image needs no .load() — assigning src is enough
+     (and load() is not a function on an <img>). */
   (function freshClipSrcs() {
     var t = Date.now();
-    var vids = document.querySelectorAll('video[data-fresh]');
-    for (var i = 0; i < vids.length; i++) {
-      var v = vids[i];
-      var s = v.getAttribute('src');
+    var els = document.querySelectorAll('video[data-fresh], img[data-fresh]');
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      var s = el.getAttribute('src');
       if (!s) continue;
       // keep a real query string (carrd's own ?v=...), replace a token from a previous run
       var base = s.replace(/([?&])t=\d+&?/, '$1').replace(/[?&]$/, '');
-      v.setAttribute('src', base + (base.indexOf('?') < 0 ? '?' : '&') + 't=' + t);
-      try { v.load(); } catch (e) {}
+      el.setAttribute('src', base + (base.indexOf('?') < 0 ? '?' : '&') + 't=' + t);
+      if (el.tagName === 'VIDEO') { try { el.load(); } catch (e) {} }
     }
   })();
 
@@ -4709,26 +5990,26 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
      With a single row the arrows stay disabled (dimmed), which is this page's own
      convention (.g-arrow:disabled). Add a second row and they come alive. */
   var HERO_SLIDES = [
-    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video44.mp4',
+    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video44.mp4?v=f823f065',
       tag: 'Anime', name: 'Chan',
       href: 'https://kanafuyuko.booth.pm/items/5419110?registration=1' },
-    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video45.mp4',
+    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video45.mp4?v=14259bb1',
       tag: 'Anime', name: 'Kun',
       href: 'https://booth.pm/en/items/5420804' },
-    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video46.mp4',
+    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video46.mp4?v=f477aec0',
       tag: 'Mollusk (Snail)', name: 'Snail',
       href: 'https://studio.blender.org/characters/forest-animals/v1' },
     // ⛔ Every row MUST carry a `tag`: the swap only writes leftBadge when s.tag
     // exists, so a row without one would leave the PREVIOUS character's tag sitting
     // over this clip. Same class of trap as the href (see the note in apply()).
-    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video47.mp4',
+    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video47.mp4?v=4873c111',
       tag: 'Blender Studio', name: 'Snow',
       href: 'https://studio.blender.org/characters/snow/v4' },
     // ⛔ NO href here on purpose — the credit is a plain label, not a link. apply()
     // drops the href from the badge for a row like this (otherwise Snow's store page
     // would follow the credit onto MetaHuman's clip), and the :not([href]) rules in
     // the CSS take the chain glyph, the pointer and the hover lift off it.
-    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video48.mp4',
+    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video48.mp4?v=dfd54e68',
       tag: 'Humanoid', name: 'Meta' }
     // ,{ src: 'https://mr3dpageclips.carrd.co/assets/videos/videoNN.mp4',
     //    tag: 'Realistic', name: 'Someone', href: 'https://...' }
@@ -5038,419 +6319,6 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 
   catShow(0);
   catRestart();
-
-  /* ---------- 10. Hero particle pattern background (Antigravity-style) ---------- */
-  var pCanvas = document.getElementById('particleCanvas');
-  if (pCanvas) {
-    (function () {
-      var ctx = pCanvas.getContext('2d');
-      var hero = pCanvas.parentElement;
-      var particles = [];
-      var linkDist = 110;              // max px between connected particles
-      var pMouse = { x: -9999, y: -9999 };
-      var dpr = Math.min(window.devicePixelRatio || 1, 2);
-      var pColors = { teal: '#000', olive: '#000' };
-
-      // Pull particle colors from the theme tokens so light/dark both look right
-      function getPColors() {
-        var cs = getComputedStyle(document.documentElement);
-        pColors.teal = cs.getPropertyValue('--color-tertiary').trim() || '#000';
-        pColors.olive = cs.getPropertyValue('--color-accent').trim() || '#000';
-      }
-      getPColors();
-
-      function spawn() {
-        var w = pCanvas.width / dpr, h = pCanvas.height / dpr;
-        return {
-          x: Math.random() * w,
-          y: Math.random() * h,
-          vx: (Math.random() - 0.5) * 0.4,
-          vy: (Math.random() - 0.5) * 0.4,
-          r: 0.8 + Math.random() * 1.6,
-          hue: Math.random() > 0.5 ? 'teal' : 'olive'
-        };
-      }
-
-      function sizeP() {
-        var rect = hero.getBoundingClientRect();
-        pCanvas.width = Math.max(1, Math.round(rect.width * dpr));
-        pCanvas.height = Math.max(1, Math.round(rect.height * dpr));
-        pCanvas.style.width = rect.width + 'px';
-        pCanvas.style.height = rect.height + 'px';
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        // Density scales with area
-        var target = Math.max(28, Math.min(160, Math.round(rect.width * rect.height / 15000)));
-        if (particles.length !== target) {
-          particles = [];
-          for (var i = 0; i < target; i++) particles.push(spawn());
-        }
-      }
-
-      function renderP() {
-        var w = pCanvas.width / dpr, h = pCanvas.height / dpr;
-        ctx.clearRect(0, 0, w, h);
-
-        var i, j, p, q, dx, dy, d, a;
-
-        // Update + gentle mouse repulsion
-        for (i = 0; i < particles.length; i++) {
-          p = particles[i];
-          p.x += p.vx; p.y += p.vy;
-          if (p.x < -20) p.x = w + 20; else if (p.x > w + 20) p.x = -20;
-          if (p.y < -20) p.y = h + 20; else if (p.y > h + 20) p.y = -20;
-          dx = p.x - pMouse.x; dy = p.y - pMouse.y;
-          d = Math.sqrt(dx * dx + dy * dy);
-          if (d < 130 && d > 0.1) { p.x += (dx / d) * 0.5; p.y += (dy / d) * 0.5; }
-        }
-
-        // Connection lines (opacity fades with distance)
-        ctx.lineWidth = 1;
-        for (i = 0; i < particles.length; i++) {
-          p = particles[i];
-          for (j = i + 1; j < particles.length; j++) {
-            q = particles[j];
-            dx = p.x - q.x; dy = p.y - q.y;
-            d = Math.sqrt(dx * dx + dy * dy);
-            if (d < linkDist) {
-              a = (1 - d / linkDist) * 0.45;
-              ctx.globalAlpha = a;
-              ctx.strokeStyle = pColors.teal;
-              ctx.beginPath();
-              ctx.moveTo(p.x, p.y);
-              ctx.lineTo(q.x, q.y);
-              ctx.stroke();
-            }
-          }
-        }
-
-        // Particle dots (azure + cyan mix)
-        for (i = 0; i < particles.length; i++) {
-          p = particles[i];
-          ctx.globalAlpha = 0.9;
-          ctx.fillStyle = p.hue === 'olive' ? pColors.olive : pColors.teal;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.globalAlpha = 1;
-      }
-
-      function loopP() {
-        renderP();
-        requestAnimationFrame(loopP);
-      }
-
-      function onPMove(e) {
-        var r = pCanvas.getBoundingClientRect();
-        pMouse.x = e.clientX - r.left;
-        pMouse.y = e.clientY - r.top;
-      }
-      function onPLeave() { pMouse.x = -9999; pMouse.y = -9999; }
-
-      window.addEventListener('resize', function () { sizeP(); });
-      hero.addEventListener('mousemove', onPMove);
-      hero.addEventListener('mouseleave', onPLeave);
-
-      // Re-pull colors when the theme toggle flips
-      var pToggle = document.getElementById('themeToggle');
-      if (pToggle) pToggle.addEventListener('click', function () { getPColors(); });
-
-      sizeP();
-      if (reduceMotion) { renderP(); } else { loopP(); }
-    })();
-  }
-
-  /* ---------- 11. Section particle patterns (each section gets its own design) ---------- */
-  (function () {
-    var instances = [];
-
-    function getPCols() {
-      // Particles are the button azure (#0096ff), with a lighter companion so the
-      // two-hue mix the patterns were drawn with survives instead of going flat.
-      // (Was --color-tertiary / --color-accent, which resolve to white and grey.)
-      return { teal: '#0096ff', olive: '#53e8fd' };
-    }
-
-    function initP(canvas, pattern) {
-      var ctx = canvas.getContext('2d');
-      var section = canvas.parentElement;
-      var dpr = 1; // background canvases: 1× is plenty, saves a lot of pixels
-      var cols = getPCols();
-      var parts = [];
-      var w = 0, h = 0;
-      var bandX0 = 0, bandX1 = 0;   // horizontal extent of the seam divider, see size()
-      var mX = -9999, mY = -9999; // mouse position relative to this canvas
-
-      function make() {
-        var p = { x: bandX0 + Math.random() * (bandX1 - bandX0), y: Math.random() * h, r: 0.8 + Math.random() * 1.6, hue: Math.random() > 0.5 ? 'teal' : 'olive' };
-        if (pattern === 'drift')  { p.vx = (Math.random() - 0.5) * 0.3; p.vy = (Math.random() - 0.5) * 0.3; p.ph = Math.random() * 6.28; }
-        else if (pattern === 'flow') { p.vx = (Math.random() - 0.5) * 0.2; p.vy = 0.3 + Math.random() * 0.6; p.y = Math.random() * h; }
-        else if (pattern === 'twinkle') { p.ph = Math.random() * 6.28; p.s = 0.4 + Math.random() * 1.4; }
-        else if (pattern === 'orbit') { p.a = Math.random() * 6.28; p.sp = (Math.random() - 0.5) * 0.01; p.ro = 25 + Math.random() * Math.min(w, h) * 0.45; p.ox = 0; p.oy = 0;
-                                       p.ro = Math.min(p.ro, (bandX1 - bandX0) / 2 - 8); }
-        else if (pattern === 'grid')  { p.vx = (Math.random() - 0.5) * 0.25; p.vy = (Math.random() - 0.5) * 0.25; }
-        else { p.vx = (Math.random() - 0.5) * 0.4; p.vy = (Math.random() - 0.5) * 0.4; }
-        return p;
-      }
-
-      function size() {
-        var r = section.getBoundingClientRect();
-        w = r.width; h = r.height;
-        // The seam divider is `min(1180px, 92%)` wide and centred on the section
-        // (`.section::before`). Keep every particle inside that band, so the
-        // background art stops exactly where the divider line stops.
-        var dw = Math.min(1180, w * 0.92);
-        bandX0 = (w - dw) / 2;
-        bandX1 = (w + dw) / 2;
-        canvas.width = Math.max(1, Math.round(w * dpr));
-        canvas.height = Math.max(1, Math.round(h * dpr));
-        canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        measureHoles();                 // BEFORE spawning: placeClear() needs the boxes
-        // Slightly denser than before (owner) — divisor 48000 → 40000, caps raised.
-        var n = Math.max(8, Math.min(42, Math.round(w * h / 40000)));
-        // Double density for every pattern except orbit
-        if (pattern !== 'orbit') n = Math.max(8, Math.min(85, n * 2));
-        if (parts.length !== n) {
-          parts = [];
-          for (var i = 0; i < n; i++) {
-            var q = make();
-            if (pattern === 'twinkle') placeClear(q);
-            parts.push(q);
-          }
-        }
-      }
-
-      function wrap(p) {
-        if (p.x < -20) p.x = w + 20; else if (p.x > w + 20) p.x = -20;
-        if (p.y < -20) p.y = h + 20; else if (p.y > h + 20) p.y = -20;
-      }
-
-      /* ---- Keep the background OUT of the cards ----------------------------
-         This canvas paints BEHIND the content (z-index 0 under a z-index 1
-         container) and the cards are glass, so any particle under a card shows
-         straight through its face. Collect the card rectangles and skip
-         everything drawn inside them, so the background only appears in the
-         gaps AROUND the cards.
-         ⚠ measured with offsetLeft/offsetTop, NOT getBoundingClientRect: cards
-         carry a .reveal transform (translateY 30px) until they scroll in, and a
-         transform would displace the rects while the canvas itself never moves.
-         Both the canvas and the cards live in the same section, so their
-         layout offsets are directly comparable. */
-      var holes = [];
-      var HOLE_SEL = '.quickfog-outer,.price-card,.support-card,.workflow-card,' +
-        '.feature-card,.feature-media,.accordion,.acc-head,.compare-card,.time-chip,' +
-        '.c-card,.g-frame,.img-frame,.rating-card,.hero-media,.special-offer,' +
-        '.hero-side,.hero-copy-card,.specs-bar,.spec-item,.catalog-card,.offer-card,.card,' +
-        // …plus the buttons and button-like UI (owner: "or the buttons or anything")
-        '.btn,.faq-btn,.theme-toggle,.version-badge,.g-arrow,.action-btn,.menu-btn,' +
-        '.coupon-btn,.support-link,.step-num,.tag,.media-tag,.media-reel,.pop-badge,' +
-        '.latest-tag,.vb-version,.workflow-num,.pb-code,.workflow-num,.g-thumb';
-
-      /* Place a STATIC particle clear of the UI — twinkle does not move, so a
-         bounce can never rescue one that spawns inside a card; it would simply
-         stay hidden. Re-roll (capped) until it lands in a gap. */
-      function placeClear(p) {
-        for (var tries = 0; tries < 24; tries++) {
-          if (!inHole(p.x, p.y, BOUNCE_PAD)) return;
-          p.x = bandX0 + Math.random() * (bandX1 - bandX0); p.y = Math.random() * h;
-        }
-      }
-
-      function measureHoles() {
-        holes.length = 0;
-        var found = section.querySelectorAll(HOLE_SEL);
-        for (var k = 0; k < found.length; k++) {
-          var el = found[k], x = 0, y = 0, n = el;
-          while (n && n !== section) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
-          if (n !== section) continue;                     // not in this section's chain
-          if (el.offsetWidth < 2 || el.offsetHeight < 2) continue;
-          holes.push({ x0: x, y0: y, x1: x + el.offsetWidth, y1: y + el.offsetHeight });
-        }
-      }
-      function inHole(x, y, pad) {
-        pad = pad || 0;
-        for (var k = 0; k < holes.length; k++) {
-          var h = holes[k];
-          if (x >= h.x0 - pad && x <= h.x1 + pad && y >= h.y0 - pad && y <= h.y1 + pad) return true;
-        }
-        return false;
-      }
-      /* A connector is drawn BETWEEN two particles, so both endpoints can be clear
-         of a card while the line itself crosses it. Sample along the segment —
-         cheap, and a line across a big card cannot slip between 5 samples. */
-      function segHitsHole(x1, y1, x2, y2) {
-        for (var s = 0; s <= 4; s++) {
-          var t = s / 4;
-          if (inHole(x1 + (x2 - x1) * t, y1 + (y2 - y1) * t, 1)) return true;
-        }
-        return false;
-      }
-
-      /* ---- Bounce off the UI ------------------------------------------------
-         A particle that reaches a card, a button or any other UI box turns away
-         instead of vanishing behind it. Pushed out along the axis it is least
-         deep in, and the velocity on that axis is reflected — the standard
-         minimal-translation response, so it never tunnels and never jitters. */
-      var BOUNCE_PAD = 4;   // widest particle radius (2.4) + sub-pixel slop: the canvas
-                            // backing store is rounded to whole px while the section can
-                            // be fractional, so a 3px pad left a few anti-aliased pixels
-                            // sitting on a card edge
-      function bounce(p) {
-        for (var k = 0; k < holes.length; k++) {
-          var h = holes[k];
-          var x0 = h.x0 - BOUNCE_PAD, y0 = h.y0 - BOUNCE_PAD,
-              x1 = h.x1 + BOUNCE_PAD, y1 = h.y1 + BOUNCE_PAD;
-          if (p.x > x0 && p.x < x1 && p.y > y0 && p.y < y1) {
-            var dl = p.x - x0, dr = x1 - p.x, dt = p.y - y0, db = y1 - p.y;
-            var m = Math.min(dl, dr, dt, db);
-            if (m === dl)      { p.x = x0; p.vx = -Math.abs(p.vx || 0.2); }
-            else if (m === dr) { p.x = x1; p.vx =  Math.abs(p.vx || 0.2); }
-            else if (m === dt) { p.y = y0; p.vy = -Math.abs(p.vy || 0.2); }
-            else               { p.y = y1; p.vy =  Math.abs(p.vy || 0.2); }
-            return true;
-          }
-        }
-        return false;
-      }
-      /* Orbit particles do not own a velocity — their position comes from an
-         angle, so a push would be undone next frame. Widen the ring until it
-         clears the box and reverse the swing instead. */
-      function orbitBounce(p) {
-        for (var k = 0; k < holes.length; k++) {
-          var h = holes[k];
-          var x0 = h.x0 - BOUNCE_PAD, y0 = h.y0 - BOUNCE_PAD,
-              x1 = h.x1 + BOUNCE_PAD, y1 = h.y1 + BOUNCE_PAD;
-          if (p.x > x0 && p.x < x1 && p.y > y0 && p.y < y1) {
-            var cx = (h.x0 + h.x1) / 2, cy = (h.y0 + h.y1) / 2;
-            var ang = Math.atan2(p.y - cy, p.x - cx);
-            var reach = Math.max(Math.abs(h.x1 - h.x0), Math.abs(h.y1 - h.y0)) * 0.6;
-            p.ro = Math.max(p.ro + 2, Math.sqrt(Math.pow(p.x - w / 2, 2) + Math.pow(p.y - h / 2, 2)) + reach);
-            p.ox += Math.cos(ang) * 3;
-            p.oy += Math.sin(ang) * 3;
-            p.sp = -p.sp;
-            return true;
-          }
-        }
-        return false;
-      }
-
-      function draw() {
-        ctx.clearRect(0, 0, w, h);
-        var i, j, p, q, dx, dy, d, a;
-        var hid = [];
-        // ⛔ pad 0, NOT BOUNCE_PAD. The bounce parks a particle exactly on the
-        // BOUNCE_PAD boundary, and `inHole(x, y, BOUNCE_PAD)` is TRUE at that exact
-        // point — so culling with the same pad made every bounced particle vanish
-        // instead of bouncing. This is now only a safety net for anything that ends
-        // up genuinely inside a box; the physics keeps them out.
-        for (i = 0; i < parts.length; i++) hid.push(inHole(parts[i].x, parts[i].y, 0));
-        for (i = 0; i < parts.length; i++) {
-          p = parts[i];
-          if (pattern === 'drift')   { p.ph += 0.008; p.x += p.vx + Math.sin(p.ph) * 0.2; p.y += p.vy; }
-          else if (pattern === 'flow') { p.y += p.vy; p.x += p.vx; }
-          else if (pattern === 'twinkle') { p.ph += 0.025; }
-          else if (pattern === 'orbit') { p.a += p.sp; p.x = w / 2 + Math.cos(p.a) * p.ro + p.ox; p.y = h / 2 + Math.sin(p.a) * p.ro * 0.7 + p.oy; }
-          else if (pattern === 'grid') { p.x += p.vx; p.y += p.vy; }
-          else { p.x += p.vx; p.y += p.vy; }
-
-          // Mouse repulsion — applied to every pattern
-          dx = p.x - mX; dy = p.y - mY; d = Math.sqrt(dx * dx + dy * dy);
-          if (d < 130 && d > 0.1) {
-            if (pattern === 'orbit') { p.ox += (dx / d) * 1.2; p.oy += (dy / d) * 1.2; }
-            else { p.x += (dx / d) * 1.5; p.y += (dy / d) * 1.5; }
-          }
-
-          if (pattern === 'orbit') {
-            orbitBounce(p);
-            // an orbit ring can still swing past the divider's end — pull it back in
-            if (p.x < bandX0 + 2) { p.ox += (bandX0 + 2 - p.x); p.sp = Math.abs(p.sp); }
-            else if (p.x > bandX1 - 2) { p.ox -= (p.x - bandX1 + 2); p.sp = -Math.abs(p.sp); }
-            p.ox *= 0.92; p.oy *= 0.92;
-          } else {
-            wrap(p);
-            // bounce AFTER wrap, so a particle that wraps across an edge straight
-            // into a card is pushed back out on the same frame
-            if (pattern !== 'twinkle') bounce(p);   // twinkle is static: placed clear at spawn
-            // …and never let one drift past the end of the divider line
-            if (p.x < bandX0) { p.x = bandX0; p.vx = Math.abs(p.vx || 0.2); }
-            else if (p.x > bandX1) { p.x = bandX1; p.vx = -Math.abs(p.vx || 0.2); }
-          }
-        }
-
-        if (pattern === 'flow' || pattern === 'grid') {
-          ctx.lineWidth = 1;
-          // Check every other pair (halves the O(n²) work) and a shorter distance
-          for (i = 0; i < parts.length; i++) {
-            p = parts[i];
-            for (j = i + 1; j < parts.length; j += 2) {
-              q = parts[j]; dx = p.x - q.x; dy = p.y - q.y; d = Math.sqrt(dx * dx + dy * dy);
-              if (d < 70 && !segHitsHole(p.x, p.y, q.x, q.y)) { a = (1 - d / 70) * 0.3; ctx.globalAlpha = a; ctx.strokeStyle = cols.teal; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke(); }
-            }
-          }
-        }
-        if (pattern === 'pulse') {
-          ctx.lineWidth = 1.4;
-          for (i = 0; i < parts.length; i++) {
-            p = parts[i]; p.ph += 0.01;
-            var ring = (p.ph % 1) * 70;
-            if (inHole(p.x, p.y, ring + 1)) continue;   // ring would sweep over a card
-            a = Math.max(0, 1 - (p.ph % 1));
-            ctx.globalAlpha = a * 0.28; ctx.strokeStyle = cols.teal;
-            ctx.beginPath(); ctx.arc(p.x, p.y, (p.ph % 1) * 70, 0, 6.283); ctx.stroke();
-          }
-        }
-        if (pattern === 'orbit') {
-          ctx.lineWidth = 1; ctx.globalAlpha = 0.12; ctx.strokeStyle = cols.teal;
-          for (i = 0; i < parts.length; i++) { p = parts[i]; if (segHitsHole(w / 2, h / 2, p.x, p.y)) continue; ctx.beginPath(); ctx.moveTo(w / 2, h / 2); ctx.lineTo(p.x, p.y); ctx.stroke(); }
-        }
-
-        for (i = 0; i < parts.length; i++) {
-          p = parts[i];
-          if (hid[i]) continue;                       // no background art behind a card
-          ctx.globalAlpha = pattern === 'twinkle' ? 0.2 + Math.abs(Math.sin(p.ph)) * 0.8 : 0.85;
-          ctx.fillStyle = p.hue === 'olive' ? cols.olive : cols.teal;
-          ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill();
-        }
-        ctx.globalAlpha = 1;
-      }
-
-      // Visibility-gated loop (~30fps): only runs while the section is on screen
-      var rafId = null, frame = 0;
-      function start() {
-        if (rafId) return;
-        (function tick() {
-          rafId = requestAnimationFrame(tick);
-          frame++;
-          if (frame % 3 === 0) draw(); // render ~every 3rd frame (~20fps)
-        })();
-      }
-      function stop() { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
-
-      section.addEventListener('mousemove', function (e) {
-        var r = canvas.getBoundingClientRect();
-        mX = e.clientX - r.left; mY = e.clientY - r.top;
-      });
-      section.addEventListener('mouseleave', function () { mX = -9999; mY = -9999; });
-
-      size();
-      if (reduceMotion) { draw(); }
-      else if ('IntersectionObserver' in window) {
-        new IntersectionObserver(function (es) {
-          es.forEach(function (en) { if (en.isIntersecting) start(); else stop(); });
-        }, { rootMargin: '80px' }).observe(section);
-      } else { start(); }
-      window.addEventListener('resize', function () { size(); });
-      instances.push({ refresh: function () { cols = getPCols(); } });
-    }
-
-    document.querySelectorAll('.section-particles').forEach(function (c) {
-      initP(c, c.getAttribute('data-pattern') || 'drift');
-    });
-
-    var pt = document.getElementById('themeToggle');
-    if (pt) pt.addEventListener('click', function () { instances.forEach(function (x) { x.refresh(); }); });
-  })();
 
   /* ---------- 12. Feature clips: intentionally no hover behaviour ----------
      The clips below the sub-divider no longer zoom on hover (the old 0.5s
@@ -5940,5 +6808,15 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
   }
 })();
 </script>
+
+<!-- Interactive procedural background. Deferred so it can never delay the page's
+     own scripts, and kept as a FILE rather than inline: it is ~450 lines of
+     self-contained module with no dependency on anything in this document. -->
+<script src="assets/js/interactive-bg.js" defer></script>
+<!-- ⛔ REMOVED: `<script src="assets/js/brand-title.js" defer></script>` — the
+     wordmark letter-by-letter entrance and its scribble. Owner: *"remove the
+     animation"*. The CSS went with it (see the note by `.brand-title-grad`); the
+     module itself is still on disk, unreferenced. Re-adding this tag alone restores
+     nothing — the CSS block has to come back too. -->
 </body>
 </html>
