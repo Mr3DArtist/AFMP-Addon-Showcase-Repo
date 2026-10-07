@@ -4416,12 +4416,20 @@ html.dark #workflow .feature-text > .quickfog-outer::before {
    `.card-fx` with an IntersectionObserver and a 200px `rootMargin`, so a card is live slightly
    BEFORE it enters the viewport and nothing pops. This is the technique the `#cardFx` block
    records as holding a full rollout to 2-12 live at any scroll position. */
-.card-fx > .fx-dots,
-.card-fx > .fx-ring {
-  animation-name: none;
-}
-.card-fx.fx-live > .fx-dots { animation-name: dotWave; }
-.card-fx.fx-live > .fx-ring { animation-name: fxOrbit; }
+/* ⛔⛔ THE CARD LAYERS ARE GATED BY THE GENERIC PAUSE INSTEAD, AND THIS RULE IS DELETED.
+   Owner: *"why did you pause the animations"* — which found a real defect.
+   ⛔⛔ `animation-name: none` DOES NOT PAUSE AN ANIMATION, IT DESTROYS AND RECREATES IT.
+   Removing the name and putting it back restarts the animation from zero, so every card's
+   dot wave and orbiting ring visibly JUMPED BACK TO THE START as it scrolled into view. The
+   `rootMargin` made it worse rather than better: the restart happened 200px BEFORE the card
+   appeared, exactly where the eye could watch it happen.
+   ⛔ The reason this rule existed was to avoid resetting `animation-duration` and
+   `animation-delay` (the stagger across the section). Pausing never touches either, so the
+   generic gate in `#fxAnimGate` gets the same saving AND keeps the phase. The 32% it was
+   built to recover is still recovered — the measurement is in that block.
+   ⛔ `.fx-live` is left in the CSS and in `#fxVisibility`'s class toggle only as a hook; no
+   rule reads it now. If a rule is ever added back here, it MUST use `animation-play-state`
+   rather than `animation-name`, for the reason above. */
 
 /* ------------------------------------- 6. the hover COLOUR, on the rest of the cards
    Owner: *"the hover over color does not show also add that"*.
@@ -8105,6 +8113,26 @@ html.dark .hero-copy-card:hover {
      EDGE sentinels ever cross a threshold. The interior ones sit at ratio 1 and are silent. */
   var BAND_SLACK = 160;        // px of canvas beyond the band — see `fitCanvasToBand()`
 
+  /* ⛔⛔ THE FIELD STOPS AT THE FULL CATALOG SECTION. Owner: *"make the pages max size till the
+     full cataloq section no more then that"*.
+     ⛔ MEASURED, NOT GUESSED: the catalog section runs from 14272 to **14952** and the document
+     to 15400, so the part being excluded is the 448px of footer below it.
+     ⛔⛔ THIS BOUNDS THE FIELD, NOT THE PAGE. Truncating the document at the catalog was the
+     other reading, and it would DELETE THE FOOTER — so the page keeps every pixel it has and
+     only the particle field stops there. Everything below the catalog is simply outside the
+     field's extent: no particles are seeded past it, so none are ever drawn there.
+     ⛔ It also makes the field smaller to run, which is the same direction as the work above.
+     ⛔ Read at `measure()` time from the live element, so it follows the page if the section
+     ever moves; if `.catalog-section` is missing the whole document is used, which is the
+     behaviour before this existed. */
+  function fieldBottom() {
+    var cat = document.querySelector('.catalog-section');
+    var h = document.documentElement.scrollHeight || 0;
+    if (!cat) return h;
+    var b = Math.round(cat.getBoundingClientRect().bottom + (window.scrollY || 0));
+    return (b > 200 && b < h) ? b : h;
+  }
+
   /* ⛔⛔ THE CANVAS KEEPS A SMALL MARGIN AND REALLOCATES RARELY. Resizing the canvas is a
      backing-store reallocation, not a style change — a 1418 x 800 canvas is about 4.5MB — so
      following the band pixel-for-pixel would reallocate on every ~8px of scroll and cost more
@@ -8174,7 +8202,7 @@ html.dark .hero-copy-card:hover {
   function buildBandSentinels() {
     for (var i = 0; i < bandSegs.length; i++) bandSegs[i].el.remove();
     bandSegs = [];
-    var h = Math.max(2000, document.documentElement.scrollHeight || 0);
+    var h = Math.max(2000, fieldBottom());
     var n = Math.ceil(h / BAND_SEG) + 1;
     var frag = document.createDocumentFragment();
     for (var j = 0; j < n; j++) {
@@ -8274,7 +8302,7 @@ html.dark .hero-copy-card:hover {
     linkDist2 = (W / 7) * (H / 7);
     /* ⛔ the DOCUMENT's size, not the window's — this is what the field is seeded across */
     docW = Math.max(W, document.documentElement.scrollWidth || 0);
-    docH = Math.max(H, document.documentElement.scrollHeight || 0);
+    docH = Math.max(H, fieldBottom());
   }
 
   function seed() {
@@ -8574,45 +8602,16 @@ html.dark .hero-copy-card:hover {
 })();
 </script>
 
-<script>
-/* ⛔⛔ THE VISIBILITY GATE — the whole of the last optimisation.
-   Owner: *"it's still using 30% cpu and 20% gpu"*, then *"make it use as little as possible"*.
-
-   ⛔⛔ THE PAGE HAD 40 PATTERN ANIMATIONS RUNNING AND ONE CARD ON SCREEN. Measured: 20
-   `.card-fx` cards, each with a `.fx-ring` (an `fxOrbit` conic-gradient rotation) and a
-   `.fx-dots` (a `dotWave` mask-position slide). Disabling those three layer classes saved
-   0.429s of the 1.356s the page spent per three seconds — 32% — while disabling the particle
-   field saved nothing at all. Neither animation can be GPU-composited, so each one repaints
-   its card continuously for as long as it runs, on-screen or not.
-   ⛔ This toggles `animation-name` on the two layer classes through a single class on the
-   card. **Only `animation-name`** — the CSS gate would reset the durations and the stagger
-   delays if it used the `animation` shorthand, and the stagger is what stops the whole
-   section waving in lockstep.
-   ⛔ `rootMargin: 200px` so a card goes live slightly before it appears, and comes back the
-   moment it is near. That keeps the effect identical to the eye while the animations that are
-   actually running at any instant drop from 40 to a handful.
-   ⛔ `#cardFxLayers` has already run by the time this does — it is inline, earlier in the body
-   — so the `.card-fx` elements exist to observe. The observer is re-armed on nothing else: the
-   card set is fixed at load. */
-(function () {
-  'use strict';
-  if (!window.IntersectionObserver) {
-    /* ⛔ no observer, no gate: better to keep every card animating than to leave them all
-       frozen. This is the pre-gate behaviour and it is correct, only wasteful. */
-    return;
-  }
-  var cards = document.querySelectorAll('.card-fx');
-  if (!cards.length) return;
-  var io = new IntersectionObserver(function (entries) {
-    for (var i = 0; i < entries.length; i++) {
-      var e = entries[i];
-      if (e.isIntersecting) e.target.classList.add('fx-live');
-      else e.target.classList.remove('fx-live');
-    }
-  }, { root: null, rootMargin: '200px 0px 200px 0px', threshold: 0 });
-  for (var i = 0; i < cards.length; i++) io.observe(cards[i]);
-})();
-</script>
+<!-- ⛔⛔ THE VISIBILITY GATE — deleted; its job moved to `#fxAnimGate` below.
+     Owner: *"why did you pause the animations"*, which found a real defect.
+     This toggled `animation-name` on `.fx-dots` and `.fx-ring` per card. Measured, it
+     recovered the full 32% those layers cost. ⛔⛔ BUT `animation-name: none` is not a
+     pause: it DESTROYS the animation, and restoring the name recreates it FROM ZERO — so
+     every card's wave and ring visibly restarted as it scrolled into view, and the 200px
+     `rootMargin` put that restart just before the card appeared, in plain sight.
+     `pause()`/`play()` preserves the phase and never touches the stagger delays, so there is
+     now ONE gate, for the whole page. The `.fx-live` hook remains but no rule reads it; if a
+     CSS gate is ever added back here it MUST use `animation-play-state`, never the name. -->
 
 <script>
 /* ⛔⛔ PAUSE EVERY INFINITE ANIMATION THAT IS OFF SCREEN — the whole page, not just the cards.
@@ -8657,14 +8656,56 @@ html.dark .hero-copy-card:hover {
     }
   }, { root: null, rootMargin: '200px 0px 200px 0px', threshold: 0 });
 
-  var all = document.getAnimations(), watched = [], i, el;
-  for (i = 0; i < all.length; i++) {
-    if (!infinite(all[i])) continue;
-    el = all[i].effect.target;
-    if (!el || watched.indexOf(el) >= 0) continue;
-    watched.push(el);
-    io.observe(el);
+  /* ⛔⛔ THE COLLECTION RUNS MORE THAN ONCE, AND THAT IS THE WHOLE FIX.
+     It used to run once, at parse time. MEASURED: that left only 30 of 122 infinite
+     animations paused, and the 92 still running included **23 off-screen `dotWave` and 19
+     off-screen `fxOrbit`** — the card layers this gate exists for.
+     ⛔⛔ WHY THEY WERE MISSED: `#cardFxLayers` builds the cards on `DOMContentLoaded`, which
+     has NOT fired while the body is still being parsed. So at parse time the `.card-fx` cards
+     — and therefore their `.fx-dots` and `.fx-ring` animations — did not exist yet, and
+     `document.getAnimations()` could not report them. Only the animations created by markup
+     that was already parsed (the clip bars, the pulses) were observed.
+     ⛔ `watched` makes re-running free: an element already observed is skipped, and
+     `io.observe()` on a new element fires its initial callback immediately, so anything found
+     late is paused in the same tick.
+     ⛔ Three passes because animated elements appear at three different times: on
+     `DOMContentLoaded` (the card layers), on `load` (anything waiting for a resource), and
+     once more on a timer for anything a script adds afterwards. */
+  var io, watched = [];
+
+  function collect() {
+    var all = document.getAnimations(), i, el;
+    for (i = 0; i < all.length; i++) {
+      if (!infinite(all[i])) continue;
+      el = all[i].effect.target;
+      if (!el || watched.indexOf(el) >= 0) continue;
+      watched.push(el);
+      io.observe(el);
+    }
   }
+
+  io = new IntersectionObserver(function (entries) {
+    for (var i = 0; i < entries.length; i++) {
+      var e = entries[i];
+      if (!e.target.getAnimations) continue;
+      var anims = e.target.getAnimations();
+      for (var j = 0; j < anims.length; j++) {
+        if (!infinite(anims[j])) continue;
+        try { e.isIntersecting ? anims[j].play() : anims[j].pause(); } catch (err) {}
+      }
+    }
+  }, { root: null, rootMargin: '200px 0px 200px 0px', threshold: 0 });
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', collect);
+  else collect();
+  window.addEventListener('load', collect);
+  /* ⛔ MEASURED: after the two standard passes, 48 infinite animations were still running off
+     screen — the clip-bar layers most of all, 14 of them, because the clip-bar script builds
+     its elements AFTER the videos report their duration rather than during parsing. A later
+     pass catches them for one `getAnimations()` call. `watched` makes each re-run a no-op for
+     everything already observed. */
+  setTimeout(collect, 1500);
+  setTimeout(collect, 4000);
 })();
 </script>
 
