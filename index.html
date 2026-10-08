@@ -9937,6 +9937,349 @@ html:not(.dark) header.site-header .brand-stroke-header .brand-title-text {color
 .quick-nav a > .fx-ring {--ring:var(--nav-accent);background:var(--nav-accent)!important;}
 html:not(.dark) .quick-nav a {color:color-mix(in srgb,var(--nav-accent) 42%,#142636)!important;background:color-mix(in srgb,var(--nav-accent) 13%,#fff)!important;}
 html:not(.dark) .quick-nav a:hover,html:not(.dark) .quick-nav a.active {color:#102638!important;background:color-mix(in srgb,var(--nav-accent) 30%,#fff)!important;}
+
+.hero-media .hm-nav,.hero-media .hm-nav:hover {border-color:transparent!important;outline:none!important;box-shadow:none!important;}
+.hero-media .hm-nav::before,.hero-media .hm-nav::after,.hero-media .hm-nav > .fx-ring {display:none!important;}
+.hero-media .hm-nav:focus-visible {outline:2px solid #d6efff!important;outline-offset:3px;}
+
+/* Extra breathing room above the Workflow and Features seam. */
+.hero {padding-bottom:50px;}
+
+.hero-note,.hero-note:hover {border:0!important;outline:none!important;box-shadow:none!important;}
+.hero-note::before,.hero-note::after,.hero-note > .fx-ring {display:none!important;}
+
+
+/* The ten-pixel dot tile advances by one full period for a seamless loop. */
+.card-fx > .fx-dots,html.dark .price-card::before,.offer-band::before {animation:patternTileLoop 4s linear infinite;}
+@keyframes patternTileLoop {0%{background-position:0 0;opacity:.45;}50%{background-position:20px 0;opacity:.95;}100%{background-position:40px 0;opacity:.45;}}
+@media(prefers-reduced-motion:reduce){.card-fx > .fx-dots,html.dark .price-card::before,.offer-band::before{animation:none;}}
+
+/* Seamless wave: translate the160px repeating mask through exactly one period. */
+.card-fx > .fx-dots,html.dark .price-card::before {animation:dotWave 3.6s linear infinite;background-position:0 0;opacity:.85;}
+.offer-band::before {
+ -webkit-mask-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22l%22%20gradientUnits%3D%22userSpaceOnUse%22%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2278%22%20gradientTransform%3D%22scale(.52%201.25)%22%3E%3Cstop%20stop-color%3D%22white%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22white%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%3CradialGradient%20id%3D%22r%22%20gradientUnits%3D%22userSpaceOnUse%22%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2278%22%20gradientTransform%3D%22translate(100%200)%20scale(.52%201.25)%22%3E%3Cstop%20stop-color%3D%22white%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22white%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Cpath%20fill%3D%22url(%23l)%22%20d%3D%22M0%200h100v100H0z%22%2F%3E%3Cpath%20fill%3D%22url(%23r)%22%20d%3D%22M0%200h100v100H0z%22%2F%3E%3C%2Fsvg%3E"),repeating-linear-gradient(90deg,rgba(0,0,0,.15) 0px,#000 80px,rgba(0,0,0,.15) 160px);
+ mask-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22l%22%20gradientUnits%3D%22userSpaceOnUse%22%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2278%22%20gradientTransform%3D%22scale(.52%201.25)%22%3E%3Cstop%20stop-color%3D%22white%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22white%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%3CradialGradient%20id%3D%22r%22%20gradientUnits%3D%22userSpaceOnUse%22%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2278%22%20gradientTransform%3D%22translate(100%200)%20scale(.52%201.25)%22%3E%3Cstop%20stop-color%3D%22white%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22white%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Cpath%20fill%3D%22url(%23l)%22%20d%3D%22M0%200h100v100H0z%22%2F%3E%3Cpath%20fill%3D%22url(%23r)%22%20d%3D%22M0%200h100v100H0z%22%2F%3E%3C%2Fsvg%3E"),repeating-linear-gradient(90deg,rgba(0,0,0,.15) 0px,#000 80px,rgba(0,0,0,.15) 160px);
+ -webkit-mask-composite:source-in;mask-composite:intersect;animation:dotWave 3.6s linear infinite;background-position:0 0;opacity:.85;
+}
+@media(prefers-reduced-motion:reduce){.card-fx > .fx-dots,html.dark .price-card::before,.offer-band::before{animation:none;}}
+
+/* Keep the looping card wave confined to the original corner anchor. */
+.card-fx > .fx-dots {
+ -webkit-mask-image:radial-gradient(72% var(--fx-vh,75%) at var(--fx-ax,10%) var(--fx-ay,0%),#000,transparent 70%),repeating-linear-gradient(90deg,rgba(0,0,0,.15) 0px,#000 80px,rgba(0,0,0,.15) 160px);
+ mask-image:radial-gradient(72% var(--fx-vh,75%) at var(--fx-ax,10%) var(--fx-ay,0%),#000,transparent 70%),repeating-linear-gradient(90deg,rgba(0,0,0,.15) 0px,#000 80px,rgba(0,0,0,.15) 160px);
+ -webkit-mask-composite:source-in;mask-composite:intersect;
+}
+
+/* Compact quick navigation and tighter spacing around the product gallery. */
+header.site-header {margin-bottom:8px;}
+.quick-nav {padding-top:.25rem;padding-bottom:.25rem;gap:.45rem;top:82px;}
+.quick-nav a {font-size:.72rem;padding:.35rem .75rem;}
+#gallery {margin-top:24px;padding-top:44px!important;padding-bottom:16px!important;}
+
+.offer-band .so-new,.special-offer .so-new {color:#37c9ff!important;}
+.offer-band .coupon-copy,.special-offer .coupon-copy {background:#37c9ff!important;color:#042438!important;}
+
+/* Give clip-adjacent text the full column; fade the surface, never the lettering. */
+#workflow .quickfog-outer:has(> .feature-row.side-row) {padding:0!important;}
+#workflow .feature-row.side-row {gap:.35rem;}
+#workflow .feature-row.side-row .feature-text > .quickfog-outer {
+ width:100%;max-width:none;box-sizing:border-box;padding:.65rem .3rem!important;margin:0;border:0!important;border-radius:0!important;outline:none!important;box-shadow:none!important;
+ background:linear-gradient(90deg,transparent 0,rgba(0,0,0,.3) 12px,rgba(0,0,0,.3) calc(100% - 12px),transparent 100%)!important;
+}
+#workflow .feature-row.side-row .feature-text > .quickfog-outer:hover {outline:none!important;box-shadow:none!important;}
+#workflow .feature-row.side-row .feature-text > .quickfog-outer > .fx-ring {display:none!important;}
+#workflow .feature-row.side-row .feature-text .feature-title,#workflow .feature-row.side-row .feature-text .feature-copy {max-width:none;width:100%;margin-left:0;margin-right:0;}
+
+/* Retain the text-panel frame and extend its outer side to the page edge. */
+#workflow .quickfog-outer:has(> .feature-row.side-row) {overflow:visible;}
+#workflow .feature-row.side-row {--text-edge:calc((100vw - min(1180px,92vw)) / 2);}
+#workflow .feature-row.side-row .feature-text {flex-basis:calc(30% + var(--text-edge));width:calc(30% + var(--text-edge));}
+#workflow .feature-row.side-row:not(.rev) .feature-text {margin-left:calc(-1 * var(--text-edge));}
+#workflow .feature-row.side-row.rev .feature-text {margin-right:calc(-1 * var(--text-edge));}
+#workflow .feature-row.side-row .feature-text > .quickfog-outer {position:relative;border-radius:20px!important;padding:.65rem .75rem!important;background:rgba(0,0,0,.3)!important;}
+#workflow .feature-row.side-row .feature-text > .quickfog-outer::after {content:''!important;display:block!important;position:absolute;inset:0;border:1px solid rgba(49,175,231,.65);border-radius:inherit;pointer-events:none;background:none!important;opacity:1!important;box-shadow:none!important;}
+#workflow .feature-row.side-row:not(.rev) .feature-text > .quickfog-outer::after {-webkit-mask-image:linear-gradient(90deg,transparent,#000 24px);mask-image:linear-gradient(90deg,transparent,#000 24px);}
+#workflow .feature-row.side-row.rev .feature-text > .quickfog-outer::after {-webkit-mask-image:linear-gradient(270deg,transparent,#000 24px);mask-image:linear-gradient(270deg,transparent,#000 24px);}
+#workflow .feature-row.side-row:not(.rev) .feature-text > .quickfog-outer {background:linear-gradient(90deg,transparent,rgba(0,0,0,.3) 24px)!important;}
+#workflow .feature-row.side-row.rev .feature-text > .quickfog-outer {background:linear-gradient(270deg,transparent,rgba(0,0,0,.3) 24px)!important;}
+
+/* Gradual outer-edge fade on decorative layers only; text retains full opacity. */
+#workflow .feature-row.side-row .feature-text > .quickfog-outer {--edge-fade:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.08) 6%,rgba(0,0,0,.3) 14%,rgba(0,0,0,.68) 24%,#000 40%);border-radius:0 20px 20px 0!important;}
+#workflow .feature-row.side-row.rev .feature-text > .quickfog-outer {--edge-fade:linear-gradient(270deg,transparent 0%,rgba(0,0,0,.08) 6%,rgba(0,0,0,.3) 14%,rgba(0,0,0,.68) 24%,#000 40%);border-radius:20px 0 0 20px!important;}
+#workflow .feature-row.side-row .feature-text > .quickfog-outer::after {-webkit-mask-image:var(--edge-fade)!important;mask-image:var(--edge-fade)!important;}
+#workflow .feature-row.side-row:not(.rev) .feature-text > .quickfog-outer {background:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.025) 6%,rgba(0,0,0,.09) 14%,rgba(0,0,0,.2) 24%,rgba(0,0,0,.3) 40%)!important;}
+#workflow .feature-row.side-row.rev .feature-text > .quickfog-outer {background:linear-gradient(270deg,transparent 0%,rgba(0,0,0,.025) 6%,rgba(0,0,0,.09) 14%,rgba(0,0,0,.2) 24%,rgba(0,0,0,.3) 40%)!important;}
+#workflow .feature-row.side-row .feature-text > .quickfog-outer > .fx-dots,#workflow .feature-row.side-row .feature-text > .quickfog-outer > .fx-pool {clip-path:inset(0 0 0 0);}
+#workflow .feature-row.side-row .feature-text > .quickfog-outer > .fx-pool {-webkit-mask-image:var(--edge-fade),radial-gradient(200px circle at var(--mx,10%) var(--my,0%),#000,transparent 74%);mask-image:var(--edge-fade),radial-gradient(200px circle at var(--mx,10%) var(--my,0%),#000,transparent 74%);-webkit-mask-composite:source-in;mask-composite:intersect;}
+
+#workflow .feature-row.side-row .feature-text > .quickfog-outer > .fx-dots {
+ -webkit-mask-image:var(--edge-fade),radial-gradient(72% var(--fx-vh,75%) at var(--fx-ax,10%) var(--fx-ay,0%),#000,transparent 70%),repeating-linear-gradient(90deg,rgba(0,0,0,.15) 0px,#000 80px,rgba(0,0,0,.15) 160px);
+ mask-image:var(--edge-fade),radial-gradient(72% var(--fx-vh,75%) at var(--fx-ax,10%) var(--fx-ay,0%),#000,transparent 70%),repeating-linear-gradient(90deg,rgba(0,0,0,.15) 0px,#000 80px,rgba(0,0,0,.15) 160px);
+ -webkit-mask-composite:source-in,source-in;mask-composite:intersect,intersect;animation:featureEdgeWave 3.6s linear infinite;
+}
+@keyframes featureEdgeWave {from{-webkit-mask-position:0 0,0 0,0 0;mask-position:0 0,0 0,0 0;}to{-webkit-mask-position:0 0,0 0,160px 0;mask-position:0 0,0 0,160px 0;}}
+@media(prefers-reduced-motion:reduce){#workflow .feature-row.side-row .feature-text > .quickfog-outer > .fx-dots{animation:none;}}
+
+#workflow .feature-row.side-row:not(.rev) .feature-text .feature-title,#workflow .feature-row.side-row:not(.rev) .feature-text .feature-copy {-webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,.6),#000 64%);mask-image:linear-gradient(90deg,rgba(0,0,0,.6),#000 64%);}
+#workflow .feature-row.side-row.rev .feature-text .feature-title,#workflow .feature-row.side-row.rev .feature-text .feature-copy {-webkit-mask-image:linear-gradient(270deg,rgba(0,0,0,.6),#000 64%);mask-image:linear-gradient(270deg,rgba(0,0,0,.6),#000 64%);}
+
+/* Remove the enclosing row fill beneath the text-panel fade. Clip surfaces remain. */
+#workflow .quickfog-outer:has(> .feature-row.side-row) {background:transparent!important;border-color:transparent!important;box-shadow:none!important;}
+#workflow .quickfog-outer:has(> .feature-row.side-row)::before,#workflow .quickfog-outer:has(> .feature-row.side-row)::after,#workflow .quickfog-outer:has(> .feature-row.side-row) > .fx-dots,#workflow .quickfog-outer:has(> .feature-row.side-row) > .fx-pool,#workflow .quickfog-outer:has(> .feature-row.side-row) > .fx-ring {display:none!important;}
+#workflow .feature-row.side-row .feature-text > .quickfog-outer::before {-webkit-mask-image:var(--edge-fade);mask-image:var(--edge-fade);}
+
+/* Fade only the outer sixteen pixels of feature footage, not playback controls. */
+#workflow .feature-row.side-row .feature-media > video {
+ -webkit-mask-image:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent),linear-gradient(180deg,transparent,#000 16px,#000 calc(100% - 16px),transparent);
+ mask-image:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent),linear-gradient(180deg,transparent,#000 16px,#000 calc(100% - 16px),transparent);
+ -webkit-mask-composite:source-in;mask-composite:intersect;
+}
+
+/* Transparent backing lets the footage's alpha edge reveal the page. */
+#workflow .feature-row.side-row .feature-media,#workflow .feature-row.side-row .feature-media:hover {background:transparent!important;border-color:transparent!important;outline:none!important;box-shadow:none!important;}
+#workflow .feature-row.side-row .feature-media::before,#workflow .feature-row.side-row .feature-media::after,#workflow .feature-row.side-row .feature-media > .fx-ring,#workflow .feature-row.side-row .feature-media > .fx-dots,#workflow .feature-row.side-row .feature-media > .fx-pool {display:none!important;}
+
+/* Restore the travelling text-card glow, fading the complete decorative layer. */
+#workflow .feature-row.side-row .feature-text > .quickfog-outer > .fx-ring {display:block!important;}
+#workflow .feature-row.side-row .feature-text > .quickfog-outer > .fx-ring {-webkit-mask-image:var(--edge-fade),linear-gradient(#000 0 0),linear-gradient(#000 0 0);mask-image:var(--edge-fade),linear-gradient(#000 0 0),linear-gradient(#000 0 0);-webkit-mask-clip:border-box,content-box,border-box;mask-clip:border-box,content-box,border-box;-webkit-mask-origin:border-box,content-box,border-box;mask-origin:border-box,content-box,border-box;-webkit-mask-composite:source-in,xor;mask-composite:intersect,exclude;}
+
+/* Extend clip rows to both page edges and give the released space to copy. */
+#workflow .feature-row.side-row .feature-text {flex-basis:calc(30% + 2 * var(--text-edge));width:calc(30% + 2 * var(--text-edge));}
+#workflow .feature-row.side-row:not(.rev) .feature-media {margin-right:calc(-1 * var(--text-edge))!important;border-top-right-radius:0;border-bottom-right-radius:0;--clip-outer-fade:linear-gradient(270deg,transparent,#000 32px);}
+#workflow .feature-row.side-row.rev .feature-media {margin-left:calc(-1 * var(--text-edge))!important;border-top-left-radius:0;border-bottom-left-radius:0;--clip-outer-fade:linear-gradient(90deg,transparent,#000 32px);}
+#workflow .feature-row.side-row .feature-media > video {
+-webkit-mask-image:var(--clip-outer-fade),linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent),linear-gradient(180deg,transparent,#000 16px,#000 calc(100% - 16px),transparent);
+mask-image:var(--clip-outer-fade),linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent),linear-gradient(180deg,transparent,#000 16px,#000 calc(100% - 16px),transparent);
+-webkit-mask-composite:source-in,source-in;mask-composite:intersect,intersect;
+}
+
+/* Expanded information panels follow the navy/cyan page palette. */
+#specs .acc-inner,#changelog .acc-inner {background:linear-gradient(135deg,#0a2339,#061321);color:#e0f2ff;border:1px solid rgba(55,201,255,.24);}
+#specs .acc-inner .spec-table td {color:#e0f2ff;border-bottom-color:rgba(85,192,235,.22);}
+#specs .acc-inner .spec-table td:first-child {color:#91cde9;}
+#specs .acc-inner li::before,#changelog .acc-inner li::before {background:#37c9ff;}
+#specs .acc-inner a,#changelog .acc-inner a {color:#65d8ff;}
+
+/* Cyan perimeter glow on the complete More from MR3D strip. */
+.m3-wrap,.m3-wrap:hover {border-color:rgba(55,201,255,.7);box-shadow:0 0 9px rgba(29,177,255,.32),0 0 24px rgba(0,153,255,.18),inset 0 0 8px rgba(55,201,255,.12)!important;}
+
+/* Travelling outline arc on the More from MR3D container. */
+.m3-wrap::after {
+content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:3; z-index: 3; }
+/* ⛔ content must sit above the dot field, and `> *` alone would rip an absolutely
+   positioned child (a badge, a nav pill) back into the flow — the page learned this
+   on `.price-card` (`> *:not(.pop-badge)`). Here the injected spans are excluded by
+   class instead, which is the same guard without depending on a specific child.
+   ⚠ This is safe at the CURRENT scope — three Shapekeys cards and the top bar. It was
+   rolled out page-wide to 59 surfaces and REVERTED on the owner's word (*"undo last
+   prompt"*); doing so again needs the `.fx-abs` snapshot described at the end of this
+   block, because at that scope it pulls `.pop-badge` and the hero badges out of
+   position. Do not widen `TARGETS` without reading that note. */
+/* ⛔⛔ `.fx-abs` IS EXCLUDED, AND `z-index: 2` IS DELIBERATELY *NOT* SET ON IT.
+   The note at the end of this block suggests `el.classList.add('fx-abs')` PLUS a
+   `.card-fx > .fx-abs { z-index: 2 }` rule. For the hero clip that rule would be a
+   REGRESSION, and measurement is why: those twelve children already carry their own
+   z-indexes — `.hm-nav` at 7, `.hm-tips` at 6, `.hm-dots` at 5, the badges at 4,
+   `.clip-load` at 4, `.clip-bar` at 3, `.play-btn` at 2, the video at 1 — and flattening
+   every one of them to 2 would put the navigation arrows BEHIND the video. Exempting them
+   from `position: relative; z-index: 1` and leaving their own stacking alone is what keeps
+   the clip working; they all already sit above the dot field's `z-index: 0`, so the layers
+   still order correctly with no further rule. */
+.card-fx > *:not(.fx-dots):not(.fx-ring):not(.fx-pool):not(.fx-abs) { position: relative; z-index: 1; }
+
+/* ---------------------------------------------------------- the dot pattern
+   ⛔ SAME FIELD AND SAME WAVE as `html.dark .price-card::before` — the two must stay
+   identical, or the pricing block and the new cards read as two different patterns.
+   ⛔ THE RESTING CORNER IS THE LEFT, on the owner's word ("the patern should be on
+   the left side"): the fade anchor is `10% 0%` where the pricing cards use `88% 0%`.
+   The wave band is unchanged — it is `90deg` and travels exactly one 160px period,
+   which is what makes the loop seamless.
+   ⛔⛔ `--fx-ay` / `--fx-vh` MOVE THE FADE ONTO THE PART OF THE CARD THAT HAS NO IMAGE.
+   Owner: *"for the cards where the image is placed then show the patren where there is
+   no image in the card"*. The top-left anchor is fine on a text-only card, but two of
+   the three Shapekeys cards carry a banner image across the top — which is EXACTLY
+   where the fade was centred, so the image simply covered the pattern and the rest of
+   the card got the faded-out tail. Measured by toggling the layer off in the same run:
+   only **0.64%** of the pixels outside the image changed on one card and **0.04%** on
+   the other — the pattern was effectively absent. `#cardFxLayers` measures where the
+   image ends and writes these two, so the fade sits in the empty band instead.
+   ⛔ Both fall back to the text-only anchor, so a card with no image is unchanged. */
+.card-fx > .fx-dots {
+  /* ⛔⛔ ONE ALPHA, THREE PLACES — CHANGE ALL OF THEM TOGETHER.
+     Owner: *"make the patern brighter"*. The dot colour lives here for the dark theme, in
+     the `html:not(.dark)` override just below for the light one, and again as a string in
+     `#fxParticles` (`colourFor()`) where the hover field draws the SAME dots to canvas.
+     ⛔ Move one and not the others and the pattern changes brightness the moment the pointer
+     arrives — the cross-fade is only invisible while both layers are the same colour.
+     ⛔ `.38` -> `.58` dark and `.30` -> `.48` light, both raised by the same proportion rather
+     than set to one shared value: white and the dark navy sit on opposite sides of their
+     backgrounds, so equalising them would make one of the two themes lighter than asked for.
+     ⛔ This is a SHARED layer — the Creating Shapekeys cards and the top bar carry the same
+     `.fx-dots`, so all of them brighten together. That is the "linking" the owner asked for
+     (*"use linking bcz if i ask you to update later it will update on the entire page"*). If
+     only the features section should change, scope this rule to `#workflow`. */
+  background-image: radial-gradient(circle, rgba(0, 150, 255, .95) 1.1px, transparent 1.5px);
+  background-size: 10px 10px;
+  -webkit-mask-image:
+    radial-gradient(130% var(--fx-vh, 95%) at var(--fx-ax, 10%) var(--fx-ay, 0%), #000, transparent 70%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .15) 0px, #000 80px, rgba(0, 0, 0, .15) 160px);
+          mask-image:
+    radial-gradient(130% var(--fx-vh, 95%) at var(--fx-ax, 10%) var(--fx-ay, 0%), #000, transparent 70%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .15) 0px, #000 80px, rgba(0, 0, 0, .15) 160px);
+  -webkit-mask-composite: source-in;
+          mask-composite: intersect;
+  animation: dotWave 3.6s linear infinite;
+}
+html:not(.dark) .card-fx > .fx-dots {
+  /* ⛔ the light theme's brand azure — see the note on `.card-fx > .fx-dots` above */
+  background-image: radial-gradient(circle, rgba(11, 79, 143, .85) 1.1px, transparent 1.5px);
+}
+
+/* ------------------------------------------------------------ the cursor pool
+   Owner: *"implement the exact same as in pricing cards"*.
+
+   ⛔⛔ THIS IS `html.dark .price-card::after` VERBATIM, and it replaces a drifting canvas.
+   The whole effect is now a PLAIN SPAN, exactly as the pricing card does it: the same dot
+   grid, the same `200px circle ... transparent 74%` mask on `--mx`/`--my`, the same
+   `opacity: .75`, the same `animation: none`. No canvas, no `requestAnimationFrame`, no
+   script at all — the `#fxParticles` block that built and animated one is DELETED.
+   ⛔⛔ WHAT WAS DIFFERENT, and why "close" was not close enough:
+        pricing `::after`            this layer, before
+        static CSS dot grid          a canvas, redrawn every frame
+        opacity: .75                 opacity: 1
+        no animation                 every dot drifting ~10px/s
+   Three visible differences in one layer, and the drift is the one that reads: the pricing
+   card's pool is a still field that appears under the pointer, so dots that wander make it a
+   different effect however well the colours match.
+   ⛔ THE ONLY VALUE THAT IS NOT COPIED IS THE FALLBACK ANCHOR — `10% 0%` here against the
+   price card's `88% 0%`. That is not a deviation: the anchor matches the card's own corner
+   field, exactly as the pricing card's pool fallback (`88% 0%`) matches its own `::before`
+   (`130% 95% at 88% 0%`). Top-right there, top-left here, same relationship. Copying `88% 0%`
+   literally would park the pool in the corner this card's fade does not use.
+   ⛔ `--mx`/`--my` need no listener: `#pricingGlow` (~:4560) already sets both on every
+   `.card-fx`, which is what these cards are.
+   ⛔ DARK ONLY, as `html.dark .price-card::after` is. The pricing block has no light-theme
+   pool, so adding one would be the one place this card differs from it.
+   ⛔ `z-index: 0`, the same as `.fx-dots`, so the pool sits BEHIND the heading and copy —
+   the pricing card has the same layer order. That holds because the `#cardFx` content rule
+   excludes `.fx-pool` by name. */
+html.dark .card-fx > .fx-pool {
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none; display: block;
+  z-index: 0;
+  background-image: radial-gradient(circle, rgba(0, 150, 255, .95) 1.1px, transparent 1.5px);
+  background-size: 10px 10px;
+  background-repeat: repeat;
+  background-position: 0 0;
+  -webkit-mask-image: radial-gradient(200px circle at var(--mx, 10%) var(--my, 0%), #000, transparent 74%);
+          mask-image: radial-gradient(200px circle at var(--mx, 10%) var(--my, 0%), #000, transparent 74%);
+  opacity: .75;
+  animation: none;
+}
+/* ⛔⛔ THE STATIC GRID STAYS. It used to fade to 0 as the old canvas faded in, which is right
+   for a HANDOVER and wrong for a REVEAL: the pool adds more of the same pattern under the
+   pointer, exactly as the price card's `::before` corner field and `::after` pool sit on top
+   of each other. Fading the grid out would leave the card looking emptier on hover than
+   off it. */
+.card-fx > .fx-dots { transition: opacity .3s ease; }
+
+/* ⛔⛔ THE INTRO CARD'S SURFACE — the same treatment as the hero copy card and the feature
+   text cards. Owner: *"the background blur too"*, one step after adding the pattern to it.
+   ⛔⛔ IT ALREADY HAD A BLUR, AND THAT IS WHY THIS IS NOT JUST A `backdrop-filter` LINE.
+   `.afmp-intro-card` is a `.quickfog-outer`, so the LIQUID GLASS rule (~:2395) was giving it
+   `blur(30px) saturate(1.8)` plus four inset highlights plus a 7%-white fill. Left in place,
+   a 1.5px blur behind that fill and those highlights is invisible — the owner would have
+   looked at a card that had "had the blur added" and seen no change at all. Matching the
+   other two cards means matching all of it: fill, image, highlights and blur radius.
+   ⛔ `saturate(1.8)` goes too — the hero copy card and the feature text cards carry blur
+   alone, and "too" means the same as them.
+   ⛔ The pattern is unaffected: `.fx-dots`, `.fx-pool` and `.fx-ring` are real children
+   painted above this element's backdrop, so the dots stay sharp while the page behind them
+   frosts.
+   ⛔ `backdrop-filter` creates a stacking context and a containing block. Nothing inside this
+   card is `position: fixed`, so neither matters.
+   ⚠ Re-measure the copy's contrast if the page behind it ever lightens — this card is long
+   and its three paragraphs run the full width. */
+#workflow .afmp-intro-card {
+  background: rgba(0, 0, 0, .3) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+}
+
+/* ------------------------------------------------------- the travelling outline
+   ⛔⛔ A CONIC GRADIENT ON A 1px RING, NOT A ROTATED ELEMENT. The ring is produced by
+   `padding: 1px` plus `mask-composite: exclude`, which paints the gradient only in
+   the padding band — so the glow follows the border EXACTLY, including the corner
+   radius. Rotating a clipped pseudo instead would swing the corners out of line.
+   ⛔ `@property --fxA` is what makes the angle animatable at all: an unregistered
+   custom property is a string, and a string cannot tween — the ring would jump 0 →
+   360 in one frame. This is the whole reason the effect needs `@property`. */
+.card-fx > .fx-ring {
+  padding: 1px;
+  /* ⛔⛔ THE ARC NOW FOLLOWS THE SUPPLIED REFERENCE'S OWN GRADIENT.
+     Owner: *"make the outline exactly like this but keep the current animation"*, with
+     the reference's markup. Its active-item bar is
+       linear-gradient(90deg, transparent, #ae8df9, #8b5cf6, #ae8df9, transparent)
+     i.e. FIVE stops and SYMMETRIC — transparent at both ends, and the SATURATED brand
+     colour at the centre with LIGHTER stops either side of it. The previous conic was
+     not symmetric: it ran transparent -> #0096ff -> a near-white head (#bdeaff) and
+     then cut to transparent in the last 8 degrees, so it read as a comet with a hard
+     tail rather than as a bar. The head is gone; the falloff is mirrored.
+     ⛔ It is a conic because the ring is round — the reference's `90deg` is the straight
+     equivalent along a 16px bar, and the five-stop shape is what transfers, not the
+     axis.
+     ⛔ The hue is the PAGE'S azure, not the reference's violet (#8b5cf6 / #ae8df9). The
+     reference is a different product's purple navbar; importing its violet would put a
+     colour on this page that appears nowhere else. Everything else — stop count,
+     stop ORDER (light / brand / light), relative weights, and the three shadow layers
+     below — is the reference's. To go violet anyway, swap the two literals here and
+     the one in the filter below. */
+  background: conic-gradient(from var(--fxA),
+    transparent 0deg,
+    transparent 298deg,
+    color-mix(in srgb, #7dd3ff 62%, transparent) 318deg,
+    #0096ff 338deg,
+    color-mix(in srgb, #7dd3ff 62%, transparent) 352deg,
+    transparent 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  /* ⛔⛔ THE REFERENCE'S THREE SHADOW LAYERS, at its own geometry and alphas:
+       rgba(139,92,246,.6)  0 0 4px 1px
+       rgba(139,92,246,.3)  0 0 12px 3px
+       rgba(139,92,246,.15) 0 -4px 16px 4px
+     — a tight bright rim, a medium halo, and a WIDE one pushed UPWARD, which is what
+     makes the reference read as light coming off the top of the bar.
+     ⛔ `filter: drop-shadow()`, not `box-shadow`: the mask keeps only the padding band,
+     and a mask clips an element's box-shadow with everything else, so a box-shadow here
+     would be masked to nothing. drop-shadow runs AFTER the mask and so survives.
+     ⛔ drop-shadow has NO spread parameter, so the reference's 1px/3px/4px spreads
+     cannot be reproduced exactly — the blur radius is nudged up to compensate, which
+     is why the numbers read 5/14/18 rather than 4/12/16. That is the one place this is
+     an approximation rather than a copy. */
+  filter:
+    drop-shadow(0 0 5px color-mix(in srgb, #0096ff 60%, transparent))
+    drop-shadow(0 0 14px color-mix(in srgb, #0096ff 30%, transparent))
+    drop-shadow(0 -4px 18px color-mix(in srgb, #0096ff 15%, transparent));
+  animation: fxOrbit 4.2s linear infinite;
+}
+
+@media(prefers-reduced-motion:reduce){.m3-wrap::after{animation:none;--fxA:40deg;}}
+
+/* Enlarge the flanking character clips out to the page edges. */
+.hero-cards {--portrait-edge:calc((100vw - min(1180px,92vw)) / 2);}
+.hero-cards > .hero-side {width:calc(100% + var(--portrait-edge));background:transparent!important;border:0!important;outline:none!important;box-shadow:none!important;}
+.hero-cards > .hero-side:first-child {margin-left:calc(-1 * var(--portrait-edge));border-radius:0 18px 18px 0;--portrait-fade:linear-gradient(90deg,transparent,#000 48px);}
+.hero-cards > .hero-side:last-child {border-radius:18px 0 0 18px;--portrait-fade:linear-gradient(270deg,transparent,#000 48px);}
+.hero-cards > .hero-side video {transform:scale(1.06);-webkit-mask-image:var(--portrait-fade);mask-image:var(--portrait-fade);}
+.hero-cards > .hero-side {-webkit-mask-image:var(--portrait-fade);mask-image:var(--portrait-fade);}
+
+/* Preserve the character strips' original three-high by one-wide proportions. */
+.hero-cards > .hero-side {aspect-ratio:1 / 3;align-self:center;height:auto;}
+.hero-cards > .hero-side video {width:100%;height:100%;aspect-ratio:1 / 3;object-fit:contain;transform:none;-webkit-mask-image:none;mask-image:none;}
 </style>
 <script id="brandStrokeSync">
 (function(){
@@ -9944,18 +10287,18 @@ html:not(.dark) .quick-nav a:hover,html:not(.dark) .quick-nav a.active {color:#1
  var v=stage.querySelector('video'); if(!v)return;
  v.playbackRate=3.4722223333; v.defaultPlaybackRate=3.4722223333;
  v.addEventListener('loadedmetadata',function(){if(isFinite(v.duration)&&v.duration>0){v.playbackRate=v.duration/3;v.defaultPlaybackRate=v.duration/3;}});
- var letters=stage.querySelectorAll('.stroke-letter'),visible=false,done=false,ticket=null;
+ var letters=stage.querySelectorAll('.stroke-letter'),visible=false,done=false,ticket=null,replay=false,waiting=false,replayTimer=null;
  var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
- function sync(){for(var i=0;i<letters.length;i++)letters[i].classList.toggle('is-finished',v.currentTime+0.001>=Number(letters[i].dataset.finish));}
+ function sync(){var active=-1;if(replay){for(var j=0;j<letters.length;j++){if(v.currentTime+0.001<Number(letters[j].dataset.finish)){active=j;break;}}}for(var i=0;i<letters.length;i++)letters[i].classList.toggle('is-finished',replay?i!==active:v.currentTime+0.001>=Number(letters[i].dataset.finish));}
  function alignClip(){var text=stage.querySelector('.brand-title-text'),style=getComputedStyle(text),r=text.getBoundingClientRect(),base=stage.getBoundingClientRect(),size=parseFloat(style.fontSize),ctx=document.createElement('canvas').getContext('2d');ctx.font=style.fontWeight+' '+style.fontSize+' '+style.fontFamily;var m=ctx.measureText('A'),fa=m.fontBoundingBoxAscent||size*.95,fd=m.fontBoundingBoxDescent||size*.25,baseline=(r.height-fa-fd)/2+fa,ink=m.actualBoundingBoxAscent||size*.72,scale=(ink/402)*0.975;v.style.width=(5738*scale)+'px';v.style.left=(r.left-base.left-(m.actualBoundingBoxLeft||0)-157*scale+size*.04)+'px';v.style.top=(r.top-base.top+baseline-ink-303*scale)+'px';v.style.transform='none';}
  alignClip();window.addEventListener('resize',alignClip,{passive:true});if(document.fonts)document.fonts.ready.then(alignClip);
  if(window.ResizeObserver){var titleSizeObserver=new ResizeObserver(alignClip);titleSizeObserver.observe(stage.querySelector('.brand-title-text'));}
  v.addEventListener('loadedmetadata',alignClip);
  function frames(){ticket=null;sync();if(!v.paused&&!done&&v.requestVideoFrameCallback)ticket=v.requestVideoFrameCallback(frames);}
  function stop(){v.pause();if(ticket!==null&&v.cancelVideoFrameCallback)v.cancelVideoFrameCallback(ticket);ticket=null;}
- function gate(){if(reduced||done)return;if(!visible||document.hidden){stop();return;}stage.classList.add('is-drawing');v.play().then(function(){if(!visible||document.hidden){stop();return;}if(ticket===null&&v.requestVideoFrameCallback)ticket=v.requestVideoFrameCallback(frames);}).catch(function(){stage.classList.remove('is-drawing');});}
+ function gate(){if(reduced||done)return;if(!visible||document.hidden){stop();if(replayTimer!==null){clearTimeout(replayTimer);replayTimer=null;}return;}if(waiting){if(replayTimer===null)replayTimer=setTimeout(function(){replayTimer=null;if(!visible||document.hidden)return;waiting=false;replay=true;v.playbackRate=(isFinite(v.duration)&&v.duration>0?v.duration:10.416667)/6;v.currentTime=0;sync();gate();},2000);return;}sync();stage.classList.add('is-drawing');v.play().then(function(){if(!visible||document.hidden){stop();return;}if(ticket===null&&v.requestVideoFrameCallback)ticket=v.requestVideoFrameCallback(frames);}).catch(function(){stage.classList.remove('is-drawing');});}
  v.addEventListener('timeupdate',sync);v.addEventListener('seeked',sync);
- v.addEventListener('ended',function(){done=true;stop();for(var i=0;i<letters.length;i++)letters[i].classList.add('is-finished');stage.classList.remove('is-drawing');});
+ v.addEventListener('ended',function(){stop();waiting=true;for(var i=0;i<letters.length;i++)letters[i].classList.add('is-finished');stage.classList.remove('is-drawing');gate();});
  v.addEventListener('error',function(){done=true;stop();stage.classList.remove('is-drawing');});
  document.addEventListener('visibilitychange',gate);
  if(!reduced&&window.AFMP&&window.AFMP.watch){window.AFMP.watch(stage,function(on){visible=on;gate();},false);}
