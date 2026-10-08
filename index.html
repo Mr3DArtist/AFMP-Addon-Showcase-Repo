@@ -207,7 +207,10 @@ header.site-header {
      ⛔ `border-bottom` follows the radius, so the hairline still curves with the shape
      rather than running straight past it. */
   background: color-mix(in srgb, var(--bg) 50%, transparent);
-  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  /* ⛔ 16px -> 10px with the rest of the glass. This is the most expensive single blur on
+     the page — full width, and page content scrolls behind it forever, so its backdrop
+     changes on every scroll frame and it can never be cached. */
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
   border-radius: 20px;
   transition: box-shadow .3s ease, background .45s ease;
@@ -2342,8 +2345,10 @@ html.dark .offer-band .so-kicker { color: #fff; }
    `!important`, so the plain `.site-header` rule above loses to it whatever order they
    are in. The opacity has to be changed HERE, not there.
    ⛔ 100% -> 50% on the owner's word. `color-mix` against `transparent`, so the 50% is
-   the alpha; the element's own `backdrop-filter: blur(16px)` is what keeps the bar
-   readable at half opacity, and it is untouched. */
+   the alpha; the element's own `backdrop-filter` is what keeps the bar readable at half
+   opacity, and the opacity here is untouched. ⚠ The blur behind it is NOT: it went
+   16px -> 10px with the rest of the glass in the low-quality pass. That weakens this
+   bar's frost slightly — the 50% does more of the work now. */
 .dark .site-header{background:color-mix(in srgb, #000 50%, transparent) !important;border-bottom:1px solid rgba(255,255,255,.16)}
 .dark .site-header .brand,
 .dark .site-header .faq-btn,
@@ -2418,6 +2423,27 @@ h1,h2,h3,h4,.site-header .brand,.section-title,.g-title,.g-name,.acc-head,.vb-ve
 /* ============================================================
    LIQUID GLASS — everything glass (Gobos Master style)
    ============================================================ */
+/* ⛔⛔ LOW-QUALITY GLASS — the blur is KEPT, its cost is cut. Owner: *"instead of removeing
+   the blur make it low qaulity"*, chosen from a trade list over switching the frosted panels
+   off entirely.
+   ⛔ RADIUS ONLY, AND `saturate()` STAYS. The obvious second saving is to drop the
+   `saturate(1.8)`, and it is deliberately NOT taken: saturation is a colour matrix over an
+   already-blurred buffer, so it costs a fraction of the blur and it changes the HUE of
+   everything behind the glass. Cutting it would read as "the page changed colour", not as
+   "the glass got cheaper" — a different change from the one asked for.
+   ⛔ AND THE HONEST SIZE OF THIS LEVER: a `backdrop-filter` re-captures and re-blurs its
+   backdrop whenever that backdrop CHANGES, so most of its cost on this page is not the
+   radius at all — it is that `#interactiveBg` animates behind every visible card. Lowering
+   30px to 10px makes each blur cheaper; the canvas frame cap below is what makes it happen
+   less often. Both were chosen together, and this one alone would not have been worth much.
+   ⛔ The radii are lowered IN PLACE, never overridden from below with a blanket `!important`:
+   the page also carries blur(8px)/blur(6px)/blur(5px) on smaller chrome, and a single global
+   rule would have RAISED those and made the total worse. Edit each tier, or none.
+   30px -> 10px (this glass rule and the four wrappers that copy it)
+   20px -> 8px  (buttons and chips)
+   16px -> 10px (the sticky bar)
+   14px -> 8px  (the hero note pill)
+   ⚠ Anything smaller than 8px was left alone: there is nothing left to take. */
 .quickfog-outer,.specs-bar,.spec-item,.compare-card,.time-chip,.accordion,.acc-head,.feature-card,.feature-media,.c-card,.img-frame,.g-frame,.rating-card,.hero-media,.tag{
   position:relative;
   background-color:var(--card-bg);
@@ -2427,8 +2453,8 @@ h1,h2,h3,h4,.site-header .brand,.section-title,.g-title,.g-name,.acc-head,.vb-ve
     linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 60%);
   background-size:200% 100%,auto,auto;
   background-position:120% 0,0 0,0 0;
-  -webkit-backdrop-filter:blur(30px) saturate(1.8);
-  backdrop-filter:blur(30px) saturate(1.8);
+  -webkit-backdrop-filter:blur(10px) saturate(1.8);
+  backdrop-filter:blur(10px) saturate(1.8);
   border-color:rgba(255,255,255,.16);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.30),
@@ -2444,8 +2470,8 @@ h1,h2,h3,h4,.site-header .brand,.section-title,.g-title,.g-name,.acc-head,.vb-ve
 .hero-video-card.quickfog-outer:hover{background-position:120% 0,0 0,0 0}
 .btn,.btn-ghost,.theme-toggle,.g-arrow,.menu-btn,.action-btn,.faq-btn,.version-badge,.step-num{
   background-color:var(--card-bg);
-  -webkit-backdrop-filter:blur(20px) saturate(1.6);
-  backdrop-filter:blur(20px) saturate(1.6);
+  -webkit-backdrop-filter:blur(8px) saturate(1.6);
+  backdrop-filter:blur(8px) saturate(1.6);
   border-color:rgba(255,255,255,.18);
 }
 html:not(.dark) .btn,html:not(.dark) .theme-toggle,html:not(.dark) .g-arrow,html:not(.dark) .faq-btn,html:not(.dark) .version-badge,html:not(.dark) .step-num{border-color:rgba(0,0,0,.16)}
@@ -2639,8 +2665,8 @@ html:not(.dark) .price-card:hover,html:not(.dark) .workflow-card:hover,html:not(
   border-radius:22px;
   background:var(--card-bg);
   padding:var(--strip-pad);
-  -webkit-backdrop-filter:blur(30px) saturate(1.8);
-  backdrop-filter:blur(30px) saturate(1.8);
+  -webkit-backdrop-filter:blur(10px) saturate(1.8);
+  backdrop-filter:blur(10px) saturate(1.8);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.30),
     inset 0 -1px 0 rgba(255,255,255,.06);
@@ -2666,8 +2692,8 @@ html:not(.dark) .m3-wrap:hover{outline-color:transparent}
   border-radius:22px;
   background:var(--card-bg);
   padding:.55rem;
-  -webkit-backdrop-filter:blur(30px) saturate(1.8);
-  backdrop-filter:blur(30px) saturate(1.8);
+  -webkit-backdrop-filter:blur(10px) saturate(1.8);
+  backdrop-filter:blur(10px) saturate(1.8);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.30),inset 0 -1px 0 rgba(255,255,255,.06);
   /* transparent at rest: the ring is painted only by @keyframes ringOut on hover */
   outline:1px solid transparent;
@@ -2694,8 +2720,8 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
     linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 60%);
   background-size:200% 100%,auto,auto;
   background-position:120% 0,0 0,0 0;
-  -webkit-backdrop-filter:blur(30px) saturate(1.8);
-  backdrop-filter:blur(30px) saturate(1.8);
+  -webkit-backdrop-filter:blur(10px) saturate(1.8);
+  backdrop-filter:blur(10px) saturate(1.8);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.30),
     inset 0 -1px 0 rgba(255,255,255,.06);
@@ -2826,8 +2852,8 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   padding:.5rem 1.2rem;
   border:1px solid color-mix(in srgb,var(--color-tertiary) 30%,transparent);
   border-radius:999px;
-  -webkit-backdrop-filter:blur(14px) saturate(1.4);
-  backdrop-filter:blur(14px) saturate(1.4);
+  -webkit-backdrop-filter:blur(8px) saturate(1.4);
+  backdrop-filter:blur(8px) saturate(1.4);
   background:color-mix(in srgb,var(--card-bg) 40%,transparent);
 }
 .price-card,.workflow-card,.support-card,.catalog-card{
@@ -2839,8 +2865,8 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
     linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 60%);
   background-size:200% 100%,auto,auto;
   background-position:120% 0,0 0,0 0;
-  -webkit-backdrop-filter:blur(30px) saturate(1.8);
-  backdrop-filter:blur(30px) saturate(1.8);
+  -webkit-backdrop-filter:blur(10px) saturate(1.8);
+  backdrop-filter:blur(10px) saturate(1.8);
   border-color:rgba(255,255,255,.16);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.30),
@@ -3958,7 +3984,8 @@ html.dark .card-fx > .fx-pool {
    text cards. Owner: *"the background blur too"*, one step after adding the pattern to it.
    ⛔⛔ IT ALREADY HAD A BLUR, AND THAT IS WHY THIS IS NOT JUST A `backdrop-filter` LINE.
    `.afmp-intro-card` is a `.quickfog-outer`, so the LIQUID GLASS rule (~:2395) was giving it
-   `blur(30px) saturate(1.8)` plus four inset highlights plus a 7%-white fill. Left in place,
+   `blur(10px) saturate(1.8)` — 30px until the low-quality pass — plus four inset highlights
+   plus a 7%-white fill. Left in place,
    a 1.5px blur behind that fill and those highlights is invisible — the owner would have
    looked at a card that had "had the blur added" and seen no change at all. Matching the
    other two cards means matching all of it: fill, image, highlights and blur radius.
@@ -4051,7 +4078,8 @@ html.dark .card-fx > .fx-pool {
    On these cards `background` was ALREADY `rgba(0,0,0,0)` and `background-image` was
    already `none` — and the card still read as a card, because what is left is the
    GLASS: a multi-layer `box-shadow` (an inset white top highlight plus outer rings)
-   and `backdrop-filter: blur(30px) saturate(1.8)`. Those two ARE the colouring.
+   and `backdrop-filter: blur(30px) saturate(1.8)` — the radius is 10px since the
+   low-quality pass, the saturate is unchanged. Those two ARE the colouring.
    ⛔ There is also NO BORDER to remove — `border-width` computes to `0px` on
    `.quickfog-outer`, so an earlier `border-color` override here was a silent no-op.
    `border-radius: 22px` STAYS: it shapes the dot field's mask and the travelling ring,
@@ -4757,7 +4785,8 @@ html.dark .hero-copy-card:hover {
   background: transparent;
   /* ⛔⛔ CLEARING `background` IS NOT ENOUGH — AND THE LEFTOVERS PAINT A WHOLE RECTANGLE.
      `.acc-head` is in the LIQUID GLASS selector list at ~:2336, which also gives it
-     `backdrop-filter: blur(30px) saturate(1.8)` and a four-layer inset `box-shadow`.
+     `backdrop-filter: blur(30px) saturate(1.8)` (10px since the low-quality pass) and a
+     four-layer inset `box-shadow`.
      A `backdrop-filter` filters what is BEHIND the element, so it draws a visible box
      even when the element's own background is fully transparent — that rectangle, edge
      to edge across the row, is exactly the "extra stuff" that looked like a leftover
@@ -8029,8 +8058,9 @@ html.dark .hero-copy-card:hover {
           from the owner's thumbnail — and flatten the whole page. `clearRect` instead,
           leaving the field transparent over the gradient. ⚠ To match the reference's
           black exactly, swap `clearRect` for a black `fillRect`; that is the one line.
-       5. No `devicePixelRatio`, so the nodes are soft on any retina display. Sized at
-          DPR here.
+       5. No `devicePixelRatio`, so the nodes are soft on any retina display. ⚠ That is now
+          the DELIBERATE state again: the low-quality pass pins DPR at 1. The nodes are soft
+          on retina by choice, not by oversight.
      ⛔ Also kept from this page's own conventions rather than the original: a
        `prefers-reduced-motion` path that paints one static frame and stops, and a
        `visibilitychange` pause so a hidden tab is not burning a frame budget.
@@ -8313,7 +8343,17 @@ html.dark .hero-copy-card:hover {
   }
 
   function measure() {
-    DPR = Math.min(2, window.devicePixelRatio || 1);
+    /* ⛔⛔ ALWAYS 1 — THE CANVAS RENDERS AT CSS RESOLUTION, NEVER DEVICE RESOLUTION.
+       Owner: *"Particles at half resolution"*, picked from a trade list. On a 2x display this
+       is a QUARTER of the pixels and a quarter of the backing store it used to carry — fill
+       cost is linear in DPR squared, so this is the largest single saving available inside
+       the field. The dots go soft and lose their edge definition; that is the trade, and it
+       was chosen deliberately over switching the field off.
+       ⚠ ON A 1x DISPLAY THIS IS A NO-OP, and the owner's own machine may well be one. If the
+       measurement shows nothing, that is why — it is not a broken change.
+       ⚠ Was `Math.min(2, devicePixelRatio)`. Do NOT raise the cap back to 2 without
+       re-measuring: it is the one value here that costs quadratically. */
+    DPR = 1;
     /* ⛔⛔ CAPPED. Owner: *"the background particles are using 50% of my cpu and 30% gpu"*,
        and *"yet they are still very slow in the page"*, running **on Superhive's iframe**.
        ⛔⛔ THE IFRAME IS THE DANGEROUS CASE, NOT THE DESKTOP ONE. If the frame is sized to the
@@ -8521,22 +8561,35 @@ html.dark .hero-copy-card:hover {
     for (i = 0; i < parts.length; i++) if (parts[i].on) vis.push(parts[i]);
   }
 
-  /* ⛔⛔ FRAME CAPPED AT 30fps, WITH THE STEP SCALED SO THE FIELD MOVES AT THE SAME SPEED.
-     Owner: *"optimize in a way that the quality stays the same"*. Halving the frame rate is
+  /* ⛔⛔ FRAME CAPPED AT 24fps, WITH THE STEP SCALED SO THE FIELD MOVES AT THE SAME SPEED.
+     Owner: *"optimize in a way that the quality stays the same"*, then *"make the particle
+     fps to 24 from 30"*. Cutting the frame rate is
      HALF the work of every pass below, and it is the last big lever after the batching — but
      the drift is written as a fixed `p.x += p.dx` PER FRAME, so simply skipping frames would
      halve the speed and the field would visibly crawl. `k` carries the elapsed time instead,
-     so one second of motion covers the same distance whether it is drawn 60 times or 30.
+     so one second of motion covers the same distance whether it is drawn 60 times or 24.
      ⛔ `k` is clamped at 2.5 frames' worth: a background tab, a slow resize or a long GC can
      hand back a huge `t - last`, and an unclamped `k` would teleport the field across the
      page in one step. The clamp turns that into a brief slow-down instead of a jump.
+     ⛔⛔ THE GATE IS A TARGET TIME, NOT `t - lastT >= FRAME_MS`. `requestAnimationFrame` only
+     fires on a vsync beat, so a plain difference test quantises the cap UP to the next beat.
+     1000/24 = 41.67ms is not a multiple of a 60Hz panel's 16.67ms — the neighbours are 33.3ms
+     (30fps) and 50ms (20fps) and the test always takes 50, so the field would run at 20 and
+     never at the 24 that was asked for. Carrying `nextT` forward instead lets it alternate
+     33/50 and average exactly 24. ⚠ The motion is identical either way: `k` scales the step
+     by the real elapsed time, so which beat fired is invisible in the drift.
      ⛔ The reduced-motion path is a single still frame and never touches this. */
-  var FRAME_MS = 1000 / 30;
-  var lastT = 0;
+  var FRAME_MS = 1000 / 24;
+  var lastT = 0;      // when a frame was last DRAWN — drives `k`, so it is real elapsed time
+  var nextT = 0;      // when the next frame is DUE — a running target, so the average is exact
 
   function frame(t) {
     raf = requestAnimationFrame(frame);
-    if (t - lastT < FRAME_MS - 2) return;          // under one 30fps beat — skip this frame
+    if (nextT && t < nextT) return;                // not due yet — this vsync is skipped
+    /* ⛔ the catch-up clamp, for the same reason `k` is clamped: past three frames behind, the
+       target resyncs to now instead of firing on every remaining vsync to catch up, which
+       would be exactly the burst of work the cap exists to prevent. */
+    nextT = (nextT && t - nextT <= FRAME_MS * 3) ? nextT + FRAME_MS : t + FRAME_MS;
     /* ⛔ the field has not been built yet because the band is unknown — see `rebuild()`. */
     if (frameIsTall && !bandReady) return;
     var k = lastT ? (t - lastT) / (1000 / 60) : 1;
