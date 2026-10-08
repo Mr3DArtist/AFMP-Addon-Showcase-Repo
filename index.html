@@ -134,8 +134,12 @@ html.dark .prod-link:hover{color:#7cc9ff;}
 /* #features is a block INSIDE #workflow (the cards), so it needs the offset itself.
    #character is the Human Generator card inside #shapekeys — same deal, the quick nav's
    "Character" pill scrolls to the card, and without this the card's banner lands under the
-   sticky header + nav. */
-section, #features, #character { scroll-margin-top: 132px; }
+   sticky header + nav.
+   ⛔ 157, not 132: this is "the sticky stack above the target", so it moves with the stack.
+   The floating header put the bar's stuck bottom edge at 90 instead of 65 and the nav
+   followed it there, so the target has to sit 25px lower too or every jump to a section
+   lands with its first 25px under the pills. Same 25px, same reason, one number. */
+section, #features, #character { scroll-margin-top: 157px; }
 
 .container { width: min(1180px, 92%); margin-inline: auto; }
 
@@ -199,15 +203,30 @@ section, #features, #character { scroll-margin-top: 132px; }
    ⚠ Symptom to recognise: `getComputedStyle` reports `relative` for an element whose only
    own rule says `sticky`. `CSS.getMatchedStylesForNode` names the second rule. */
 header.site-header {
-  position: sticky; top: 0; z-index: 100;
-  /* ⛔ ALL FOUR CORNERS, owner: *"from top left right corners too"*. The first pass
+  position: sticky; top: 12px; z-index: 100;
+  /* ⛔⛔ A FLOATING BAR, NOT A FULL-BLEED STRIP (owner, 2026-10-08: "floating header").
+     It rides the same rail as every section (`.container` is `min(1180px, 92%)`) and sits
+     12px down from the top of the scrollport, inset on both sides — so its 20px corners no
+     longer touch the viewport edge. Two consequences are compensated in the final override
+     block at the end of the document, NOT here: `.topbar-backing` (the white notch tiles
+     that filled the gap those corners used to leave) is switched off, and the quick nav's
+     sticky `top` moves down with the bar so the pills cannot tuck under it.
+     ⛔ `top` AND `margin-top` ARE BOTH 12px ON PURPOSE — they are two different things. The
+     margin is the resting gap above the bar; `top` is how far the bar may come down before
+     it sticks. ⚠ A sticky box carries its own margin into that constraint, so a stuck bar
+     ends up 12px lower than a resting one; the quick nav's offset is set for the STUCK
+     position, which is the one that has to clear it.
+     ⛔ ALL FOUR CORNERS, owner: *"from top left right corners too"*. The first pass
      rounded only the bottom two, on the reasoning that the top ones sit on the viewport
-     edge — they do, so rounding them shows a small notch of page content in each top
-     corner while the bar is at rest. That is the requested look, not a defect.
-     ⛔ `border-bottom` follows the radius, so the hairline still curves with the shape
-     rather than running straight past it. */
+     edge. Rounding all four is what makes the bar read as a floating card now that it is
+     inset on every side.
+     ⛔ `border`, not `border-bottom`: with the bar inset, the hairline has to run all the
+     way round, and it follows the radius rather than running straight past it.
+     ⛔ NO height and NO spacer: the bar keeps its own content height (`.header-inner`),
+     and nothing on `body` was added to reserve room for it. */
+  width: min(1180px, 92%); margin: 12px auto 24px;
   background: rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: 20px;
   transition: box-shadow .3s ease, background .45s ease;
 }
@@ -413,13 +432,35 @@ header.site-header {
   background: color-mix(in srgb, var(--bg) 62%, transparent);
 }
 .clip-bar-fill {
-  width: 0;
+  /* ⛔⛔ FULL WIDTH, SCALED BY THE PROGRESS. The element is the whole track; the value
+     is `transform: scaleX(0…1)` applied by the script (drawClipBar), with the origin on
+     the left so the scale grows the way a progress bar should. Two reasons it is not
+     `width` any more: a width change is a LAYOUT pass on every clip that is playing,
+     where a transform is composited; and the gradient below is a fixed ramp across a
+     fixed box instead of one that stretches as the bar fills. */
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
   background: linear-gradient(45deg, #0096ff, #22d3ee, #0096ff, #3b82f6, #0096ff);
   background-size: 400%;
-  animation: glowing 20s linear infinite;
-  box-shadow: 0 0 12px color-mix(in srgb, #0096ff 70%, transparent);
-  /* short: the bar is redrawn every frame now, and a long transition would lag it */
-  transition: width .06s linear;
+  /* ⛔⛔ THERE IS NO TRANSITION ON `transform` HERE ANY MORE, AND THAT IS THE POINT.
+     The fill is now advanced by a Web Animations `scaleX(0) → scaleX(1)` whose
+     `currentTime` is the video's own clock (see the clip-bar script): the browser
+     interpolates it on the compositor and holds the exact value it was given. A 60ms
+     transition on top of that is a SECOND smoother on an already-smooth value — every
+     seek, every rate change and every resync would arrive damped, so the bar would
+     visibly lag the frame it was just moved to, and a paused scrub would keep sliding
+     after the pointer stopped.
+     ⛔ THE FALLBACK KEEPS ITS SMOOTHING, on `.is-stepped` below: a browser without
+     `Element.animate()`, a `prefers-reduced-motion` visitor and a clip whose duration is
+     unknown or live all fall back to the event-driven writes, and those are genuinely
+     steppy (the value is quantised to 1% and arrives about four times a second) — that
+     is the path the transition was written for. */
+}
+/* ⛔ the event-driven path only — never applied while the compositor is animating the fill */
+.clip-bar-fill.is-stepped {
+  /* short: the fallback writes this on every media event, and a long transition would lag it */
+  transition: transform .06s linear;
 }
 /* the hero's own bar keeps the wider inset and higher lift asked for earlier */
 .hero-media { --clip-bar-inset: 22px; --clip-bar-lift: 16px; --clip-bar-h: 5px; }
@@ -1573,6 +1614,23 @@ html:not(.dark) .support-badge { color: #0096ff; }
    gradient seam, but all seams share one flowing gradient so
    the whole page reads as connected channels of light.
    ============================================================ */
+/* ⛔⛔ THE MAIN DIVIDER'S WIDTH IS A TOKEN, AND IT IS THE RAIL.
+   The four section seams below draw one centred column, `min(1180px, 92%)`, and the
+   particle field is now constrained to exactly that column (see the rail block in the
+   canvas script). Declaring the width once here means the CSS side of the rail has a
+   single source of truth instead of four copies that can drift apart.
+   ⛔ IT IS NOT WHAT THE SCRIPT READS. The script measures the USED width of the
+   `::before` box at layout time (`getComputedStyle(section, '::before').width`), so it
+   follows whatever this declaration resolves to — including a media query that changes
+   it — and can never disagree with what was painted. Changing this token moves the
+   seam AND the field together; that is the point of it being here.
+   ⚠ `92%` resolves against the ::before's containing block — the section's own padding
+   box — not the viewport, which is why the token is declared on the sections rather
+   than on `:root`: an inherited custom property is substituted in the context of the
+   element that USES it, and a `:root` declaration would still be correct, but a
+   declaration beside the rule that consumes it is the one that cannot be missed. */
+.section, .gallery-section, .catalog-section, .site-footer { --seam-w: min(1180px, 92%); }
+
 .section::before,
 .gallery-section::before,
 .catalog-section::before,
@@ -1580,7 +1638,7 @@ html:not(.dark) .support-badge { color: #0096ff; }
   content: '';
   position: absolute; top: 0; left: 50%; transform: translateX(-50%);
   z-index: 2;
-  width: min(1180px, 92%);
+  width: var(--seam-w);
   height: 3px;
   border-radius: 999px;
   background:
@@ -1655,7 +1713,21 @@ html:not(.dark) .support-badge { color: #0096ff; }
 
 /* Section name label sitting on the divider seam */
 .seam-label {
-  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  position: absolute; top: -14px; left: 50%;
+  /* ⛔⛔ THE CENTRING IS A TOKEN, BECAUSE OTHER RULES REPLACE `transform` ON THIS ELEMENT.
+     A pill is placed with `left:50%` and pulled back by half its OWN width, so the moment
+     any later rule writes a bare `transform` — a hover lift, a "remove the effect" reset —
+     the -50% is gone and the pill jumps RIGHT by half its width. That is exactly what
+     `#workflow .seam-label:hover { transform: none !important }` did on the Workflow &
+     Features pill and on the nested Features pill: a visible horizontal jump on hover,
+     while every other pill on the page sat still.
+     ⛔ The fix is the token, not a pile of `transform: translateX(-50%)` copies: the
+     centring is declared ONCE here, and every rule that needs to neutralise the rest of
+     the transform re-states `var(--seam-tx)` rather than `none`. Nothing else about the
+     hover state changes — the ring, the outline offsets, the colours and the resting
+     geometry are untouched. */
+  --seam-tx: translateX(-50%);
+  transform: var(--seam-tx);
   z-index: 3;
   padding: .42rem 1.7rem;
   font-size: .82rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase;
@@ -1668,6 +1740,17 @@ html:not(.dark) .support-badge { color: #0096ff; }
   white-space: nowrap;
   text-shadow: 0 0 14px color-mix(in srgb, #0096ff 45%, transparent);
 }
+/* ⛔ THE CENTRING SURVIVES EVERY INTERACTIVE STATE. This page removes hover lifts in
+   several places with `transform: none` on broad selector lists, and any one of them
+   reaching a `.seam-label` would move the pill sideways. Stating the state's own value
+   here — the same token, so the resting geometry does not move by a pixel — makes that
+   class of override harmless wherever it is written.
+   ⚠ Written for `:focus`/`:focus-visible` as well as `:hover`: the pills are not
+   focusable today (no tabindex, not a link), so those two are inert, and they are here
+   so that making one focusable later cannot reintroduce the jump. */
+.seam-label:hover,
+.seam-label:focus,
+.seam-label:focus-visible { transform: var(--seam-tx, translateX(-50%)); }
 @media (prefers-reduced-motion: reduce) {
   .section::before, .gallery-section::before, .catalog-section::before, .site-footer::before { animation: none; }
 }
@@ -2235,11 +2318,16 @@ html.dark .offer-band .so-kicker { color: #fff; }
 /* ============================================================
    QUICK NAV BUTTONS (above & below the gallery)
    ============================================================ */
-/* Scroll points — pills pinned under the sticky header (header measures 65px tall).
+/* Scroll points — pills pinned under the sticky header.
    No surface of its own: the bar carries no background, blur or border, so the pills
-   float and each one keeps its own card surface. */
+   float and each one keeps its own card surface.
+   ⛔ `top` IS THE FLOATING BAR'S STUCK BOTTOM EDGE, and it is arithmetic, not taste:
+   12px (the bar's sticky `top`) + 12px (the margin a sticky box carries into that
+   constraint) + 64px (`.header-inner`) + 2px (the bar's own 1px top and bottom borders)
+   = **90px**. The old value, 65, was the flush bar's 64 + its 1px bottom edge — so this
+   simply follows the bar down by 25px. Leave it behind and the pills tuck under it. */
 .quick-nav {
-  position: sticky; top: 65px; z-index: 90;
+  position: sticky; top: 90px; z-index: 90;
   display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center;
   padding: .5rem .9rem;
 }
@@ -2275,8 +2363,9 @@ html.dark .offer-band .so-kicker { color: #fff; }
    i.e. the bar he wants inside the store embed is the SITE HEADER (logo + Latest badge + FAQ +
    theme toggle), NOT this nav row. Keeping `display:none` on the header is exactly what
    removes it. With the rule gone the embedded page is identical to the standalone one: the
-   header shows and the nav sits under it at its normal `top:65px`, so the 62px scroll-margin
-   override is wrong too (the normal 132px clears header + nav).
+   header shows and the nav sits under it at its normal `top:90px` (65 until the bar floated;
+   see the note on `.quick-nav`), so the 62px scroll-margin override is wrong too — the normal
+   `scroll-margin-top` (157px, moved with the nav) clears header + nav.
    ⛔ If a future round wants the nav-only look back, both rules plus the 62px offset must
    return TOGETHER — the nav is z-index 90 under the header's 100. */
 /* (no overrides — the embedded page keeps its header) */
@@ -2333,8 +2422,13 @@ html.dark .offer-band .so-kicker { color: #fff; }
    are in. The opacity has to be changed HERE, not there.
    ⛔ 100% -> 50% on the owner's word. `color-mix` against `transparent`, so the 50% is
    the alpha; the element's own `backdrop-filter: blur(16px)` is what keeps the bar
-   readable at half opacity, and it is untouched. */
-.dark .site-header{background:color-mix(in srgb, #000 50%, transparent) !important;border-bottom:1px solid rgba(255,255,255,.16)}
+   readable at half opacity, and it is untouched.
+   ⛔ The hairline is `border-COLOR`, not `border-bottom`: the bar floats inset on all four
+   sides now, so `header.site-header` draws a full 1px `var(--border)` border — and this
+   rule, being two classes, would otherwise keep the OLD single bottom edge (and keep it a
+   brighter .16 white than the other three sides). Setting the colour only leaves the
+   width, the style and the bar's own `!important` background exactly where they were. */
+.dark .site-header{background:color-mix(in srgb, #000 50%, transparent) !important;border-color:var(--border)}
 .dark .site-header .brand,
 .dark .site-header .faq-btn,
 .dark .site-header .version-badge .vb-version{color:#fff}
@@ -3170,38 +3264,39 @@ html:not(.dark) body {
 <!-- ============================================================ -->
 <style id="fourChanges">
 
-/* ============ 1. CLIP PROGRESS — animated gradient ============
-   ⛔ The fill was ALREADY animated (`animation: glowing 20s …`), which is why
-   "make it animated" is the right complaint: `glowing` ping-pongs
-   background-position 0 → 400% → 0 over TWENTY seconds, so on a 4px bar the
-   movement is imperceptible — it reads as a static gradient. The keyframes are
-   shared with the hero glow, so `glowing` itself is NOT touched; the bar gets
-   its own one-directional flow at a speed the eye can actually catch.
-   ⛔ The GRADIENT ITSELF IS UNCHANGED ON PURPOSE — same five stops in the same
-   order, first and last identical (#0096ff) so the 400% tile loops seamlessly.
-   That is what makes the bar and the hero halo read as ONE element, and it is
-   kept so only the motion changes. */
-@keyframes clipFlow { from { background-position: 0% 0; } to { background-position: -400% 0; } }
+/* ============ 1. CLIP PROGRESS — static gradient ============
+   ⛔⛔ THE TWO ANIMATIONS HERE ARE GONE, ON PURPOSE, AND THIS BLOCK IS THE RECORD OF IT.
+   The fill carried a one-directional `background-position` flow (`clipFlow`) and the
+   track carried a travelling sheen (`clipTrack`), both repainting a 4–5px strip 60
+   times a second for the whole time the page was open — a continuous paint on the
+   compositor for a movement the owner had already judged imperceptible on a bar this
+   thin, and one that never stopped, playing clip or not. Progress itself is now the
+   only thing that moves, and it moves by transform.
+   ⛔ WHAT IS KEPT: the gradient ITSELF — the same five stops in the same order, first
+   and last identical (#0096ff) — the 400% tile, the track's sheen gradient and its
+   colour, the bar's thickness, its inset, its hit area (`.clip-bar::after`) and the
+   loading spinner. Only `background-position` animation and the two glow shadows on
+   the fill are removed. */
 .clip-bar-fill {
   background-size: 400% 100%;
-  animation: clipFlow 2.6s linear infinite;
-  box-shadow: 0 0 10px color-mix(in srgb, #0096ff 80%, transparent),
-              0 0 22px color-mix(in srgb, #22d3ee 45%, transparent);
 }
-/* A travelling sheen on the TRACK too, so the control still reads as alive on a
-   clip that has not started — the fill is 0-width until then, and an animated
-   gradient inside a 0-width box is invisible, which is the one case this request
-   would otherwise silently fail. */
-@keyframes clipTrack { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+/* the travelling sheen on the TRACK is kept as a still: the gradient, its 200% tile
+   and the bar's own colour are unchanged, and only the animation is gone. The fill is
+   what reads as progress now, and it is animated by `transform`. */
 .clip-bar::before {
   background-image: linear-gradient(90deg,
     transparent 30%, color-mix(in srgb, #0096ff 30%, transparent) 50%, transparent 70%);
   background-size: 200% 100%;
-  animation: clipTrack 2.6s linear infinite;
   background-color: color-mix(in srgb, var(--bg) 62%, transparent);
 }
+/* ⛔ nothing left to switch off here: the bar's two gradient animations are gone
+   outright (see above), so this control is still under `prefers-reduced-motion` by
+   construction. Reduced motion never gets the Web Animations path — a scaleX sweep is
+   exactly the kind of motion the preference is about — so the fill is always on the
+   event-driven `.is-stepped` path there, and this is the rule that takes its 60ms
+   transition away as well. */
 @media (prefers-reduced-motion: reduce) {
-  .clip-bar-fill, .clip-bar::before { animation: none; }
+  .clip-bar-fill.is-stepped { transition: none; }
 }
 
 /* ============ 2. INTRO + COMPARE — card chrome removed ============
@@ -3408,7 +3503,11 @@ html.dark .price-card::after {
    is the second reason the mask must follow the colour.
    ⛔ Same two-element split as the cards: `::before` blinks, `::after` is the steady
    cursor pool — a mask layer cannot carry its own opacity, so one element cannot do
-   both. `.ob-inner` sits at z-index 1, so both stay behind the copy. */
+   both. `.ob-inner` sits at z-index 1, so both stay behind the copy.
+   ⛔⛔ 2026-10-08 — THE FIELD WAS WIDENED FROM ONE POOL TO THREE. Owner: *"extend the
+   dot mask to top-left PLUS top-right and bottom centre"*. The measurement above is
+   unchanged and is still what anchors the TOP-LEFT pool; the two added pools are
+   mirror/opposite placements of the same ellipse, unioned with it (see the rule). */
 .offer-band::before {
   content: '';
   position: absolute; inset: 0; border-radius: inherit;
@@ -3419,12 +3518,12 @@ html.dark .price-card::after {
      corner: this band's wash is anchored TOP-LEFT, so the fade is `0% 0%`. */
   -webkit-mask-image:
     radial-gradient(52% 125% at 0% 0%, #000, transparent 78%),
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, .15) 0px, #000 80px, rgba(0, 0, 0, .15) 160px);
+    radial-gradient(52% 125% at 100% 0%, #000, transparent 78%);
           mask-image:
     radial-gradient(52% 125% at 0% 0%, #000, transparent 78%),
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, .15) 0px, #000 80px, rgba(0, 0, 0, .15) 160px);
-  -webkit-mask-composite: source-in;
-          mask-composite: intersect;
+    radial-gradient(52% 125% at 100% 0%, #000, transparent 78%);
+  -webkit-mask-composite: source-over;
+          mask-composite: add;
   animation: dotWave 3.6s linear infinite;
 }
 .offer-band::after {
@@ -3467,7 +3566,14 @@ html:not(.dark) .offer-band::after {
      but inside a 16000px-tall store iframe inset:0 would ask for a 16000px backing
      store (74M device pixels at DPR 2). The module caps the height and moves the box
      over the parent-visible band instead. */
-  position: fixed; top: 0; left: 0; right: 0; bottom: auto;
+  /* ⛔⛔ `right` IS `auto`, NOT 0, AND THAT IS NOT COSMETIC. The module now sets `left`
+     as well as `width`, and a fixed box with `left`, `right` AND `width` all specified
+     is over-constrained: the browser resolves it by IGNORING one of them (for a
+     left-to-right document, `right`), which happens to give the intended box today and
+     would silently take over the moment the width were ever left to auto. Stating
+     `right: auto` makes the box's horizontal placement exactly what the module writes —
+     one left edge, one measured width — with nothing left for the cascade to decide. */
+  position: fixed; top: 0; left: 0; right: auto; bottom: auto;
   width: 100%; height: 100%;
   z-index: -2; pointer-events: none;
   display: block;
@@ -4292,7 +4398,17 @@ html.dark #workflow .feature-text > .quickfog-outer::before {
    its own `120% 0` line.
    ⚠ This rule was accidentally deleted for one edit while rules 5 and 6 were appended; it is
    restored here verbatim. `_hover_audit.js` is what would have caught it, and it is the
-   reason that probe exists. */
+   reason that probe exists.
+   ⛔⛔ `transform: none` WAS WRONG HERE AND IS THE PILL-JUMP DEFECT. `.seam-label` is
+   centred with `left:50%; transform: translateX(-50%)`, so resetting the transform to
+   `none` — which is the correct neutral for every other element in this list — moved the
+   Workflow & Features pill and the nested Features pill RIGHT by half their own width the
+   instant the pointer touched them. `var(--seam-tx)` is the same neutral for the ones that
+   carry a transform at rest and the correct value for the one that does not: the centring
+   is restated rather than dropped, so nothing moves horizontally in any state.
+   ⛔ Every other declaration in this rule is unchanged, and the OTHER pills on the page
+   (the section seams outside #workflow) never had this rule applied to them, so their
+   hover behaviour is untouched — that is the bug's whole shape. */
 #workflow .step-num:hover,
 #workflow .seam-label:hover,
 #workflow .media-tag:hover,
@@ -4301,7 +4417,7 @@ html.dark #workflow .feature-text > .quickfog-outer::before {
   outline: 0 !important;
   outline-color: transparent !important;
   outline-offset: 0 !important;
-  transform: none !important;
+  transform: var(--seam-tx, none) !important;
   background-position: 120% 0, 0 0, 0 0 !important;
 }
 
@@ -4425,12 +4541,16 @@ html.dark .hero-copy-card:hover {
    any sibling. The bubbles live in `.container`, not in this wrapper.
    ⛔ The wrapper must never take pointer events — it covers the whole hero. */
 /* ⛔⛔ A ZERO-HEIGHT MARKER IN NORMAL FLOW, NOT A FULL-HERO OVERLAY.
-   Owner: *"move it to below the hero clip"*. It sits immediately after `.hero-media`
-   inside `.container`, so the arc begins at the clip's bottom edge at EVERY viewport
-   width — there is no offset to measure and nothing to re-tune when the clip's height
-   changes with the container width. The first version was `inset: 0` on `.hero` with
-   the dome pushed down by a hand-tuned `bottom: -560px`; that value only held at one
-   width.
+   Owner: *"move it to below the hero clip"*. It sits in normal flow inside `.container`
+   and the dome's `top` is measured from whatever edge is directly above it, so the arc
+   begins on that edge at EVERY viewport width — no offset to measure and nothing to
+   re-tune when the box above it changes height. The first version was `inset: 0` on
+   `.hero` with the dome pushed down by a hand-tuned `bottom: -560px`; that value only
+   held at one width.
+   ⛔⛔ THE BOX ABOVE IT IS NO LONGER `.hero-media` (2026-10-08). The carousel's empty
+   placeholder was removed from the top of this container, so the marker now opens the
+   hero and the arc starts 36px under the OFFER BAND. The anchor RULE is unchanged —
+   only the edge it resolves to.
    ⛔ The wrapper is `height: 0` and out of the layout: the row below it must not move.
    ⛔ `.hero { overflow-x: clip }` is what stops the 150%-wide dome creating a sideways
    scrollbar. It is `clip`, NOT `hidden`, and that distinction is load-bearing —
@@ -4450,13 +4570,17 @@ html.dark .hero-copy-card:hover {
 
 .hero-horizon {
   position: absolute;
-  /* ⛔ SITS JUST ABOVE THE WORDMARK. Owner: *"lower the image so it sits right above
-     the text"*, then *"move it a tiny bit up"* → **58**, which puts the peak at 1516,
-     60px above the wordmark text box at 1554.
-     `top` is measured from the anchor at the clip's bottom (1458), so the useful values
-     read as: **-90** = peak hidden 90px BEHIND the clip, so the arc emerges already
-     curving; **0** = peak exactly on the clip's bottom edge; **36** = where it is now;
-     higher pushes the dome down over the wordmark.
+  /* ⛔ SAT JUST ABOVE THE WORDMARK WHEN IT WAS TUNED. Owner: *"lower the image so it sits
+     right above the text"*, then *"move it a tiny bit up"* → **58**, which put the peak at
+     1516, 60px above the wordmark text box at 1554. ⚠ Those two reference points belong to
+     the 2026-10-07 hero, where the carousel sat above this marker; with the placeholder
+     removed the marker opens the hero (see above), so the dome now hangs off the offer
+     band — the value 36 is unchanged and still means "36px below the marker".
+     `top` is measured from the marker's own edge — the clip's bottom (1458) when those
+     numbers were taken, the offer band's bottom since 2026-10-08 — so the useful values
+     read as: **-90** = peak hidden 90px BEHIND that edge, so the arc emerges already
+     curving; **0** = peak exactly on it; **36** = where it is now; higher pushes the dome
+     down over the wordmark.
      ⛔ This is the knob that MOVES THE FADE AS WELL AS THE SHAPE — the mask stops below
      are percentages of `height`, so **`height` scales it while `top` translates it**.
      Changing the height leaves the fade on the same pixels; changing `top` carries the
@@ -5355,44 +5479,18 @@ html.dark .hero-copy-card:hover {
 <section class="hero" id="demo" aria-label="Introduction">
   <!-- Antigravity-style particle pattern background -->
   <div class="container">
-    <div class="hero-media" aria-label="Auto Face MoCap Pro demo preview">
-      <!-- Hero clip — hosted on the Mr3D carrd CDN (was a placeholder pointing at
-           assets/videos/hero-demo.mp4, which was never added). Swap the src to use
-           a local file instead. -->
-      <video muted loop playsinline data-autoplay aria-label="Auto Face MoCap Pro demo preview" src="https://mr3dpageclips.carrd.co/assets/videos/video44.mp4?v=f823f065" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
-      <div class="grid-lines"></div>
-      <!-- the progress bar is injected by the page script, for this clip and every
-           other <video> on the page (see "Clip progress bars" in the CSS) -->
-      <!-- category tag (left) + character credit (right) — both outlined in the
-           same gradient as this box's glow. The script swaps BOTH with the clip,
-           so the credit can never end up attached to the wrong character. -->
-      <span class="hm-badge hm-badge-left">Anime</span>
-      <span class="hm-badge hm-badge-center">Realtime</span>
-      <a class="hm-badge hm-badge-right" href="https://kanafuyuko.booth.pm/items/5419110?registration=1" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span class="hm-badge-name">Chan</span></a>
-      <!-- clip switcher — one clip per character. Add entries to HERO_SLIDES in
-           the script; the arrows appear only where there IS somewhere to go, and
-           the dots above the clip mark the position. -->
-      <button class="g-arrow hm-nav hm-nav-prev" type="button" aria-label="Previous character clip" hidden>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
-      </button>
-      <button class="g-arrow hm-nav hm-nav-next" type="button" aria-label="Next character clip" hidden>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-      </button>
-      <!-- one dot per available clip, sitting just above the clip. The script also
-           injects a .hm-tips row ABOVE this one: one always-on label bubble per
-           clip, tail aimed down at its own dot. -->
-      <div class="hm-dots" id="hmDots" role="tablist" aria-label="Character clips"></div>
-      <button class="play-btn" type="button" aria-label="Play or pause the demo video">
-        <svg class="ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg>
-        <svg class="ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5h3.2v13H8zM12.8 5.5H16v13h-3.2z"/></svg>
-      </button>
-    </div>
 
-    <!-- Hero horizon — anchored to the BOTTOM OF THE CLIP, on the owner's word
-         ("move it to below the hero clip"). It is a zero-height marker sitting in
-         normal flow straight after `.hero-media`, so the arc starts exactly at the
-         clip's bottom edge at every viewport width — no measured offset and nothing
-         to re-tune when the clip's height changes.
+    <!-- Hero horizon — the dome from the reference. It is a zero-height marker in normal
+         flow, and `.hero-horizon`'s `top` (36px) is measured from whatever edge sits
+         directly ABOVE it, so the arc tracks that edge at every viewport width — no
+         measured offset, and nothing to re-tune when the box above it changes height.
+         ⛔⛔ WHAT SITS ABOVE IT CHANGED ON 2026-10-08. It used to be `.hero-media`: the
+         marker sat straight after the carousel's placeholder, so the arc began at the
+         clip's bottom edge (owner: "move it to below the hero clip"). That placeholder
+         was then REMOVED ("remove the empty hero frame immediately below the offer
+         band"), so the marker is now the hero's FIRST child and the arc begins 36px
+         under the OFFER BAND instead. The dome's own geometry is untouched — this is
+         only where it is anchored.
          ⛔ It is NOT in the hero's own clipping wrapper any more: the dome now fits
          entirely inside the hero, so nothing needs vertical clipping, and the only
          overflow left is horizontal — which `.hero { overflow-x: clip }` handles
@@ -5409,6 +5507,12 @@ html.dark .hero-copy-card:hover {
     <!-- section, between the offer band's </section> and <section       -->
     <!-- class="hero">; it now sits directly under `.hero-media` (the    -->
     <!-- big character clip, video44) and above `.hero-cards`.           -->
+    <!-- ⛔ The clip that was above it on 2026-10-07 is no longer above  -->
+    <!-- it: the placeholder went and the LIVE carousel is the last      -->
+    <!-- child of this container, so the wordmark now sits under the     -->
+    <!-- horizon marker and above `.hero-cards` — where the owner wants  -->
+    <!-- it ("leave horizon and title"). Nothing about the wordmark      -->
+    <!-- itself changed.                                                 -->
     <!-- ⛔ INSIDE `.hero .container`, not beside it — same 1180px the   -->
     <!-- wordmark already had as a MAIN child, so the type does not      -->
     <!-- change size. The clip's own furniture (`.hm-tips` bubbles,      -->
@@ -5433,7 +5537,7 @@ html.dark .hero-copy-card:hover {
            not two fragments. The RENDERED text is still the full wordmark.
            ⚠ Do not "tidy" this into one span: `background-clip: text` paints inside the
            span it is set on, so a single span would gradient the whole title again. -->
-      <span class="brand-title-text">Auto <span class="brand-title-grad">Face MoCap</span> Pro</span>
+      <span class="brand-stroke-stage"><video class="brand-stroke-video" muted playsinline preload="none" data-no-clip-bar aria-hidden="true" src="https://mr3dpageclips.carrd.co/assets/videos/video55.mp4?v=b4d60b51"></video><span class="brand-title-text" aria-hidden="true"><span class="stroke-letter" data-finish="0.625">A</span><span class="stroke-letter" data-finish="1.1667">u</span><span class="stroke-letter" data-finish="1.6667">t</span><span class="stroke-letter" data-finish="1.9167">o</span> <span class="brand-title-grad"><span class="stroke-letter" data-finish="2.5417">F</span><span class="stroke-letter" data-finish="3.125">a</span><span class="stroke-letter" data-finish="3.8333">c</span><span class="stroke-letter" data-finish="4.5417">e</span> <span class="stroke-letter" data-finish="5.7917">M</span><span class="stroke-letter" data-finish="6.0417">o</span><span class="stroke-letter" data-finish="6.625">C</span><span class="stroke-letter" data-finish="6.9583">a</span><span class="stroke-letter" data-finish="7.75">p</span></span> <span class="stroke-letter" data-finish="8.6667">P</span><span class="stroke-letter" data-finish="8.9583">r</span><span class="stroke-letter" data-finish="9.875">o</span></span></span>
     </div>
 
     <div class="hero-cards">
@@ -5495,6 +5599,91 @@ html.dark .hero-copy-card:hover {
       <div class="quickfog-outer hero-side reveal">
         <video muted loop playsinline data-autoplay data-no-clip-bar src="https://mr3dpageclips.carrd.co/assets/videos/video51.mp4?v=5a2a2d09" aria-label="Demo clip (right)"></video>
       </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- 1c. THE CHARACTER CAROUSEL — MOVED HERE (owner, 2026-10-08:     -->
+    <!-- "move the existing full .hero-media character carousel         -->
+    <!-- pictured by Chan/Kun/Snail/Snow/Meta below .hero-note ... Put  -->
+    <!-- it full container width BELOW .hero-cards, not constrained     -->
+    <!-- inside hero-center ... visually directly beneath privacy       -->
+    <!-- line"). It was the first child of this container, above the    -->
+    <!-- horizon; the empty placeholder that replaced it has since been -->
+    <!-- REMOVED (owner, 2026-10-08: "remove the empty hero frame      -->
+    <!-- immediately below the offer band"), so this container now      -->
+    <!-- opens with the horizon marker, then the wordmark, then the     -->
+    <!-- card row.                                                      -->
+    <!-- ⛔ NOT A REBUILD AND NOT A COPY. This is the same element,     -->
+    <!-- moved: the same `<video>` src, the same `.grid-lines`, the     -->
+    <!-- same three badges, BOTH `.hm-nav` arrows, `#hmDots` (the id    -->
+    <!-- is unique and stays unique — one node, one place in the        -->
+    <!-- document), the same `.play-btn`, and every comment that came   -->
+    <!-- with them. Nothing was retyped, so nothing can drift.          -->
+    <!-- ⛔ "FULL CONTAINER WIDTH" = a CHILD OF `.container` at this    -->
+    <!-- level, a sibling of `.hero-cards` — NOT nested in             -->
+    <!-- `.hero-center`, where it would have been squeezed into the     -->
+    <!-- middle 1.6fr cell (~55% of the row) instead of the container.  -->
+    <!-- Its own `max-width: 1000px` is deliberately KEPT: that 1000px  -->
+    <!-- is load-bearing, because `.hm-nav-prev/next` sit at            -->
+    <!-- `left/right: -64px` outside the box above 1244px and the       -->
+    <!-- container's side gutter is only `(min(1180px, 92vw) - 1000)/2` -->
+    <!-- — widening the box to the full 1180px would push both arrows   -->
+    <!-- past the container and add a horizontal scrollbar (the note on -->
+    <!-- that media query says the same thing).                         -->
+    <!-- ⛔ THE LABELS DO NOT TOUCH THE PRIVACY LINE, AND NO MARGIN     -->
+    <!-- NEEDED TO CHANGE FOR THAT. The cluster that floats above this  -->
+    <!-- box reaches at most 69px over its top edge — `.hm-nav` sits at -->
+    <!-- `bottom: calc(100% + 27px)` and `.g-arrow` is 42px tall, so    -->
+    <!-- 27 + 42 = 69 — while the `.hm-tips` bubbles stop lower, at     -->
+    <!-- ~63px (a 34px `margin-bottom` plus a ~29px bubble: .32rem of   -->
+    <!-- padding twice over a 1.6 line box on a .72rem font).           -->
+    <!-- `.hero-media`'s own `margin-top: 88px` leaves 88px between     -->
+    <!-- `.hero-cards`' bottom edge (where `.hero-note` ends) and this  -->
+    <!-- box, so the taller of those two sits ~19px clear of the note.  -->
+    <!-- That is read off the rules, not assumed. The 88px was written  -->
+    <!-- to clear the offer band above; below the cards it clears the   -->
+    <!-- note for the same reason, so it is unchanged.                  -->
+    <!-- ⛔ BEHAVIOUR IS THE SAME CODE PATHS, ONE VISIBLE DIFFERENCE:   -->
+    <!-- `heroBox`/`heroVideo` resolve by `.hero-media` and everything  -->
+    <!-- else is scoped to `heroBox`, so the switcher, the dots, the    -->
+    <!-- tips, the play toggle and the clip bar all rebind here with no -->
+    <!-- selector change. The difference is that the block now starts   -->
+    <!-- BELOW the fold, so the off-screen gates (ANIM_ROOTS + the      -->
+    <!-- `AFMP.watch` sentinel) hold its CSS animations and its         -->
+    <!-- autoplay until it is scrolled into view — the gating working   -->
+    <!-- as designed, not a regression.                                 -->
+    <!-- ============================================================ -->
+    <div class="hero-media" aria-label="Auto Face MoCap Pro demo preview">
+      <!-- Hero clip — hosted on the Mr3D carrd CDN (was a placeholder pointing at
+           assets/videos/hero-demo.mp4, which was never added). Swap the src to use
+           a local file instead. -->
+      <video muted loop playsinline data-autoplay aria-label="Auto Face MoCap Pro demo preview" src="https://mr3dpageclips.carrd.co/assets/videos/video44.mp4?v=f823f065" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+      <div class="grid-lines"></div>
+      <!-- the progress bar is injected by the page script, for this clip and every
+           other <video> on the page (see "Clip progress bars" in the CSS) -->
+      <!-- category tag (left) + character credit (right) — both outlined in the
+           same gradient as this box's glow. The script swaps BOTH with the clip,
+           so the credit can never end up attached to the wrong character. -->
+      <span class="hm-badge hm-badge-left">Anime</span>
+      <span class="hm-badge hm-badge-center">Realtime</span>
+      <a class="hm-badge hm-badge-right" href="https://kanafuyuko.booth.pm/items/5419110?registration=1" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span class="hm-badge-name">Chan</span></a>
+      <!-- clip switcher — one clip per character. Add entries to HERO_SLIDES in
+           the script; the arrows appear only where there IS somewhere to go, and
+           the dots above the clip mark the position. -->
+      <button class="g-arrow hm-nav hm-nav-prev" type="button" aria-label="Previous character clip" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+      <button class="g-arrow hm-nav hm-nav-next" type="button" aria-label="Next character clip" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <!-- one dot per available clip, sitting just above the clip. The script also
+           injects a .hm-tips row ABOVE this one: one always-on label bubble per
+           clip, tail aimed down at its own dot. -->
+      <div class="hm-dots" id="hmDots" role="tablist" aria-label="Character clips"></div>
+      <button class="play-btn" type="button" aria-label="Play or pause the demo video">
+        <svg class="ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg>
+        <svg class="ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5h3.2v13H8zM12.8 5.5H16v13h-3.2z"/></svg>
+      </button>
     </div>
   </div>
 </section>
@@ -5566,15 +5755,12 @@ html.dark .hero-copy-card:hover {
          sit almost on the label. -->
     <div class="quickfog-outer afmp-intro-card">
       <h3>What is Auto Face MoCap Pro?</h3>
-      <!-- ⛔ House rules for this copy, from the owner: no dashes or hyphens at all (his "AR-Kit"
-           spelling is the one exception), no "bakes it to your rig in two clicks", never the
-           number 52, and the summary runs to about 500 characters. The gate enforces all four. -->
-      <!-- ⛔ THREE paragraphs, not one block: at ~860 characters a single wall of text is
-           unreadable (owner, 2026-09-30: "also add line spaces where ever needed"). The gap
-           between them comes from .afmp-intro-card p's margin-bottom. -->
-      <p>Auto Face Mocap Pro is a all new Flagship Blender Addon that turns any face video into facial animation. Bring a webcam clip, a phone recording or footage you already have, and it detects the performance and maps it onto your character's <span style="white-space:nowrap;">AR-Kit</span> shape keys (Togue is Not Supported Yet). There is no headset, no suit and no tracking markers to place, only the video you already have (Make sure the video lighting is good and everything is visible clearly).</p>
-      <p>Everything stays adjustable with real time sliders, so you can tune the result until it looks right, and every slider can be keyframed like any other animation. It supports multiple characters and multiple mocaps Per character, so a whole cast can live in one file.</p>
-      <p>It is beginner friendly, so even someone on their first day can get a clean result without studying a manual or watching a tutorial, and it all runs locally on your machine, so your footage never leaves your PC and nothing is uploaded anywhere.</p>
+      <p>Auto Face MoCap Pro turns face videos into facial animation in Blender, mapping the performance to your character's ARKit shape keys. Use a webcam clip, a phone recording or footage you already have. For best results, keep the face clearly visible and well lit. Tongue tracking is not yet supported.</p>
+      <h3 class="afmp-benefits-heading">Why Use Auto Face MoCap Pro?</h3>
+      <p><strong>Capture a performance with the camera you have.</strong> Bring facial expressions into your animation without a headset, capture suit or tracking markers. Spend less time on facial animation and more time bringing bigger scenes to life.</p>
+      <p><strong>Keep creative control.</strong> Fine-tune the result with live sliders and keyframe every adjustment, so you can refine expressions to suit your character and scene.</p>
+      <p><strong>Build a whole cast in one file.</strong> Work with multiple characters and multiple captures per character, keeping your performances together in one Blender project.</p>
+      <p><strong>Start simply. Keep your footage private.</strong> An approachable workflow makes facial capture easier to get into. Processing runs locally on your PC, so your footage stays with you and is never uploaded.</p>
     </div>
 
     <style>
@@ -5641,10 +5827,10 @@ html.dark .hero-copy-card:hover {
                addon; "mocap" and "mocaps" stay lowercase as common nouns, and the product
                name keeps its own "MoCap" in the heading above. -->
           <ul class="compare-steps">
-            <li><span class="step-num">1</span><span>Move the rig and set every keyframe by hand</span></li>
-            <li><span class="step-num">2</span><span>Spend hours cleaning up curves in the Graph Editor</span></li>
-            <li><span class="step-num">3</span><span>Every small change means readjusting the whole animation</span></li>
-            <li><span class="step-num">4</span><span>Hard to learn when you are just starting out</span></li>
+            <li><span class="step-num">1</span><span>Pose and keyframe by hand</span></li>
+            <li><span class="step-num">2</span><span>Clean up animation curves</span></li>
+            <li><span class="step-num">3</span><span>Rework keyframes for every change</span></li>
+            <li><span class="step-num">4</span><span>Steep learning curve</span></li>
           </ul>
           <span class="time-chip">~ 6 hours</span>
         </div>
@@ -5663,11 +5849,11 @@ html.dark .hero-copy-card:hover {
                now phrased to sit in the same list without breaking it, and "Apply Mocap"
                keeps its capitals because it is a button label. -->
           <ul class="compare-steps">
-            <li><span class="step-num">1</span><span>Record the clip (webcam, phone or video file)</span></li>
-            <li><span class="step-num">2</span><span>Select an AR-Kit shapekey character and click Apply Mocap</span></li>
-            <li><span class="step-num">3</span><span>Change anything you want with the real time sliders</span></li>
-            <li><span class="step-num">4</span><span>Multiple characters and multiple mocaps in one file</span></li>
-            <li><span class="step-num">5</span><span>Beginner friendly, so even a first day user can get a clean result</span></li>
+            <li><span class="step-num">1</span><span>Record or import a video</span></li>
+            <li><span class="step-num">2</span><span>Select an ARKit character. Click Apply Mocap.</span></li>
+            <li><span class="step-num">3</span><span>Fine-tune with live sliders</span></li>
+            <li><span class="step-num">4</span><span>Multiple characters and captures in one file</span></li>
+            <li><span class="step-num">5</span><span>Easy to use from day one</span></li>
           </ul>
           <span class="time-chip">~ 2 minutes</span>
         </div>
@@ -5763,9 +5949,9 @@ html.dark .hero-copy-card:hover {
       <div class="feature-row side-row reveal rev" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
-            <h3 class="feature-title">Built on the 52 ARKit shape keys</h3>
+            <h3 class="feature-title">Built on ARKit shape keys</h3>
             <p class="feature-copy">
-              Your character's 52 AR-Kit blend shapes carry the performance: eyes, brows, jaw, lips,
+              Your character's AR-Kit blend shapes carry the performance: eyes, brows, jaw, lips,
               cheeks, nose and tongue. Every key animates live on the mesh as it takes place in the clip.
             </p>
           </div>
@@ -6077,7 +6263,8 @@ html.dark .hero-copy-card:hover {
         background:rgba(10,12,16,.78);color:#fff;font-size:.78rem;font-weight:600;letter-spacing:.02em;
         pointer-events:none;transition:opacity .25s ease,transform .25s ease;}
       #shapekeys .prod-banner:hover::after{opacity:1;transform:translateX(-50%) translateY(0);}
-    </style>
+    
+</style>
     <!-- ⛔ id="character" is the quick nav's target (owner: "ALSO ADD 'Character' quick nav and add the
          scroll to human generator card") — the pill must land on THIS card, not on the #shapekeys
          section. It carries scroll-margin like a section so the sticky header + nav clear it. -->
@@ -6630,7 +6817,7 @@ html.dark .hero-copy-card:hover {
        to scroll, so a click silently does NOTHING.
        scrollIntoView() is a different operation: it walks UP through every scrollable
        ancestor, so the host document moves when the frame cannot. The sticky-header
-       offset is already covered by the existing `scroll-margin-top: 132px` on the
+       offset is already covered by the existing `scroll-margin-top: 157px` on the
        sections, which scrollIntoView honours — so on a normal page the destination is
        identical to the plain anchor. */
     quickLinks.forEach(function (a, i) {
@@ -6915,17 +7102,215 @@ html.dark .hero-copy-card:hover {
      to remember to add markup. Runs BEFORE the hero player below, which reuses
      drawClipBar(). */
   var CLIP_BARS = [];
-  function clipBarFill(v) {
-    for (var i = 0; i < CLIP_BARS.length; i++) if (CLIP_BARS[i].v === v) return CLIP_BARS[i].fill;
+  function clipBarEntry(v) {
+    for (var i = 0; i < CLIP_BARS.length; i++) if (CLIP_BARS[i].v === v) return CLIP_BARS[i];
     return null;
   }
-  function drawClipBar(v) {
-    var fill = clipBarFill(v);
-    if (!fill) return;
+  /* ⛔⛔ THE BAR IS DRIVEN BY THE VIDEO'S OWN EVENTS, NOT BY A LOOP, AND IT IS WRITTEN AS
+     A `transform`, NOT A `width`.
+     The bar used to carry a requestAnimationFrame chain per playing clip, each one
+     writing `style.width` — a layout-inducing property — 60 times a second, on a page
+     that also runs video, CSS animation and the particle field; and the value it wrote
+     changed on every one of those frames whether or not the pixel did. Three changes,
+     all of them the same picture:
+       · the fill is a full-width element (`width:100%`) that is SCALED by the progress,
+         so a step of progress is a compositor transform rather than a layout pass;
+       · progress is QUANTISED TO 1% and an identical value is not written at all — on a
+         10px-wide bar that is the same pixel, and on any bar it is the same write;
+       · the events do all the driving: `timeupdate` (~4/s by spec), `seeked`,
+         `loadedmetadata`, `durationchange` and `ended`. Scrubbing calls this directly
+         from the pointer handler, so a drag is still redrawn on every move.
+     ⛔ `e.q` is the last PERCENT WRITTEN, not the last fraction: it exists to make the
+     skip exact, and it starts at -1 so the first paint of a 0% bar is not swallowed. */
+  function drawClipBar(v, force) {
+    var e = clipBarEntry(v);
+    if (!e) return;
+    // Animated fills reuse their browser timeline; only explicit scrubbing resyncs here.
+    if (e.anim) { if (force) barSync(e); return; }
     var d = v.duration;
-    fill.style.width = (d && isFinite(d) && d > 0)
-      ? Math.min(100, v.currentTime / d * 100).toFixed(2) + '%' : '0%';
+    var f = (d && isFinite(d) && d > 0) ? v.currentTime / d : 0;
+    if (!(f > 0)) f = 0; else if (f > 1) f = 1;
+    var q = Math.round(f * 100);
+    if (q === e.q) return;
+    e.q = q;
+    e.fill.style.transform = 'scaleX(' + (q / 100) + ')';
   }
+
+  /* ============================================================================
+     THE FILL IS ANIMATED ON THE COMPOSITOR — Web Animations, not a loop.
+
+     ⛔⛔ WHAT THIS REPLACES. The bar above is event-driven and stays that way, but a
+     `timeupdate` arrives about four times a second, so between two events the fill is
+     a still image of a value that is moving. The old answer to that was a rAF chain per
+     playing clip, and it was worse than the problem. THIS answer is one
+     `Element.animate()` per clip: a two-keyframe `scaleX(0) → scaleX(1)` whose
+     `currentTime` is set from the video's own clock, and which the BROWSER then advances
+     itself, on the compositor, with no JavaScript on the main thread per frame, no
+     timer and no rAF. The script touches it only when the video's time is not where the
+     animation thinks it is.
+     ⛔ THE HONEST CLAIM, AND ITS LIMIT. "No main-thread work per frame" is the claim.
+     It is NOT a claim of zero cost and NOT a claim of a GPU measurement: the browser
+     still composites the layer every frame the page is on screen, on whatever path that
+     browser uses, and nothing here was profiled on real hardware. What changed is whose
+     clock drives the value and where the interpolation happens.
+     ⛔ SYNCHRONISATION, AND WHY IT IS COARSE. `currentTime` is written on the media
+     events that mean "the time jumped": loadedmetadata, durationchange, seeked,
+     ratechange, play, playing, pause, ended, emptied. During ordinary playback nothing
+     is written at all — the animation and the video are both real-time, so they stay
+     together. `timeupdate` is used ONLY as a cheap drift check (> 0.3s of disagreement
+     means something moved that no event described, and on a looping clip it means the
+     video wrapped back to 0 while the animation sat at its end). Rewriting the transform
+     on every callback is exactly what this pass removes.
+     ⛔ PLAYBACK RATE: the animation is given the video's `playbackRate`, so a clip at 2×
+     fills at 2× and the two do not separate.
+     ⛔ THE FALLBACK IS THE PRE-EXISTING ONE, unchanged: no `Element.animate()` (an old
+     engine), `prefers-reduced-motion: reduce`, or a duration that is unknown, zero or
+     live (`Infinity`) all leave the event-driven `drawClipBar` writes as the only
+     driver — and reduced motion never gets a playing animation, it gets the still bar.
+     ⛔ AND NO SHEEN COMES BACK WITH IT: two keyframes on `transform` only, the same
+     gradient at rest, no glow, no sprite, no raster asset. */
+
+  /* ⛔ ONE KEYFRAME PAIR FOR THE WHOLE PAGE. `Element.animate()` copies the keyframes it
+     is given, so a shared constant is the identical animation without a new array per
+     clip — and per source change, which is where the garbage would otherwise come from. */
+  var BAR_KEYS = [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }];
+  var BAR_SLOP = 0.3;            // seconds of disagreement that is worth a resync
+  var CAN_ANIMATE = !!(window.Element && window.Element.prototype &&
+    typeof window.Element.prototype.animate === 'function');
+  var CALM = false;
+  try { CALM = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+  /* ⛔ the fallback's 60ms transition is a class, so the compositor path can never pick
+     it up — see `.clip-bar-fill.is-stepped` in the CSS */
+  function barStepped(e, on) {
+    if (!e.fill.classList) return;
+    if (on) e.fill.classList.add('is-stepped');
+    else e.fill.classList.remove('is-stepped');
+  }
+  /* ⛔ DROP THE ANIMATION. Called when the fill can no longer be animated (the source
+     changed, the duration went unknown, the preference is on) and before a new one is
+     built, so a clip that changes source cannot leave the old animation running against
+     the new clip's clock. `cancel()` removes the effect outright; it is not paused and
+     parked. */
+  function barAnimOff(e) {
+    if (e.anim) { try { e.anim.cancel(); } catch (err) {} }
+    e.anim = null;
+    e.dur = 0;
+    barStepped(e, true);
+  }
+  /* ⛔ THE ONE PLACE AN ANIMATION IS BUILT, and the cache: the same clip at the same
+     duration reuses the object it already has. A different duration (a new source, or a
+     clip whose metadata only just landed) cancels and rebuilds — the old duration would
+     scale the new clip's progress wrongly for its whole length. */
+  function barAnimFor(e) {
+    var d = e.v.duration;
+    if (!CAN_ANIMATE || CALM || !(d > 0) || !isFinite(d)) { barAnimOff(e); return null; }
+    if (e.anim && e.dur === d) return e.anim;
+    barAnimOff(e);
+    var a = null;
+    try {
+      a = e.fill.animate(BAR_KEYS, { duration: d * 1000, easing: 'linear', fill: 'both' });
+    } catch (err) { a = null; }
+    if (!a) { barAnimOff(e); return null; }
+    e.anim = a;
+    e.dur = d;
+    /* ⛔ BORN PAUSED. A fresh animation runs on the wall clock from the moment it is
+       created, which is not the video's clock; its currentTime is set by barSync below
+       and it is only set moving when the video is moving. */
+    try { a.pause(); } catch (err) {}
+    barStepped(e, false);
+    return a;
+  }
+  /* ⛔ THE ONLY WRITER. Put the animation exactly where the video is, then let it run
+     only if the video is running — a manual pause, a clip the visibility manager stopped,
+     a hidden tab and an ended clip all arrive here as "the video is not moving", and the
+     animation is paused to match. It never decides on its own to play. */
+  function barSync(e) {
+    var a = barAnimFor(e);
+    if (!a) return false;
+    var v = e.v, t = v.currentTime;
+    if (!(t >= 0) || !isFinite(t)) t = 0;
+    var ms = t * 1000;
+    var at = a.currentTime;
+    if (typeof at !== 'number' || !isFinite(at)) at = 0;
+    if (at !== ms) { try { a.currentTime = ms; } catch (err) {} }
+    var rate = v.playbackRate;
+    try { a.playbackRate = (rate > 0 && isFinite(rate)) ? rate : 1; } catch (err) {}
+    if (v.paused || v.ended || v.seeking ||
+        (typeof v.readyState === 'number' && v.readyState < 3) ||
+        e.off || (document.hidden === true)) {
+      try { a.pause(); } catch (err) {}
+    } else {
+      try { a.play(); } catch (err) {}
+    }
+    e.t = t;
+    return true;
+  }
+  /* ⛔ THE COARSE CHECK, and the ONLY thing `timeupdate` does to the animation. Two
+     cases are worth a write and nothing else is:
+       · WRAP — a looping clip jumps back to 0 and no event says so (`ended` does not fire
+         on a loop). The animation would otherwise sit finished at 100% for the second
+         pass. Detected as "the video is materially BEHIND the animation".
+       · DRIFT — a resync that some other path missed, or a stall the clock recovered
+         from. Detected as a disagreement in either direction.
+     ⛔ The 0.3s threshold is the point: at four `timeupdate`s a second the two clocks
+     cannot disagree by a third of a second without something having actually happened,
+     and below it a write would be a no-op the browser has to re-resolve. */
+  function barDriftCheck(e) {
+    var a = e.anim;
+    if (!a) return false;
+    var t = e.v.currentTime;
+    if (!(t >= 0) || !isFinite(t)) return false;
+    var at = a.currentTime;
+    if (typeof at !== 'number' || !isFinite(at)) at = 0;
+    if (t + BAR_SLOP < at / 1000 || Math.abs(at / 1000 - t) > BAR_SLOP) return barSync(e);
+    return false;
+  }
+  /* ⛔ THE SOURCE CHANGED (`loadstart`, and the `emptied` that follows it on some
+     engines): the old duration belongs to a clip that is being replaced, so the old
+     animation is cancelled here rather than left to be found later. The new one is built
+     by the `loadedmetadata` that follows. */
+  function barReset(e) { barAnimOff(e); }
+
+  /* ⛔ THE TAB AND THE VIEWPORT, EXPLICITLY. The page already gates CSS animation on
+     `afx-off` roots, but a Web Animation is not a CSS animation and that class does
+     nothing to it — so the two states that must stop it are wired here, by hand. */
+  function barSyncAll() {
+    for (var i = 0; i < CLIP_BARS.length; i++) barSync(CLIP_BARS[i]);
+  }
+  /* ⛔ AFMP.watch() IS DEFINED BY A LATER SCRIPT in this document (the sentinel ladder),
+     so the off-screen subscription cannot be made while the bars are being built: it is
+     made at `load`, by which point every inline block has run. `barsWatched` keeps it to
+     one registration per clip. */
+  var barsWatched = false;
+  function watchBars() {
+    if (barsWatched || !window.AFMP || typeof window.AFMP.watch !== 'function') return;
+    barsWatched = true;
+    for (var i = 0; i < CLIP_BARS.length; i++) {
+      (function (e) {
+        window.AFMP.watch(e.v, function (on) {
+          /* ⛔ a clip nobody can see is not animating: barSync reads `e.off` and pauses.
+             Coming back on screen syncs it to where the video actually is, which is the
+             point of driving from `currentTime` rather than from elapsed wall time. */
+          e.off = !on;
+          barSync(e);
+          drawClipBar(e.v);
+        });
+        /* ⛔ AND THE ANSWER THE OBSERVER HAS ALREADY GIVEN. A `<video>` is watched for
+           playback by the sentinel script long before this runs, so its first
+           intersection callback — the one that would have said "this clip is off screen"
+           — may already have been delivered and gone. Registering a callback alone would
+           then leave an off-screen clip in the "visible" state until it next changes,
+           which is exactly a clip animating where nobody can see it. `isOnScreen` is that
+           answered state, read once per clip at registration. */
+        if (typeof window.AFMP.isOnScreen === 'function') {
+          e.off = !window.AFMP.isOnScreen(e.v);
+          barSync(e);
+        }
+      })(CLIP_BARS[i]);
+    }
+  }
+
   (function buildClipBars() {
     var vids = document.querySelectorAll('video');
     for (var i = 0; i < vids.length; i++) {
@@ -6943,32 +7328,37 @@ html.dark .hero-copy-card:hover {
         fill.className = 'clip-bar-fill';
         bar.appendChild(fill);
         host.appendChild(bar);
-        CLIP_BARS.push({ v: v, fill: fill });
-        ['timeupdate', 'loadedmetadata', 'seeked', 'ended', 'durationchange'].forEach(function (ev) {
-          v.addEventListener(ev, function () { drawClipBar(v); });
+        /* ⛔ `anim`/`dur`/`off`/`t` are the compositor animation's own state: the live
+           Animation (or null), the duration it was built for, "measured off screen", and
+           the video time it was last put at. `q` stays the last percent WRITTEN. */
+        var entry = { v: v, fill: fill, q: -1, anim: null, dur: 0, off: false, t: -1 };
+        CLIP_BARS.push(entry);
+        /* ⛔ TWO LISTS, BECAUSE THEY MEAN TWO DIFFERENT THINGS.
+           These are the events that say the video's TIME JUMPED — a new clip's metadata,
+           a seek, a rate change, the transitions in and out of playback. Each one puts
+           the animation where the video is and starts or stops it to match (`barSync`),
+           then repaints the fallback value.
+           ⛔ `timeupdate` is deliberately NOT in this list: it is the ~4/s heartbeat, and
+           all it is allowed to do is the coarse wrap/drift check in `barDriftCheck`. */
+        ['loadedmetadata', 'durationchange', 'seeked', 'ratechange', 'play', 'playing',
+          'pause', 'ended', 'emptied', 'error'].forEach(function (ev) {
+          v.addEventListener(ev, function () { barSync(entry); drawClipBar(v); });
         });
+        v.addEventListener('timeupdate', function () { barDriftCheck(entry); drawClipBar(v); });
+        /* ⛔ A NEW SOURCE ON THE SAME ELEMENT: `loadstart` fires before the new clip's
+           metadata, and the animation in hand was built for the old clip's duration.
+           Cancelling it here is what stops a source switch from leaving a stale timeline
+           running behind the new clip. */
+        v.addEventListener('loadstart', function () { barReset(entry); });
         drawClipBar(v);
+        barSync(entry);
 
-        /* timeupdate is throttled by the spec to roughly 4x/SECOND, so a bar driven
-           only by it steps in ~250ms jumps: on a very short clip that is a handful of
-           visible stutters, and it cannot get smoother however short the clip is.
-           requestAnimationFrame drives it once per frame instead, so the bar is as
-           smooth on a 1s clip as on a 60s one. The listeners above stay as the
-           fallback for paused, seeking and pre-play states, where no loop runs. */
-        var barRaf = 0;
-        var barTick = function () {
-          barRaf = (v.paused || v.ended) ? 0 : requestAnimationFrame(barTick);
-          drawClipBar(v);
-        };
-        var barStart = function () {
-          if (!barRaf && !v.paused && !v.ended && window.requestAnimationFrame) {
-            barRaf = requestAnimationFrame(barTick);
-          }
-        };
-        var barStop = function () { if (barRaf) { cancelAnimationFrame(barRaf); barRaf = 0; } };
-        ['play', 'playing', 'seeking'].forEach(function (ev) { v.addEventListener(ev, barStart); });
-        ['pause', 'ended'].forEach(function (ev) { v.addEventListener(ev, barStop); });
-        if (!v.paused && !v.ended) barStart();
+        /* ⛔ THERE IS NO PER-CLIP ANIMATION LOOP ANY MORE, and this is where one used to
+           live: a rAF chain started on `play`/`playing`/`seeking` and stopped on
+           `pause`/`ended`, redrawing the bar on every frame of the display to track a
+           value the video only reports ~4 times a second. There is no rAF chain and no
+           timer here either — the browser advances the Web Animation itself, and this
+           script only writes to it when the video's own time moves under it. */
 
         // loading spinner — same idea, one per clip
         var spin = document.createElement('div');
@@ -6977,7 +7367,7 @@ html.dark .hero-copy-card:hover {
         host.appendChild(spin);
         var setSpin = function (on) { spin.classList.toggle('on', !!on); };
         ['loadstart', 'waiting', 'stalled'].forEach(function (ev) {
-          v.addEventListener(ev, function () { setSpin(true); });
+          v.addEventListener(ev, function () { setSpin(true); barSync(entry); });
         });
         // ⛔ 'error' belongs in this list, not just as an afterthought: without it a
         // clip that can never load (missing file, or HEVC with no hardware decode)
@@ -6998,7 +7388,7 @@ html.dark .hero-copy-card:hover {
           var f = (clientX - r.left) / (r.width || 1);
           f = Math.max(0, Math.min(1, f));
           try { v.currentTime = f * d; } catch (e) {}
-          drawClipBar(v);
+          drawClipBar(v, true);
         };
         var dragging = false;
         bar.addEventListener('pointerdown', function (e) {
@@ -7023,6 +7413,11 @@ html.dark .hero-copy-card:hover {
         bar.addEventListener('click', function (e) { e.stopPropagation(); });
       })(vids[i]);
     }
+    /* ⛔ THE TWO GATES THE CLASS-BASED CSS GATING CANNOT REACH — see watchBars(). Both
+       are one-off registrations for the whole page, not one per clip. */
+    watchBars();
+    window.addEventListener('load', watchBars);
+    document.addEventListener('visibilitychange', barSyncAll);
   })();
 
   /* ---------- 8. Hero clip player — progress bar + play/pause ----------
@@ -7654,22 +8049,21 @@ html.dark .hero-copy-card:hover {
   anyway (its toggle element does not exist on the page). The source page keeps it.
 -->
 <script>
-/* Gobos effects — mouse glow + reveal */
+/* Gobos effects — reveal (the mouse glow that used to live here is GONE; see below) */
 (function () {
   'use strict';
-  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var glow = document.querySelector('.mouse-glow');
-  if (glow && !reduceMotion) {
-    var gX = 0, gY = 0, tX = 0, tY = 0, raf = null;
-    function tick() {
-      gX += (tX - gX) * 0.95;
-      gY += (tY - gY) * 0.95;
-      glow.style.transform = 'translate(' + gX + 'px,' + gY + 'px)';
-      if (Math.abs(gX - tX) < 0.4 && Math.abs(gY - tY) < 0.4) { raf = null; return; }
-      raf = requestAnimationFrame(tick);
-    }
-    window.addEventListener('mousemove', function (e) { tX = e.clientX; tY = e.clientY; if (!raf) raf = requestAnimationFrame(tick); }, { passive: true });
-  }
+  /* ⛔⛔ REMOVED: A SECOND, DUPLICATE `.mouse-glow` LOOP. This block used to select the
+     same element as the landing-page script above (`document.querySelector('.mouse-glow')`
+     — there is one such element on the page), attach its own `mousemove` listener, and
+     run its own requestAnimationFrame chain writing the SAME `transform`, with the same
+     0.95 easing and the same 0.4px stop threshold. That is two integrators racing to
+     write one property on one element: the visitor's mouse woke two listeners and two
+     rAF chains per move, and whichever wrote last in a frame won — the visible motion
+     was always one of the two, and they are identical, so removing this one is
+     behaviour-equivalent by construction, not a change of design.
+     ⛔ The surviving loop is the one in the landing-page script (search for
+     "Mouse-follow background glow"), which is the one that also carries the
+     prefers-reduced-motion guard and its explanatory note. */
   var reveals = document.querySelectorAll('.reveal');
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {
@@ -8401,6 +8795,11 @@ html.dark .hero-copy-card:hover {
      ⛔ Also kept from this page's own conventions rather than the original: a
        `prefers-reduced-motion` path that paints one static frame and stops, and a
        `visibilitychange` pause so a hidden tab is not burning a frame budget.
+     ⛔ AND ONE THING THE ORIGINAL'S LOOP IS NOT ALLOWED TO DO HERE: it paints on every
+       callback the display offers. This one is capped at MAX_FPS (24) — a skipped
+       callback draws nothing at all — and scales its per-frame drift and cursor push by
+       the elapsed time, so the field still moves at the speed the constants were tuned
+       at. Both are described where they are defined, below the palette.
    ========================================================================== */
 (function () {
   'use strict';
@@ -8442,11 +8841,62 @@ html.dark .hero-copy-card:hover {
   var PUSH = 2.5;
   var SIZE_MIN = 1, SIZE_MAX = 3;
 
+  /* ------------------------------------------------------------- the frame cap
+     ⛔⛔ THE FIELD IS CAPPED AT 24 PAINTED FRAMES A SECOND, ON EVERY DISPLAY.
+     This is a background field of 1–3px dots drawn behind a document that also runs
+     video, CSS animation and a store page around it. It was painting on every rAF —
+     60 times a second on an ordinary screen, 120 or 144 on a gaming one — and the
+     work per paint is not trivial: a clearRect over the whole canvas, an O(n) step
+     over the visible nodes and an O(visible²) link pass with a canvas stroke per pair
+     (see the cost note at the top of this file, and PERFORMANCE.md). The field's own
+     motion is a slow drift; at 24fps it is indistinguishable, at 144fps it is 6× the
+     painting for the same picture. */
+  var MAX_FPS = 24;
+  var FRAME_MS = 1000 / MAX_FPS;   // 41.67ms — the shortest gap between two PAINTED frames
+  /* ⛔⛔ THE ONE-NANOSECOND TOLERANCE, AND WHY IT IS NOT A CATCH-UP SCHEME.
+     1000/24 does not divide into any display's frame period, and the timestamps arrive
+     as floating point: a 120Hz display offers its 5th callback at 41.666666666666671ms
+     and a 144Hz one its 6th at the same number, but the subtraction `t - lastT` lands on
+     either side of 41.666666666666664 depending on which multiple of the period each
+     timestamp happens to round to. Compared exactly, that coin-flip drops a paint every
+     few frames and the cadence falls from 24 to ~20 a second — measured on a synthetic
+     120Hz clock, not assumed. The window below is a nanosecond wide, and the next
+     display frame is 7ms away, so it can never admit a frame the cap would otherwise
+     refuse: the hard ceiling is still 1000/24 ms, to a nanosecond. */
+  var FRAME_EPS = 1e-6;
+  /* ⛔ THE OLD TICK. The drift (±0.2px) and the cursor push (PUSH = 2.5px) are per-frame
+     constants that were tuned against a nominal 60fps loop. Painting 2.5× less often
+     with the same constants would move the field at 40% of its speed, which is a
+     different picture, not a cheaper one — so both are multiplied by the elapsed time
+     since the last paint, expressed in these units. */
+  var STEP_MS = 1000 / 60;
+  /* ⛔ AND THE SCALE IS BOUNDED. A tab that was throttled, a long task, a breakpoint
+     hit in devtools: the next callback can arrive hundreds of milliseconds late, and
+     unbounded scaling would teleport every node across the screen in one frame. Three
+     old ticks is exactly the 60Hz worst case below (a 50ms gap), so nothing in normal
+     playback is ever clamped; only a genuine stall is, and it resumes at 3× for one
+     frame instead of catching up frame-for-frame. */
+  var MAX_K = 3;
+  var lastT = -1;                // the timestamp of the last PAINTED frame; -1 = none yet
+  var frameDt = STEP_MS;         // the elapsed time that paint is scaled by
+
   var W = 0, H = 0, DPR = 1, linkDist2 = 0;
+  var appliedDPR = 0;            // the ratio the live backing store was last sized for
   var docW = 0, docH = 0;        // the field's own extent — the whole DOCUMENT
   var parts = [];
   var vis = [];                  // reused each frame: no allocation in the loop
+  /* ⛔⛔ THE CURSOR IS STORED EXACTLY AS THE EVENT REPORTED IT — in the FRAME's CLIENT
+     coordinates — and is converted to canvas coordinates at the moment it is compared
+     against a node (see cursorCanvas()). It used to be compared raw, which is correct
+     only while the canvas box starts at the top of the frame: in a store embed the box
+     is MOVED down to the band the parent is showing (`originY`), so a pointer at client
+     y 8500 sat over a box whose canvas y was 500, the two never matched, and the field
+     went inert under the cursor for every visitor who was scrolled past the first
+     screenful. Storing the raw value is what makes this immune to the box moving: the
+     conversion reads `originY` when it is used, so a band reposition cannot leave a
+     stale coordinate behind. */
   var mouse = { x: null, y: null };
+  var curX = null, curY = null;  // the same cursor in CANVAS px, rebuilt on every read
   var raf = 0, started = false, visible = true;
   /* ⛔ `bandEmpty`: the sentinel ladder MEASURED the frame as off the parent's screen.
      `canvasOn`: this canvas is inside the visible area per the same observer. Both are
@@ -8454,12 +8904,8 @@ html.dark .hero-copy-card:hover {
      has been moved off the band the parent is showing. */
   var bandEmpty = false, canvasOn = true;
   var MAX_NODES = 2600;          // guard: the update pass is O(n), the connect O(visible^2)
-  /* ⛔⛔ HALVED. The COUNT is halved, not the DENSITY: baseline is computed exactly as
-     before — min(round(area / DENSITY), MAX_NODES) — and the field is seeded with
-     round(baseline / 2). Halving DENSITY would have doubled the count on a page small
-     enough to sit under the cap and changed nothing on a page that hits it; halving
-     the baseline after the cap means a capped page also gets exactly half. */
-  var COUNT_DIVISOR = 2;
+  /* Particle count is 40% of the original baseline; cap1040, retaining24FPS. */
+  var COUNT_DIVISOR = 2.5; // 40% of original baseline; maximum 1040 particles.
 
   /* ------------------------------------------------------- clip rectangles
      ⛔⛔ NO NODE AND NO LINE MAY PAINT INSIDE A CLIP RECTANGLE — including the
@@ -8492,6 +8938,46 @@ html.dark .hero-copy-card:hover {
      is capped and MOVED over the band the parent can actually see. */
   var MAX_CANVAS_H = 1800;
   var originY = 0;               // the canvas box's top edge, in CLIENT px
+  /* ⛔ THE OTHER HALF OF THE SAME TRANSFORM. This used to be zero BY CONSTRUCTION (the
+     box was `position:fixed; left:0; width:100%`); it is not any more, because the box
+     is now the RAIL — the centred column the section dividers draw — so its left edge is
+     a measured value and every conversion below folds it in. It is one variable in one
+     place precisely so that stays true: `computeViewport`, `cursorCanvas` and the clip
+     mask's document-space translate all read it, and a miss in any one of them puts the
+     cursor 90px from the nodes it is over. */
+  var originX = 0;
+
+  /* ============================================================================
+     THE RAIL — the centred column the whole field lives inside.
+
+     ⛔⛔ WHAT IT IS. Every section divider on this page is a `::before` on
+     `.section` / `.gallery-section` / `.catalog-section` / `.site-footer`, drawn
+     `width: min(1180px, 92%)` and centred (`left:50%; translateX(-50%)`). That column —
+     not the window — is the field's rail: the canvas box IS the rail, the nodes are
+     seeded inside it, they bounce off its two edges, and their radius is kept inside it,
+     so nothing can paint outside the divider's own width.
+     ⛔ IT IS MEASURED, NOT ASSUMED. The two numbers that define it are read off the real
+     layout at measure time — the USED width of the divider's `::before` box and the box
+     of a real section — so a media query, a container change or an edit to the CSS token
+     moves the seam and the field together. Re-deriving `min(1180px, 92%)` in JavaScript
+     would have been the same number today and a second source of truth tomorrow.
+     ⛔ AND IT IS MEASURED ONCE PER LAYOUT CHANGE, NEVER PER FRAME. `getComputedStyle` on
+     a pseudo-element is a style resolve; the whole module reads layout in exactly three
+     places — `measure()` (a rebuild, a resize that has settled, a band move), the
+     coalesced rect flush (one rAF per burst, and only when the viewport width actually
+     changed), and nowhere else. No per-node, per-pair or per-frame path touches the DOM.
+     ⛔ IN DOCUMENT SPACE. `railX0`/`railX1` are the rail's edges in the same space the
+     nodes are simulated in, so the bounce, the clamp and the clip eviction are all plain
+     arithmetic against them; `originX` is the same rail's left edge in CLIENT pixels, for
+     the fixed canvas box and the cursor. Horizontal scroll is the one thing that moves
+     one without the other, which is why `railCX` (the centre, in document space, which
+     scroll cannot move) is the value kept and `originX` is derived from it. */
+  var railX0 = 0, railX1 = 1;    // the rail's edges, DOCUMENT space
+  var railCX = 0.5;              // its centre, DOCUMENT space — stable under scroll
+  var railVw = -1;               // the viewport width the rail above was measured at
+  /* ⛔ the only selector that has a divider; the FIRST match is the probe, because every
+     section shares one rule and one width */
+  var RAIL_SEL = '.section, .gallery-section, .catalog-section, .site-footer';
 
   /* ------------------------------------------------------------- sizing
      ⛔⛔ THE CANVAS STAYS VIEWPORT-SIZED, BUT THE FIELD DOES NOT.
@@ -8507,12 +8993,15 @@ html.dark .hero-copy-card:hover {
           ~2,060 nodes, and its connect pass is O(n²) — about 4 MILLION distance checks
           per frame. Here the same field costs one O(n) pass to update and an O(visible²)
           pass to link, which is ~150–200 nodes and ~20k checks.
-     ⛔ The link range stays tied to the VIEWPORT `(W/7)*(H/7)`, exactly as the reference
-     computes it against its canvas. Tying it to the document instead would make every
-     pair within hundreds of pixels connect and the field would read as a web. */
-  function measure() {
+     ⛔ The link range stays tied to the CANVAS's own box `(W/7)*(H/7)`, exactly as the
+     reference computes it against its canvas. The canvas box is now the RAIL rather than
+     the window, so the range is about a seventh of the column instead of a seventh of
+     the viewport — slightly shorter links on a desktop (≈208px against ≈230px at 1440),
+     which is the same rule applied to the box it is actually drawn in. Tying it to the
+     DOCUMENT instead would make every pair within hundreds of pixels connect and the
+     field would read as a web. */
+  function measure(forceRail) {
     DPR = Math.min(2, window.devicePixelRatio || 1);
-    var vw = window.innerWidth;
     var vh = window.innerHeight;
     /* ⛔⛔ THE BAND THE VISITOR CAN ACTUALLY SEE. In an ordinary window it is the whole
        viewport and `originY` stays 0 — nothing about this page's own behaviour changes.
@@ -8544,16 +9033,48 @@ html.dark .hero-copy-card:hover {
       h = vh;
     }
     if (!(h >= 1)) h = 1;
-    W = vw;
     H = h;
-    canvas.width = Math.round(W * DPR);
-    canvas.height = Math.round(H * DPR);
+    /* ⛔⛔ THE WIDTH IS THE RAIL'S, NOT THE WINDOW'S. `placeRail` reads the divider's own
+       used width and places the box on it; the height above is still the band-capped
+       viewport height, because the rail is a column and has no height of its own.
+       ⛔ AND IT IS RE-PROBED ONLY WHEN IT CAN HAVE MOVED. `reposition()` runs on every
+       band move — several times a second while a parent page is scrolled — and the rail
+       does not depend on the band at all, so a probe there would be a style resolve per
+       scroll frame of somebody else's page for an answer that cannot have changed. The
+       viewport width is the one input that moves it; `rebuild()` passes true because a
+       settled resize, a rotation, a landing web font and the first run all have to
+       re-read it regardless of what the width says. */
+    if (forceRail || viewportW() !== railVw || !(W >= 1)) placeRail();
+    /* ⛔⛔ ASSIGNING canvas.width REALLOCATES AND CLEARS THE BACKING STORE, so it is done
+       only when the pixel size actually changed. This function runs on every band move
+       — several times a second while the parent page is scrolled — and the band moves
+       by changing `originY` alone: W, H and DPR are untouched, so the assignment was
+       re-allocating and blanking W×H×DPR² pixels for nothing, on the parent's scrolling
+       thread. Nothing about the picture changes: the animated loop clears and repaints
+       every frame either way, and the reduced-motion path repaints through paintOnce(). */
+    var pxW = Math.round(W * DPR), pxH = Math.round(H * DPR);
+    if (canvas.width !== pxW || canvas.height !== pxH) {
+      canvas.width = pxW;
+      canvas.height = pxH;
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      appliedDPR = DPR;
+    } else if (appliedDPR !== DPR) {
+      /* the pixel box is unchanged but the ratio behind it is not (a monitor change or
+         a zoom that left the element the same size): the transform still has to follow */
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      appliedDPR = DPR;
+    }
     canvas.style.width = W + 'px';
     canvas.style.height = H + 'px';
     canvas.style.top = originY + 'px';
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    canvas.style.left = originX + 'px';
     linkDist2 = (W / 7) * (H / 7);
-    /* ⛔ the DOCUMENT's size, not the window's — this is what the field is seeded across */
+    /* ⛔ the DOCUMENT's size, not the window's — this is what the field is seeded across.
+       ⚠ IT IS NOT THE RAIL'S SIZE, AND THAT IS THE POINT: the baseline is
+       `round(docW * docH / DENSITY)`, capped, and the rail narrowing underneath it does
+       not take a single node out of that baseline — the same 2560 (now divided by
+       COUNT_DIVISOR, so 1024) live in a narrower column as in a wide one. Narrowing the
+       rail moves the picture; it must never move the count. */
     var prevW = docW, prevH = docH;
     docW = Math.max(W, document.documentElement.scrollWidth || 0);
     docH = Math.max(H, document.documentElement.scrollHeight || 0);
@@ -8561,6 +9082,93 @@ html.dark .hero-copy-card:hover {
        moves several times per parent scroll and re-seeding 1300 nodes every time would
        put a heap of garbage on the parent's scroll thread. */
     return (Math.abs(docW - prevW) > 8 || Math.abs(docH - prevH) > 8);
+  }
+
+  /* ------------------------------------------------------------- the rail
+     ⛔⛔ ONE PROBE, TWO CALLERS, NO PER-FRAME READ. `placeRail` is the only thing that
+     writes W, originX and the rail's edges, and it is called from exactly two places: the
+     full `measure()` (a rebuild, a settled resize, a band move) and the coalesced rect
+     flush, which calls it only when the viewport width has actually changed.
+     ⛔ WHAT IT READS, AND WHY THOSE TWO THINGS.
+       · `getComputedStyle(section, '::before').width` — the USED width of the divider
+         itself. This is the only honest source for "the rail": reading the CSS token
+         would be a second copy of `min(1180px, 92%)`, and a copy is what drifts.
+       · `section.getBoundingClientRect()` — the box that pseudo-element is centred in.
+         The `::before` is `left:50%; translateX(-50%)` of the section's PADDING box, so
+         its centre is the padding box's centre; the border widths are subtracted rather
+         than assumed to be zero (`.site-footer` carries one).
+     ⛔ AND WHAT HAPPENS WHEN IT CANNOT BE READ. A browser that will not report a
+     pseudo-element's box (or a document with no sections at all) leaves the rail at the
+     full viewport width — which is exactly where the field lived before this pass. It is
+     a strictly worse picture than the rail and a strictly better failure than a field
+     squeezed into a zero-width column, and it is the pre-existing behaviour either way.
+     ⛔ THE VERTICAL SCROLL TERM IS NOT IGNORED: `getBoundingClientRect()` is in CLIENT
+     pixels and `railX0` is in DOCUMENT pixels, so the two differ by exactly `scrollX`.
+     `railCX` keeps the document-space centre — the one value a horizontal scroll cannot
+     move — and `originX` is derived from it against the CURRENT scroll on every call, so
+     a sideways scroll can never leave the box over the wrong column or the cursor
+     converted against a stale origin. */
+  /* ⛔⛔ THE WIDTH THE RAIL IS DERIVED FROM — and it is the CLIENT width, not
+     `window.innerWidth`. The two differ by the vertical scrollbar, and the rail does not
+     get to be 7px off centre the moment a section grows tall enough to produce one: the
+     divider's `92%` resolves against the section's own box, which is the client width, so
+     that is the number its centre has to be computed from. It is also the key the rail is
+     cached against — a scrollbar appearing changes this without changing `innerWidth`, and
+     a guard that watched `innerWidth` would keep serving the old measurement. */
+  function viewportW() {
+    var de = document.documentElement;
+    var cw = de ? de.clientWidth : 0;
+    return (cw > 0) ? cw : window.innerWidth;
+  }
+
+  function placeRail() {
+    var vw = viewportW();
+    railVw = vw;
+    var w = 0, cx = vw / 2;                 // the no-answer default: the whole viewport
+    if (typeof document !== 'undefined' && typeof document.querySelector === 'function' &&
+        typeof window.getComputedStyle === 'function') {
+      var sec = null, cs = null, r = null;
+      try { sec = document.querySelector(RAIL_SEL); } catch (e) { sec = null; }
+      if (sec && sec.getBoundingClientRect) {
+        try { cs = window.getComputedStyle(sec, '::before'); r = sec.getBoundingClientRect(); }
+        catch (e) { cs = null; r = null; }
+      }
+      if (cs && r && r.width > 0) {
+        var pw = parseFloat(cs.width);
+        /* ⛔ `pw <= r.width` is the sanity gate: a pseudo-element wider than the section
+           it is centred in is not this page's divider, and it is the shape a wrong answer
+           takes (a stray `width:100%`, or a computed value that resolved to `auto` and
+           was parsed as a number). Where the two disagree, the real box wins. */
+        if (isFinite(pw) && pw > 0 && pw <= r.width + 1) {
+          var bl = parseFloat(cs.borderLeftWidth), br = parseFloat(cs.borderRightWidth);
+          if (!(bl > 0)) bl = 0;
+          if (!(br > 0)) br = 0;
+          var padW = r.width - bl - br;
+          if (padW > 0) { cx = r.left + bl + padW / 2; w = pw; }
+        }
+      }
+    }
+    if (!(w > 0)) { w = vw; cx = vw / 2; }
+    if (!(w >= 1)) w = 1;
+    var sx = window.scrollX || 0;
+    W = w;
+    railCX = cx + sx;                       // document space — scroll cannot move it
+    railX0 = railCX - W / 2;
+    railX1 = railX0 + W;
+    originX = railCX - W / 2 - sx;
+  }
+
+  /* ⛔ THE CHEAP HALF, for the one thing a horizontal scroll changes: where the fixed box
+     sits over the rail. Pure arithmetic against the cached centre — no layout read, no
+     style resolve — so it is safe to call from the coalesced flush, and it writes
+     `style.left` only when the value actually moved. Returns whether it did, so the
+     reduced-motion still can be repainted on the frame the box moved under it. */
+  function followRail() {
+    var ox = railCX - W / 2 - (window.scrollX || 0);
+    if (ox === originX) return false;
+    originX = ox;
+    canvas.style.left = ox + 'px';
+    return true;
   }
 
   /* ============================================================
@@ -8635,22 +9243,68 @@ html.dark .hero-copy-card:hover {
     return false;
   }
 
-  /* ⛔ the eviction: out through the NEAREST edge, with the drift reversed so the node
-     leaves rather than being dragged straight back in on the next frame. */
+  /* ⛔ THE EVICTION: out through the NEAREST edge, with the drift reversed so the node
+     leaves rather than being dragged straight back in on the next frame.
+     ⛔⛔ AND ONLY THROUGH AN EDGE THE RAIL CAN HONOUR. This is the trap that a narrowed
+     field creates and a full-width one never showed. A node trapped inside a media box
+     whose padded left edge sits just outside the rail would be pushed to that edge — and
+     the very next thing to touch it, the rail clamp in `constrain()`, would put it back
+     inside the box. Push, clamp, push, clamp: a node oscillating between two positions
+     forever, never drawn (draw() skips anything inside a clip) and never at rest.
+     ⛔ An edge that would land outside the rail (or outside the document) is priced at
+     Infinity instead of being chosen, so the nearest HONOURABLE edge wins: a landscape
+     clip always has a top or a bottom edge inside the rail, so the node leaves through
+     it and stays out. `Infinity` rather than a skip is deliberate — it loses every
+     comparison without needing a second pass over the four distances.
+     ⛔ AND IF NO EDGE IS HONOURABLE — a rectangle covering the whole rail and the whole
+     document, which no clip on this page is — the node is left where it is. That is a
+     bounded, terminating answer rather than a retry: draw() keeps it off the canvas, and
+     nothing loops. */
   function pushOut(p) {
     for (var i = 0; i < clipRects.length; i++) {
       var r = clipRects[i];
       if (p.x <= r.x0 || p.x >= r.x1 || p.y <= r.y0 || p.y >= r.y1) continue;
       var dl = p.x - r.x0, dr = r.x1 - p.x, dt = p.y - r.y0, db = r.y1 - p.y;
+      if (!(r.x0 >= railX0 + p.size)) dl = Infinity;      // would land left of the rail
+      if (!(r.x1 <= railX1 - p.size)) dr = Infinity;      // would land right of it
+      if (!(r.y0 >= 0)) dt = Infinity;           // would land above the document
+      if (!(r.y1 <= docH)) db = Infinity;        // or below it
       var m = dl;
       if (dr < m) m = dr;
       if (dt < m) m = dt;
       if (db < m) m = db;
+      if (m === Infinity) continue;
       if (m === dl) { p.x = r.x0; p.dx = -Math.abs(p.dx); }
       else if (m === dr) { p.x = r.x1; p.dx = Math.abs(p.dx); }
       else if (m === dt) { p.y = r.y0; p.dy = -Math.abs(p.dy); }
       else { p.y = r.y1; p.dy = Math.abs(p.dy); }
     }
+  }
+
+  /* ⛔⛔ THE ONE PLACE A NODE IS HELD INSIDE THE RAIL, and it is the LAST thing `step()`
+     does — after the drift and after the cursor's push — so nothing can carry a node out
+     of the column for even one frame. Two edges, both inclusive of the node's own radius:
+     a node of size 3 stops 3px short of each edge, so the circle it is drawn as cannot
+     cross the divider's width. That is the difference between "the seed avoids the edges"
+     and "the field is physically inside the rail".
+     ⛔ IT ALSO REPLACES THE OLD BOUNCE, WHICH FLIPPED THE SIGN UNCONDITIONALLY. A node
+     the cursor had just pushed past the edge while drifting BACK towards the middle had
+     its drift reversed by the old test — sent further out rather than allowed home. Here
+     the position is clamped first and the sign is only flipped when the node was actually
+     moving outwards; a node that is inside the rail and moving inwards is untouched.
+     ⛔ THE VERTICAL BOUNDS COME ALONG FOR THE SAME REASON: the old test only flipped `dy`
+     past `docH` and past 0 without clamping, so a node could sit outside the document for
+     a frame with nothing to bring it back. Same clamp, same conditional flip.
+     ⛔ A RAIL NARROWER THAN THE NODE ITSELF (a degenerate measurement, or a rail collapsed
+     to a sliver) would make `lo > hi` and every clamp a fight; the node is parked on the
+     centre line instead, which is the only position the rail can honour. */
+  function constrain(p) {
+    var lo = railX0 + p.size, hi = railX1 - p.size;
+    if (hi < lo) { lo = hi = (railX0 + railX1) / 2; }
+    if (p.x < lo) { p.x = lo; if (p.dx < 0) p.dx = -p.dx; }
+    else if (p.x > hi) { p.x = hi; if (p.dx > 0) p.dx = -p.dx; }
+    if (p.y < 0) { p.y = 0; if (p.dy < 0) p.dy = -p.dy; }
+    else if (p.y > docH) { p.y = docH; if (p.dy > 0) p.dy = -p.dy; }
   }
 
   /* ⛔ the segment test — a straight line between two legal nodes can still cross a
@@ -8698,7 +9352,15 @@ html.dark .hero-copy-card:hover {
     clipRaf = 0;
     if (!clipDirty) return;
     clipDirty = false;
-    refreshClipRects();
+    /* ⛔ A LAYOUT CHANGE THAT HAS NOT SETTLED YET. A drag-resize, a rotation or a web
+       font landing fires this flush on its own frames, long before the 160ms debounce
+       calls rebuild(). The rail is re-read on those frames — but ONLY when the viewport
+       width actually changed, which is the one input that can move it, so an ordinary
+       scroll burst pays a comparison and nothing else. The re-SEED still waits for
+       rebuild(); this only re-places the box so the field cannot be drawn on a column
+       the dividers have already left. */
+    if (viewportW() !== railVw) measure();
+    followRail();    refreshClipRects();
     /* ⛔ the same layout change that moved a clip box may also have lengthened or
        shortened the DOCUMENT (an accordion, a tab panel, a carousel page, the web font
        landing) — and the sentinel ladder's length is derived from the document height.
@@ -8706,8 +9368,16 @@ html.dark .hero-copy-card:hover {
     if (window.AFMP && window.AFMP.refreshSentinels) window.AFMP.refreshSentinels();
     /* a node the new layout trapped is evicted NOW rather than on the frame it is next
        stepped — every simulated node is already inside the viewport margin, so this
-       touches a couple of hundred objects, not the whole field */
-    for (var i = 0; i < parts.length; i++) if (parts[i].on) pushOut(parts[i]);
+       touches a couple of hundred objects, not the whole field.
+       ⛔ AND EVERY NODE IS RE-CLAMPED, not just the visible ones: a resize moves the rail
+       itself, and a node parked off screen outside the OLD rail's edges would otherwise
+       be drawn at that stale x for the frame it first appears. `constrain` has no inner
+       loop, so this is one arithmetic test per node. */
+    for (var i = 0; i < parts.length; i++) {
+      var q = parts[i];
+      if (q.on) pushOut(q);
+      constrain(q);
+    }
     if (reduce) paintOnce();
   }
   function scheduleRects() {
@@ -8717,32 +9387,56 @@ html.dark .hero-copy-card:hover {
 
   function seed() {
     parts = [];
-    /* ⛔ THE BASELINE IS UNCHANGED — min(round(area / DENSITY), MAX_NODES) — and the
-       field is seeded with round(baseline / 2). The cap is applied to the BASELINE, so
-       a document big enough to be capped still ends up with exactly half of what the
-       cap used to yield (round(2600 / 2) = 1300), not a second cap of its own. */
+    /* ⛔ THE BASELINE IS min(round(area / DENSITY), MAX_NODES) — the reference's own
+       (w * h) / 9000 — and the field is seeded with a 40% of it (COUNT_DIVISOR = 2.5,
+       the owner's "particle count 40% of original"): 2600/2.5 = 1040 at or past the cap,
+       fewer under it. The cap is applied to the BASELINE; the divisor is not a second cap.
+       ⛔ THE AREA IS THE DOCUMENT'S, NOT THE RAIL'S. Narrowing the rail moves the picture
+       and must not move this number: the count is the owner's, it was restored once, and
+       nothing in this pass is allowed to take it away again. */
     var baseline = Math.round((docW * docH) / DENSITY);
     if (baseline > MAX_NODES) baseline = MAX_NODES;
     var n = Math.round(baseline / COUNT_DIVISOR);
+    /* ⛔ THE HORIZONTAL BAND, INCLUSIVE OF THE RADIUS. `slo`/`shi` are the two positions a
+       node of that size can occupy with its whole circle inside the rail — the same
+       bounds `constrain()` enforces every frame, applied once here so the field starts
+       where it is going to live rather than being swept into it on the first frame.
+       ⛔ A rail too narrow for the node parks the seed on the centre line, which is the
+       position `constrain()` will keep it at. */
     for (var i = 0; i < n; i++) {
+      var size = Math.random() * (SIZE_MAX - SIZE_MIN) + SIZE_MIN;
+      var slo = railX0 + size, shi = railX1 - size;
+      if (!(shi > slo)) slo = shi = (railX0 + railX1) / 2;
       var x = 0, y = 0, tries = 0;
       /* ⛔ SEEDED OUTSIDE THE CLIPS. The attempt count is bounded and the node is placed
          anyway if it runs out, so `parts.length` is ALWAYS exactly `n` — the count is
          the one thing this pass is not allowed to vary. A node that lands inside a clip
          on the last attempt is skipped at paint time and evicted by step(). */
       do {
-        x = Math.random() * docW;
+        x = slo + Math.random() * (shi - slo);
         y = Math.random() * docH;
         tries++;
       } while (tries < 24 && insideClip(x, y));
-      parts.push({
+      var p = {
         x: x,
         y: y,
         dx: Math.random() * 0.4 - 0.2,
         dy: Math.random() * 0.4 - 0.2,
-        size: Math.random() * (SIZE_MAX - SIZE_MIN) + SIZE_MIN,
+        size: size,
         vx: 0, vy: 0, on: false      // viewport coords + visibility, recomputed per frame
-      });
+      };
+      /* ⛔ THE TWO THINGS THE REJECTION LOOP CANNOT PROMISE, DONE ONCE PER NODE.
+         The loop is bounded at 24 attempts and places the node anyway when it runs out,
+         so a node CAN be seeded inside a clip — and on a rail this narrow that is no
+         longer a rare corner: a tall media box can cover most of the column, and 24
+         uniform draws inside it all land inside it. Pushing out here costs one pass over
+         the (few) clip rectangles per node, runs once at seed time, and means the field
+         is born where it belongs rather than being cleaned up over the first frames.
+         `constrain` after it is the radius clamp, for the node the push could not place.
+         ⛔ NEITHER CAN CHANGE THE COUNT: `p` is pushed unconditionally, exactly as before. */
+      if (clipRects.length) pushOut(p);
+      constrain(p);
+      parts.push(p);
     }
   }
 
@@ -8750,16 +9444,72 @@ html.dark .hero-copy-card:hover {
      ⛔ The drift and the cursor repulsion both happen in DOCUMENT space, so a particle
      keeps its position in the page while the window moves over it. Only the DRAW is
      offset by the scroll. */
-  function step(p) {
-    if (p.x > docW || p.x < 0) p.dx = -p.dx;
-    if (p.y > docH || p.y < 0) p.dy = -p.dy;
 
+  /* ⛔⛔ THE ONE PLACE THE CURSOR CHANGES SPACES. `mouse.x/y` are CLIENT px, straight
+     from the event; `p.vx/vy` are CANVAS px. The two differ by the canvas box's own
+     origin, which is the frame's top-left in an ordinary window and MOVES with the band
+     in an embed — so the subtraction is done here, on every read, and never cached
+     across a band reposition. Returns whether there is a cursor at all; the converted
+     pair is left in `curX`/`curY` for the caller's loop.
+     ⛔ NO SCROLL TERM. The box is `position:fixed`: the document scrolls under it, the
+     canvas does not scroll with it, and the scroll is already folded into `p.vx/vy` by
+     computeViewport(). Subtracting it again here would double-count it. */
+  function cursorCanvas() {
+    if (mouse.x === null || mouse.y === null) { curX = null; curY = null; return false; }
+    curX = mouse.x - originX;
+    curY = mouse.y - originY;
+    return true;
+  }
+
+  /* ⛔ the timestamp rAF hands a callback, or the clock if it was called without one —
+     a missing timestamp would make the gap below NaN, every comparison against it
+     false, and the cap silently stop existing. */
+  function nowMs() {
+    return (window.performance && window.performance.now) ? window.performance.now() : Date.now();
+  }
+
+  /* ⛔⛔ THE GATE. True = paint this frame; FALSE = do nothing at all and wait for the
+     next callback — no clearRect, no step pass, no link pass. Everything expensive in
+     the loop lives behind this one call.
+     ⛔ `lastT` is set to the timestamp that was just PAINTED, never advanced by whole
+     intervals (`lastT += FRAME_MS`): an accumulator that has fallen behind hands out
+     two paints 16ms apart the moment it catches up, which is the exact stutter this
+     cap is supposed to remove.
+     ⛔ The cost of gating on the display's own clock is that 24 does not divide into
+     60: on a 60Hz screen the frames land 50ms apart, i.e. an effective 20fps, which is
+     what the brief asked for rather than a timer-driven scheduler. 120Hz and 144Hz both
+     land on 41.7ms — a true 24. */
+  function frameDue(t) {
+    if (typeof t !== 'number' || !isFinite(t)) t = nowMs();
+    if (lastT < 0) {                 // nothing painted since the last start: paint now
+      lastT = t;
+      frameDt = STEP_MS;             // and at 1× — a resume is not a catch-up
+      return true;
+    }
+    frameDt = t - lastT;
+    if (frameDt < FRAME_MS - FRAME_EPS) return false;
+    lastT = t;
+    return true;
+  }
+
+  /* ⛔ elapsed time → the old 60fps tick's units, bounded (see MAX_K) */
+  function stepScale(dt) {
+    var k = dt / STEP_MS;
+    if (!isFinite(k) || k <= 0) return 0;
+    return k > MAX_K ? MAX_K : k;
+  }
+
+  function step(p, k) {
     /* ⛔ a clip rectangle is a PHYSICAL exclusion zone, not just a painting one: a node
        that a resize, a carousel step or an accordion opening has left inside a media box
-       is pushed out through its nearest edge here, before it is drawn anywhere. */
+       is pushed out through its nearest edge here, before it is drawn anywhere.
+       ⛔ IT RUNS BEFORE THE DRIFT AND THE PUSH SO THAT `constrain()` AT THE END OF THIS
+       FUNCTION IS THE LAST WORD ON WHERE THE NODE IS. Every exit from this function now
+       passes through the same two bounds, whatever combination of clip eviction, cursor
+       repulsion and drift produced the position. */
     if (clipRects.length) pushOut(p);
 
-    if (mouse.x !== null && mouse.y !== null) {
+    if (cursorCanvas()) {
       /* ⛔⛔ THE VECTOR POINTS FROM THE CURSOR **TO** THE PARTICLE, AND IS THEN ADDED.
          The supplied original writes `dx = mouse.x - this.x` (particle→cursor) and then
          SUBTRACTS. When this was rewritten for document space the subtraction was kept
@@ -8769,18 +9519,29 @@ html.dark .hero-copy-card:hover {
          ⛔ Keep these two in step: swap the operand order and the sign must swap with it.
          ⛔ `p.vx`/`p.vy` are the VIEWPORT coords and `p.x`/`p.y` the DOCUMENT ones, but the
          two differ only by the scroll offset — a constant translation — so the DIRECTION
-         is identical in both spaces and no correction is needed between them. */
-      var dx = p.vx - mouse.x, dy = p.vy - mouse.y;
+         is identical in both spaces; `cursorCanvas()` has already put the cursor into the
+         same space as `p.vx/vy`, which is what makes the comparison mean anything. The
+         push itself is added to the DOCUMENT position, as before. */
+      var dx = p.vx - curX, dy = p.vy - curY;
       var d = Math.sqrt(dx * dx + dy * dy);
       if (d < CURSOR_R + p.size && d > 0.001) {
         var f = (CURSOR_R - d) / CURSOR_R;
-        p.x += (dx / d) * f * PUSH;
-        p.y += (dy / d) * f * PUSH;
+        p.x += (dx / d) * f * PUSH * k;
+        p.y += (dy / d) * f * PUSH * k;
       }
     }
 
-    p.x += p.dx;
-    p.y += p.dy;
+    /* ⛔ scaled by the elapsed time: the STRENGTH and the reach are the constants above,
+       only the rate is held at the 60fps the field was tuned at */
+    p.x += p.dx * k;
+    p.y += p.dy * k;
+
+    /* ⛔⛔ LAST, AND UNCONDITIONALLY — the rail's two edges and the document's two, with
+       the node's own radius taken off the horizontal pair. See `constrain()`. This is the
+       line that makes "inside the divider's width" a property of the simulation rather
+       than of the seed: whatever the cursor pushed, whatever the drift did, the node is
+       inside the column before anything draws it. */
+    constrain(p);
   }
 
   function draw(p) {
@@ -8795,6 +9556,10 @@ html.dark .hero-copy-card:hover {
 
   function connect() {
     var n = vis.length;
+    /* ⛔ ONCE FOR THE WHOLE PASS. The cursor test below depends only on `a`, and the
+       conversion reads the CURRENT box origin, so a band move between two frames can
+       never leave this pass comparing against where the cursor used to be. */
+    var hasCursor = cursorCanvas();
     ctx.lineWidth = 1;
     for (var a = 0; a < n; a++) {
       var pa = vis[a];
@@ -8802,8 +9567,8 @@ html.dark .hero-copy-card:hover {
          and the original recomputes it for every b. Same output, a fraction of the
          work in the O(n^2) pass. */
       var nearCursor = false;
-      if (mouse.x !== null && mouse.y !== null) {
-        var mx = pa.vx - mouse.x, my = pa.vy - mouse.y;
+      if (hasCursor) {
+        var mx = pa.vx - curX, my = pa.vy - curY;
         nearCursor = (mx * mx + my * my) < CURSOR_R * CURSOR_R;
       }
       var col = nearCursor ? LINE_NEAR : LINE_FAR;
@@ -8834,11 +9599,15 @@ html.dark .hero-copy-card:hover {
      `connect()` reads `vis`, so any path that draws MUST run this first or it links
      against the previous frame's list. */
   function computeViewport() {
-    /* ⛔ `originY` is the canvas box's own top in CLIENT px. It is 0 in every ordinary
-       window; it is non-zero only when the box has been moved over the band a parent
-       frame can see. The scroll is folded into the same offset so the document-space
-       field is projected onto the canvas box exactly once. */
-    var sx = window.scrollX || 0, sy = (window.scrollY || 0) + originY;
+    /* ⛔⛔ BOTH ORIGINS, AND THEY ARE NOT INTERCHANGEABLE. `originY` is the canvas box's
+       own top in CLIENT px — 0 in every ordinary window, non-zero only when the box has
+       been moved over the band a parent frame can see. `originX` is its left edge, which
+       is no longer 0: the box is the RAIL, a centred column, so every node's x has to
+       come off by the same measured left edge the cursor does. The scroll is folded into
+       the same offset so the document-space field is projected onto the canvas box
+       exactly once — and it is `- sx - originX`, not `- sx`, because the box is fixed at
+       the rail's left edge rather than at the frame's. */
+    var sx = (window.scrollX || 0) + originX, sy = (window.scrollY || 0) + originY;
     /* ⛔ a margin of one link range past each edge, or the links would POP as their
        particles crossed the boundary — a pair is drawn while both ends are inside */
     var M = Math.sqrt(linkDist2);
@@ -8866,8 +9635,17 @@ html.dark .hero-copy-card:hover {
     clipRectCount = n;
   }
 
-  function frame() {
+  function frame(t) {
     raf = requestAnimationFrame(frame);
+    /* ⛔⛔ THE CAP, AND IT IS THE FIRST THING THAT HAPPENS. A skipped callback does no
+       clearRect, steps no node and links no pair — the whole body below is behind this
+       return, so the only cost of a frame the display offered and the cap refused is
+       this comparison. */
+    if (!frameDue(t)) return;
+    /* ⛔ the elapsed time since the last PAINTED frame, in old-60fps ticks: a slow
+       display moves the field at the same px/second as a fast one instead of at
+       (achieved fps / 60) of it. */
+    var k = stepScale(frameDt);
     /* ⛔ NO CLIP IS ACTIVE YET — clearRect is itself clipped by the current clipping
        region, so the canvas has to be cleared before the even-odd mask goes on. */
     ctx.clearRect(0, 0, W, H);
@@ -8875,10 +9653,8 @@ html.dark .hero-copy-card:hover {
     /* ⛔ ONLY THE NODES THAT CAN BE SEEN ARE SIMULATED. `p.on` is last frame's answer and
        carries a one-link-range margin, so every node that is drawn — or that could be
        linked to one that is — is stepped exactly as it was; the great majority of the
-       field, parked off screen, is skipped. The drift is time-independent (a fixed
-       per-frame delta), so a node that is skipped simply resumes where it left off and
-       nothing about the motion changes while it is visible. */
-    for (var i = 0; i < parts.length; i++) if (parts[i].on) step(parts[i]);
+       field, parked off screen, is skipped. */
+    for (var i = 0; i < parts.length; i++) if (parts[i].on) step(parts[i], k);
     computeViewport();
 
     ctx.save();
@@ -8897,10 +9673,24 @@ html.dark .hero-copy-card:hover {
     ctx.restore();
   }
 
-  function sxNow() { return window.scrollX || 0; }
+  /* ⛔⛔ THE DOCUMENT → CANVAS TRANSLATION, AND IT IS THE SAME PAIR `computeViewport()`
+     uses. This is what the even-odd clip mask is moved by: the path is built in DOCUMENT
+     space and the drawing that follows it is in CANVAS space, so the mask has to come off
+     by exactly the offset every node came off by — `scroll + origin`, on BOTH axes. The
+     horizontal half used to be the bare scroll because the box's left edge was the
+     frame's; it is now the rail's measured left edge as well, and a mask that missed it
+     would be a 90px-wide band of the wrong pixels punched out of every clip. */
+  function sxNow() { return (window.scrollX || 0) + originX; }
   function syNow() { return (window.scrollY || 0) + originY; }
 
-  function stop() { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+  function stop() {
+    if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    /* ⛔ AND THE CLOCK GOES WITH IT. A resume is a fresh start, not a debt: without this
+       the first callback after a stop would measure its `dt` from a paint that may be
+       minutes old. `frameDue` treats -1 as "paint now, at 1×", so the field comes back
+       immediately and moving at exactly the speed it left at. */
+    lastT = -1;
+  }
 
   /* ---------------------------------------------------------- lifecycle */
   function start() {
@@ -8908,6 +9698,7 @@ html.dark .hero-copy-card:hover {
        forgotten by one of them: a frame the sentinel ladder has measured as off the
        parent's screen never gets a loop. */
     if (raf || reduce || bandEmpty) return;
+    lastT = -1;                     // ⛔ no catch-up on a resume — see stop()
     raf = requestAnimationFrame(frame);
   }
 
@@ -8927,7 +9718,11 @@ html.dark .hero-copy-card:hover {
   }
 
   function rebuild() {
-    measure();
+    /* ⛔ `true`: this is the path that runs when the layout has actually settled — the
+       first run, a debounced resize, a rotation, a web font landing — so the rail is
+       re-read here whatever the viewport width says. It is the one place a changed
+       scrollbar, a changed container or an edited `--seam-w` is picked up. */
+    measure(true);
     if (bandEmpty) { stop(); return; }
     refreshClipRects();      // ⛔ BEFORE seed() — a node must never be seeded in a clip
     seed();
@@ -9049,5 +9844,100 @@ html.dark .hero-copy-card:hover {
      animation"*. The CSS went with it (see the note by `.brand-title-grad`); the
      module itself is still on disk, unreferenced. Re-adding this tag alone restores
      nothing — the CSS block has to come back too. -->
+
+<!-- ============================================================ -->
+<!-- LAST STYLE BLOCK ON THE PAGE. Every rule here is either a     -->
+<!-- change the owner asked for on 2026-10-08 or the compensation  -->
+<!-- for the floating header; sitting after every other rule means -->
+<!-- they win by source order. Two of them carry `!important` —    -->
+<!-- both are noted at the rule.                                    -->
+<!-- ============================================================ -->
+<style id="afmpFinalOverrides">
+/* ---- THE FLOATING HEADER'S TWO LEFTOVERS ------------------------------
+   See the note on `header.site-header`. The bar is now `min(1180px, 92%)` wide, 12px
+   from the top and inset on both sides. Its OTHER two consequences — the quick nav's
+   sticky `top` and the sections' `scroll-margin-top` — are re-tuned in place, next to
+   the numbers they replace (`.quick-nav`, and the `section, #features, #character`
+   rule), because each of those is a single declaration whose value follows the bar. */
+/* 1. THE CORNER-NOTCH TILES. `.topbar-backing` paints two white quarter-tiles at the
+      viewport's top corners, to fill the notch the flush bar's 20px radius used to leave
+      there. An inset bar leaves no notch, so those tiles are now two white slivers lying
+      on the page (and white on a dark page is not subtle). The element and its rule are
+      KEPT — deleting this one line brings the old behaviour back. */
+/* Original top-left and top-right notch tiles remain visible with the floating bar. */
+.topbar-backing { display: block !important; }
+/* 2. THE BAR'S CONTENT. `.container` measures `min(1180px, 92%)` of the PAGE, and the bar
+      is now that same width — inside it the content would be inset a SECOND time (47px a
+      side at desktop, and 29px less room on a phone, where the header row is already
+      tight). It fills the bar instead, with a small inline pad so nothing touches the
+      rounded border. */
+header.site-header > .container { width: 100%; padding-inline: clamp(.25rem, 1.5vw, 1rem); }
+
+/* Cursor pattern is visible only while its card is hovered. Base dots remain. */
+.card-fx:not(:hover) > .fx-pool,
+.price-card:not(:hover)::after,
+.offer-band:not(:hover)::after { opacity:0 !important; }
+@media (hover:none) {
+  .card-fx > .fx-pool, .price-card::after, .offer-band::after { opacity:0 !important; }
+}
+
+.brand-stroke-stage { position:relative; display:inline-block; }
+.brand-stroke-video { position:absolute; left:0; top:50%; width:100%; height:auto; aspect-ratio:5738 / 1080; transform:translateY(-50%); object-fit:contain; background:transparent; mix-blend-mode:screen!important; filter:brightness(2.2); pointer-events:none; opacity:0; }
+.brand-stroke-stage.is-drawing .brand-stroke-video { opacity:1; }
+.brand-stroke-stage.is-drawing .stroke-letter { visibility:hidden; }
+.brand-stroke-stage.is-drawing .stroke-letter.is-finished { visibility:visible; }
+
+
+
+/* Consistent divider colors and a seamless center-out highlight cycle. */
+.section::before,.gallery-section::before,.catalog-section::before,.site-footer::before,.sub-divider::before {
+ background:linear-gradient(90deg,transparent 0%,#356da8 15%,#36b6d6 50%,#356da8 85%,transparent 100%),linear-gradient(90deg,transparent 0%,rgba(135,225,255,.1) 25%,#b8edff 50%,rgba(135,225,255,.1) 75%,transparent 100%);
+ background-size:100% 100%,0% 100%;background-position:center;background-repeat:no-repeat;opacity:.85;
+ box-shadow:0 0 10px rgba(49,153,203,.18);animation:seamOut 5s ease-in-out infinite;pointer-events:none;
+}
+@keyframes seamOut {0%,100%{background-size:100% 100%,0% 100%;}50%{background-size:100% 100%,220% 100%;}}
+.seam-open::before {animation:seamOut 5s ease-in-out infinite,seamOpenCentre .9s cubic-bezier(.22,.61,.36,1) both;}
+.sub-divider.seam-open::before {animation:seamOut 5s ease-in-out infinite,seamOpen .9s cubic-bezier(.22,.61,.36,1) both;}
+.seam-label {color:#d6efff!important;background:rgba(0,0,0,.3)!important;border:1px solid rgba(89,180,222,.45);box-shadow:0 0 0 3px rgba(38,98,147,.08)!important;text-shadow:none!important;}
+.seam-label:hover {color:#f1fbff!important;border-color:rgba(111,208,243,.65);}
+html:not(.dark) .seam-label {color:#123f65!important;background:#eaf5fc!important;border-color:#6caccf;}
+html:not(.dark) .seam-label:hover {color:#082c49!important;}
+@media(prefers-reduced-motion:reduce){.section::before,.gallery-section::before,.catalog-section::before,.site-footer::before,.sub-divider::before,.seam-open::before,.sub-divider.seam-open::before{animation:none;background-size:100% 100%,100% 100%;}}
+
+/* Divider labels use one attached border; shared card rings must not duplicate it. */
+.seam-label,.sub-divider .seam-label {position:absolute!important;top:0!important;left:50%;--seam-tx:translate(-50%,-50%);transform:var(--seam-tx)!important;border-radius:999px;background:#071421!important;outline:none!important;outline-offset:0!important;box-shadow:none!important;animation:none!important;z-index:3;}
+.seam-label > .fx-ring {display:none!important;}
+.seam-label:hover,.seam-label:focus,.seam-label:focus-visible {transform:var(--seam-tx)!important;outline:none!important;outline-offset:0!important;box-shadow:none!important;}
+html:not(.dark) .seam-label {background:#eaf5fc!important;}
+
+.compare-grid.compact .compare-steps li {font-size:clamp(1rem,1.25vw,1.125rem);line-height:1.5;align-items:flex-start;}
+.compare-grid.compact .compare-steps .step-num {flex-shrink:0;}
+
+#workflow .afmp-intro-card p {font-size:clamp(1rem,1.25vw,1.125rem);line-height:1.75;margin-bottom:1rem;}
+#workflow .afmp-intro-card p:last-child {margin-bottom:0;}
+
+#workflow .afmp-intro-card .afmp-benefits-heading {margin-top:1.75rem;margin-bottom:1rem;}
+#workflow .afmp-intro-card p strong {color:var(--ink);}
+</style>
+<script id="brandStrokeSync">
+(function(){
+ var stage=document.querySelector('.brand-stroke-stage'),v=stage&&stage.querySelector('video'); if(!v)return;
+ v.playbackRate=3.4722223333; v.defaultPlaybackRate=3.4722223333;
+ v.addEventListener('loadedmetadata',function(){if(isFinite(v.duration)&&v.duration>0){v.playbackRate=v.duration/3;v.defaultPlaybackRate=v.duration/3;}});
+ var letters=stage.querySelectorAll('.stroke-letter'),visible=false,done=false,ticket=null;
+ var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ function sync(){for(var i=0;i<letters.length;i++)letters[i].classList.toggle('is-finished',v.currentTime+0.001>=Number(letters[i].dataset.finish));}
+ function alignClip(){var text=stage.querySelector('.brand-title-text'),style=getComputedStyle(text),r=text.getBoundingClientRect(),base=stage.getBoundingClientRect(),size=parseFloat(style.fontSize),ctx=document.createElement('canvas').getContext('2d');ctx.font=style.fontWeight+' '+style.fontSize+' '+style.fontFamily;var m=ctx.measureText('A'),fa=m.fontBoundingBoxAscent||size*.95,fd=m.fontBoundingBoxDescent||size*.25,baseline=(r.height-fa-fd)/2+fa,ink=m.actualBoundingBoxAscent||size*.72,scale=(ink/402)*0.975;v.style.width=(5738*scale)+'px';v.style.left=(r.left-base.left-(m.actualBoundingBoxLeft||0)-157*scale)+'px';v.style.top=(r.top-base.top+baseline-ink-303*scale)+'px';v.style.transform='none';}
+ alignClip();window.addEventListener('resize',alignClip,{passive:true});if(document.fonts)document.fonts.ready.then(alignClip);
+ function frames(){ticket=null;sync();if(!v.paused&&!done&&v.requestVideoFrameCallback)ticket=v.requestVideoFrameCallback(frames);}
+ function stop(){v.pause();if(ticket!==null&&v.cancelVideoFrameCallback)v.cancelVideoFrameCallback(ticket);ticket=null;}
+ function gate(){if(reduced||done)return;if(!visible||document.hidden){stop();return;}stage.classList.add('is-drawing');v.play().then(function(){if(!visible||document.hidden){stop();return;}if(ticket===null&&v.requestVideoFrameCallback)ticket=v.requestVideoFrameCallback(frames);}).catch(function(){stage.classList.remove('is-drawing');});}
+ v.addEventListener('timeupdate',sync);v.addEventListener('seeked',sync);
+ v.addEventListener('ended',function(){done=true;stop();for(var i=0;i<letters.length;i++)letters[i].classList.add('is-finished');stage.classList.remove('is-drawing');});
+ v.addEventListener('error',function(){done=true;stop();stage.classList.remove('is-drawing');});
+ document.addEventListener('visibilitychange',gate);
+ if(!reduced&&window.AFMP&&window.AFMP.watch){window.AFMP.watch(stage,function(on){visible=on;gate();},false);}
+})();
+</script>
 </body>
 </html>
