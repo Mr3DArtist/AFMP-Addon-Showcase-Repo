@@ -37,6 +37,11 @@
      ⛔ Also kept from this page's own conventions rather than the original: a
        `prefers-reduced-motion` path that paints one static frame and stops, and a
        `visibilitychange` pause so a hidden tab is not burning a frame budget.
+     ⛔ v2 no-cache pass: in the Superhive embed the field additionally defaults to a
+       REPRESENTATIVE STATIC frame — one paint per visible host window, no continuous
+       loop — because the human's GPU budget cannot carry an ambient canvas behind a
+       page of playing clips. `?effects=full` restores the strip animation. Standalone
+       (no `embed=superhive`) is untouched. No caching, no downloads, no copies.
    ========================================================================== */
 (function () {
   'use strict';
@@ -97,6 +102,13 @@
 
   // Embed-only paint window. Physics retains the full child viewport universe.
   var stripMode = /[?&]embed=superhive(?:&|$)/.test(window.location.search) && 'IntersectionObserver' in window;
+  /* ⛔ EFFICIENT EMBED DEFAULT (no-cache pass): the canvas keeps a REPRESENTATIVE STATIC
+     frame — one paint per visible host window — instead of a 60Hz loop over the whole
+     field. `?effects=full` restores the strip animation, standalone is untouched, and
+     prefers-reduced-motion stays static as it already was. Nothing here caches or
+     fetches anything; this only decides how often the existing draw runs. */
+  var fullMotion = !stripMode || /[?&]effects=full(?:&|$)/.test(window.location.search);
+  var staticMode = reduce || !fullMotion;
   var paintTop = 0, paintBottom = 0, hostVisible = true;
   var tileIO = null, tileBox = null, tileRects = [];
   var TILE = 256, OVER = 768;
@@ -132,7 +144,8 @@
       var top = Math.max(0, Math.floor((lo - OVER) / TILE) * TILE);
       var bottom = Math.min(H, Math.ceil((hi + OVER) / TILE) * TILE);
       if (top !== paintTop || bottom !== paintBottom) setPaintWindow(top, bottom);
-      if (reduce) paintOnce(); else start();
+      /* static mode: repaint the ONE frame for the new window, never start the loop */
+      if (staticMode) paintOnce(); else start();
     }, { root: null, threshold: [0, .25, .5, .75, 1] });
     for (var y = 0, index = 0; y < H; y += TILE, index++) {
       var tile = document.createElement('div');
@@ -379,7 +392,7 @@
 
   /* ---------------------------------------------------------- lifecycle */
   function start() {
-    if (raf || reduce || document.hidden || (stripMode && !hostVisible)) return;
+    if (raf || staticMode || document.hidden || (stripMode && !hostVisible)) return;
     raf = requestAnimationFrame(frame);
   }
 
@@ -395,7 +408,7 @@
     measure();
     seed();
     rebuildTiles();
-    if (reduce && (!stripMode || hostVisible)) paintOnce();
+    if (staticMode && (!stripMode || hostVisible)) paintOnce();
   }
 
   var rt = 0;
@@ -407,7 +420,11 @@
   /* ⛔ a hidden tab must not keep animating — the original never pauses */
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) { visible = false; stop(); }
-    else { visible = true; start(); }
+    else {
+      visible = true;
+      if (staticMode) { if (!stripMode || hostVisible) paintOnce(); }
+      else start();
+    }
   });
 
   /* the cursor is tracked on the window: the canvas itself is `pointer-events:none` */

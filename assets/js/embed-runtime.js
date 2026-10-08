@@ -1,12 +1,18 @@
 /* ============================================================================
-   SUPERHIVE EMBED RUNTIME — second bounded optimization pass.
+   SUPERHIVE EMBED RUNTIME — third bounded pass: decoder lifecycle, entry pop,
+   efficient-mode defaults and honest diagnostics. NO CACHING.
+
+   ⛔ The clip download/cache idea is REMOVED by the owner. This file contains
+     NO fetch queue, NO CacheStorage, NO service worker, NO blob URLs and NO
+     asset copies. Every video keeps its ORIGINAL remote/local URL: visible
+     playback and re-entry both use that URL directly; nothing is revoke()d.
 
    Loaded with `defer` from index.html and INERT unless the URL query carries
    ?embed=superhive, so the standalone page is completely unaffected.
 
    What it does, and why in this shape:
 
-   1. OFFSCREEN VIDEOS
+   1. OFFSCREEN VIDEO DECODER LIFECYCLE
       The page loops many muted autoplay <video> elements. Inside the Superhive
       iframe (16000 CSS px tall; only the HOST scrolls) the child's window
       scrollY / getBoundingClientRect cannot express which slice the host
@@ -15,35 +21,53 @@
       ancestor-frame clipping, so it is the only visibility mechanism used.
       No parent DOM is read; no wheel / touch / key listeners are added.
 
-      pause()/play() are called on the media element itself — NOT shadow state —
-      so the page's existing wiring runs unchanged: the per-video progress-bar
-      RAF is cancelled by the existing 'pause' listener and restarted by the
-      existing 'play' listener ("Clip progress bars" in index.html). An explicit
-      user pause (a pause this runtime did not cause) marks the video
-      user-paused and it is never auto-resumed. A play that starts while the
-      video is offscreen (e.g. the hero switcher swapping src) is caught: the
-      video is paused again immediately and flagged for resume on re-entry.
-      Nothing is ever resumed while document.hidden.
+      Pausing alone leaves the decoder alive and burning GPU offscreen, so an
+      offscreen clip is RELEASED after a hysteresis: currentTime, the ORIGINAL
+      url, autoplay intent and any explicit user pause are saved, src is
+      removed (mirrored into data-sh-src for editor/export metadata) and
+      load() drops the decoder. On re-entry the original source is restored and
+      the saved time is applied on loadedmetadata; playback resumes only when
+      the clip is visible, the document is not hidden, and the user has not
+      explicitly paused it. A hook in index.html parks initial sources in
+      data-sh-src before the parser can start a fetch, so clips that never were
+      visible never acquire a decoder at all. Releasing re-fetches nothing by
+      itself: the browser's ordinary HTTP cache serves the same original URL.
 
-   2. OFFSCREEN CSS ANIMATIONS
+      The lifecycle is exposed as window.__superhiveMedia (setSource/seekHold/
+      isVisible) and is the ONE path the page's own src writers use. Pause and
+      unload caused by this runtime are never marked as a user pause.
+
+   2. REVEALS — finite entry pop owned here (embed mode)
+      The two inline one-shot .reveal observers are gated off; this runtime
+      toggles a held/popped state against the HOST viewport. The offscreen
+      state is opacity + visibility ONLY (no transform), so the observed
+      element's geometry cannot change with its state and intersection cannot
+      oscillate. Entry is one 220ms keyframe; reduced-motion pops instantly.
+      Media frames and focus are never hidden; layout is never collapsed.
+
+   3. OFFSCREEN CSS ANIMATIONS + EFFICIENT MODE
       Every running CSS animation returned by document.getAnimations() is
-      observed with the same root:null observer. While its target is offscreen
-      the animation is paused via the Web Animations API and resumed on
-      re-entry from the same time position. Finite animations continue where
-      they were paused; INFINITE ambient loops additionally advance by the time
-      spent suspended, so wall-clock phase is preserved for anything that
-      phase-locks against it (the fxParticles canvas/dots pair measures phases
-      against performance.now() — resuming from the pause point would make the
-      layers jump on hover). Speed, duration, easing and styles are untouched.
+      observed with the same root:null observer: offscreen targets are paused
+      via the Web Animations API and resumed on re-entry from the same time
+      position (infinite loops advance by the suspended wall-clock time). In
+      efficient mode (the default) the CONTINUOUS decorative loops are held
+      outright — the finite pops, progress bars and hover feedback keep
+      running; ?effects=full restores everything.
 
-   3. ROOT SCROLL LOCK
+   4. ROOT SCROLL LOCK
       The host contract makes the iframe exactly 16000 px tall. When — and only
       when — the deepest painted content fits within 16000 px at the current
       width, html/body get `overflow: clip !important`, which stops user AND
       programmatic scrolling (overflow:hidden still permits programmatic
       scrolling). If the content is taller, clipping is NOT applied — that
       would cut content off — and the incompatibility is recorded in
-      window.__superhiveEmbed and logged. See OPTIMIZATION-REPORT.md.
+      window.__superhiveEmbed and logged.
+
+   5. DIAGNOSTICS
+      ?diagnostics=1 exposes window.__superhiveDebug (nonpersistent, live
+      getters): embed state, fit, effects mode, video counts + original URLs,
+      unloaded offscreen count, reveal counts, scheduler state, canvas backing
+      sizes. No invented OS GPU metric and no cache controls exist anywhere.
 
    Preserved: nav scrollIntoView handlers are untouched (for supervisor
    testing), gallery horizontal gestures untouched, no parent access, no
@@ -65,8 +89,17 @@
   var bodyEl = doc.body;
   var EMBED_VIEWPORT = 16000;   /* px — the contractual iframe height */
 
+  /* Efficient is the DEFAULT in embed mode; ?effects=full opts the decorative
+     motion back in. Reduced motion is always respected on top of either mode. */
+  var EFFICIENT = !/[?&]effects=full(?:&|$)/.test(search);
+  var REDUCED = false;
+  try { REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
   var report = {
     mode: 'superhive',
+    pass: 3,
+    effects: EFFICIENT ? 'efficient' : 'full',
+    reducedMotion: REDUCED,
     embedViewportPx: EMBED_VIEWPORT,
     innerHeightPx: window.innerHeight,
     contentHeightPx: null,
@@ -74,8 +107,9 @@
     compatible: null,            /* true = fits and is clipped            */
     rootClipped: false,
     nestedVerticalScrollers: [],
-    videos: { tracked: 0, suspended: 0, resumed: 0, io: 'pending' },
-    animations: { tracked: 0, suspended: 0, method: 'none' }
+    videos: { tracked: 0, suspended: 0, resumed: 0, released: 0, restored: 0, io: 'pending' },
+    animations: { tracked: 0, suspended: 0, ambientHeld: 0, method: 'none' },
+    reveal: { tracked: 0, visible: 0, hidden: 0 }
   };
   window.__superhiveEmbed = report;
 
@@ -91,14 +125,22 @@
   var hasIO = ('IntersectionObserver' in window);
 
   /* ========================================================================
-     1. VIDEOS — suspend offscreen playback, resume on re-entry.
+     1. VIDEOS — host-visibility decoder lifecycle. Original URLs only.
      ====================================================================== */
   var videos = [];        /* one record per managed <video> */
   var videoIO = null;
+  var RELEASE_DELAY = 800;   /* ms offscreen before the decoder is released */
+  var MAX_VIDEOS = 400;      /* bounded guard for dynamically added nodes */
 
   function recOf(v) {
     for (var i = 0; i < videos.length; i++) if (videos[i].el === v) return videos[i];
     return null;
+  }
+
+  function countReleased() {
+    var n = 0;
+    for (var i = 0; i < videos.length; i++) if (videos[i].released) n++;
+    return n;
   }
 
   /* Our own pause()/play() calls queue their media events as tasks, so
@@ -118,7 +160,7 @@
   }
 
   function tryResume(rec) {
-    if (!rec.resumeWanted || rec.userPaused) return;
+    if (!rec.resumeWanted || rec.userPaused || rec.released) return;
     if (doc.hidden || !rec.known || !rec.visible) return;   /* never on hidden / offscreen */
     if (!rec.el.paused || rec.el.ended) { rec.resumeWanted = false; return; }
     rec.resumeWanted = false;
@@ -130,12 +172,17 @@
   }
 
   function onVideoPlay(rec) {
-    if (rec.expectPlay > 0) {
-      rec.expectPlay--;
-      if (doc.hidden || (rec.known && !rec.visible)) {
-        rec.resumeWanted = true;
-        pauseByRuntime(rec);
-      }
+    if (rec.el.paused) return;             /* a queued play preceded a later pause */
+    if (rec.expectPlay > 0) { rec.expectPlay--; rec.userPaused = false; return; }
+    if (rec.released) {
+      /* A legacy handler re-armed the element behind the shared API. Adopt its URL and
+         put it straight back into the released state instead of letting it load. */
+      var s = rec.el.getAttribute('src');
+      if (s) { rec.url = s; rec.time = 0; }
+      rec.resumeWanted = true;
+      if (!rec.el.paused) pauseByRuntime(rec);
+      if (rec.el.getAttribute('src')) rec.el.removeAttribute('src');
+      try { rec.el.load(); } catch (e) {}
       return;
     }
     /* any other play: the user (or the page's autoplay) wants it playing */
@@ -150,34 +197,213 @@
   }
 
   function onVideoPause(rec) {
+    if (!rec.el.paused) return;            /* load() pause superseded by a new play */
     if (rec.el.ended) return;                    /* end of clip is not a user pause */
-    if (rec.expectPause > 0) { rec.expectPause--; return; }  /* this is our own suspension */
+    if (rec.expectPause > 0) {
+      rec.expectPause--;
+      /* load() can discard a queued suspension event. Its stale counter must
+         never consume a later user pause on a visible, attached clip. */
+      if (doc.hidden || !rec.visible || rec.released || rec.restoring) return;
+    }
+    if (rec.released || rec.restoring) return;   /* a manager-side unload is NOT a user pause */
     /* an explicit pause (user or page code): never auto-resume this video */
     rec.userPaused = true;
     rec.resumeWanted = false;
   }
 
+  /* ---- detach / attach the ORIGINAL source ------------------------------------
+     ⛔ No copies, no blob, no cache: the exact URL string moves to data-sh-src and
+     back. data-sh-src doubles as the export/edit metadata the early head pass uses. */
+  function detachSources(rec) {
+    var el = rec.el, i;
+    var s = el.getAttribute('src');
+    if (s) {
+      rec.hasSrcAttr = true;
+      /* a parked source switch owns the metadata from the moment it is requested */
+      if (!rec.pendingSrc) rec.url = s;
+      el.setAttribute('data-sh-src', rec.pendingSrc || s);
+      el.removeAttribute('src');
+    }
+    var kids = el.getElementsByTagName('source');
+    var saved = [];
+    for (i = 0; i < kids.length; i++) {
+      var sv = kids[i].getAttribute('src') || kids[i].getAttribute('data-sh-src');
+      if (sv) {
+        saved.push(sv);
+        if (!kids[i].hasAttribute('data-sh-src')) kids[i].setAttribute('data-sh-src', sv);
+        kids[i].removeAttribute('src');
+      }
+    }
+    if (saved.length) rec.sourceSrcs = saved;
+    try { el.load(); } catch (e) {}   /* drops the decoder; the URL stays in data-sh-src */
+  }
+
+  function attachSources(rec, url) {
+    var el = rec.el, i;
+    if (!rec.hasSrcAttr && rec.sourceSrcs && rec.sourceSrcs.length) {
+      var kids = el.getElementsByTagName('source');
+      for (i = 0; i < kids.length && i < rec.sourceSrcs.length; i++) {
+        kids[i].setAttribute('src', rec.sourceSrcs[i]);
+        kids[i].setAttribute('data-sh-src', rec.sourceSrcs[i]);
+      }
+    } else {
+      el.setAttribute('src', url);
+      /* keep the export/edit metadata equal to the clip that is actually attached */
+      el.setAttribute('data-sh-src', url);
+    }
+    rec.released = false;
+    try { el.load(); } catch (e) {}
+  }
+
+  function clearDetach(rec) {
+    if (rec.detachTimer) { clearTimeout(rec.detachTimer); rec.detachTimer = 0; }
+  }
+
+  function scheduleRelease(rec) {
+    clearDetach(rec);
+    rec.detachTimer = setTimeout(function () {
+      rec.detachTimer = 0;
+      if (!rec.known || rec.visible || rec.released) return;
+      releaseRec(rec, false);
+    }, RELEASE_DELAY);
+  }
+
+  /* Save time / URL / autoplay intent, pause, remove src, load() — the decoder is
+     gone, layout and controls are untouched, and the original URL is preserved. */
+  function releaseRec(rec, initial) {
+    var el = rec.el;
+    if (rec.released) return;
+    if (!initial && (el.seeking || rec.scrub)) { scheduleRelease(rec); return; }
+    var wasPlaying = !el.paused && !el.ended;
+    rec.resumeWanted = rec.resumeWanted || wasPlaying;
+    rec.autoIntent = !!(el.autoplay || el.hasAttribute('autoplay')) || wasPlaying || rec.autoIntent;
+    if (!el.paused && !el.ended) pauseByRuntime(rec);
+    if (el.readyState > 0 && isFinite(el.currentTime)) rec.time = el.currentTime;
+    else if (!rec.pendingSrc) rec.time = 0;
+    rec.pendingSeek = null;
+    detachSources(rec);
+    rec.released = true;
+    report.videos.released = countReleased();
+  }
+
+  /* A switch requested while the clip was offscreen but NOT yet released: apply the
+     parked URL the moment the clip becomes visible again (and on document restore). */
+  function applyPending(rec) {
+    if (!rec.pendingSrc) return false;
+    var url = rec.pendingSrc;
+    rec.pendingSrc = null;
+    rec.url = url;
+    rec.time = 0;                      /* the new clip starts its OWN clock */
+    rec.pendingSeek = null;
+    rec.hasSrcAttr = true;
+    rec.restoring = true;
+    attachSources(rec, url);
+    rec.restoring = false;
+    if (!rec.userPaused && rec.autoIntent && rec.known && rec.visible && !doc.hidden) {
+      rec.resumeWanted = true;
+      tryResume(rec);
+    }
+    return true;
+  }
+
+  /* Re-entry: original source back on, saved time applied on loadedmetadata, play
+     only when visible — never on a hidden document, never against a user pause. */
+  function restoreRec(rec) {
+    clearDetach(rec);
+    if (!rec.released) { tryResume(rec); return; }
+    var fresh = !!rec.pendingSrc;
+    var url = rec.pendingSrc || rec.url || rec.el.getAttribute('src') || rec.el.getAttribute('data-sh-src');
+    rec.pendingSrc = null;
+    if (!url) { rec.released = false; return; }
+    rec.url = url;
+    if (fresh) rec.time = 0;                       /* a switched clip starts its OWN clock */
+    rec.pendingSeek = rec.time > 0.05 ? rec.time : null;
+    rec.restoring = true;
+    attachSources(rec, url);
+    rec.restoring = false;
+    report.videos.restored++;
+    report.videos.released = countReleased();
+    if (!rec.userPaused && rec.autoIntent && rec.known && rec.visible && !doc.hidden) {
+      rec.resumeWanted = true;
+      tryResume(rec);
+    }
+  }
+
   function trackVideo(v) {
-    if (!v || typeof v.pause !== 'function' || !v.addEventListener) return;
-    if (recOf(v)) return;
+    if (!v || typeof v.pause !== 'function' || !v.addEventListener) return null;
+    var existing = recOf(v);
+    if (existing) return existing;
+    if (videos.length >= MAX_VIDEOS) return null;
     var rec = {
       el: v, known: false, visible: true,
       userPaused: false, resumeWanted: false,
-      expectPause: 0, expectPlay: 0, timer: 0
+      autoIntent: !!(v.autoplay || v.hasAttribute('autoplay')),
+      released: false, restoring: false, scrub: 0,
+      time: 0, pendingSeek: null, pendingSrc: null,
+      url: null, hasSrcAttr: false, sourceSrcs: null,
+      expectPause: 0, expectPlay: 0, timer: 0, detachTimer: 0
     };
+    /* Native autoplay would restart a user-paused clip after load(). The
+       lifecycle owns autoplay intent; keep the original flag for editor export. */
+    if (rec.autoIntent) v.setAttribute('data-sh-autoplay', '');
+    v.autoplay = false;
+    var dataSrc = v.getAttribute('data-sh-src');
+    var kids = v.getElementsByTagName('source');
+    var saved = [];
+    for (var i = 0; i < kids.length; i++) {
+      var sv = kids[i].getAttribute('data-sh-src') || kids[i].getAttribute('src');
+      if (sv) saved.push(sv);
+    }
+    if (saved.length) rec.sourceSrcs = saved;
+    if (!v.getAttribute('src') && (dataSrc || saved.length)) {
+      /* parked by the early head pass (or by a previous release) — nothing attached */
+      rec.released = true;
+      rec.hasSrcAttr = !!dataSrc;
+      rec.url = dataSrc || saved[0] || null;
+    } else {
+      var cur = v.getAttribute('src');
+      if (cur) { rec.url = cur; rec.hasSrcAttr = true; }
+    }
     videos.push(rec);
     report.videos.tracked = videos.length;
+    v.addEventListener('loadedmetadata', function () {
+      if (rec.pendingSeek == null) return;
+      var t = rec.pendingSeek;
+      rec.pendingSeek = null;
+      try {
+        var d = rec.el.duration;
+        if (isFinite(d) && d > 0) t = Math.min(t, Math.max(0, d - 0.05));
+        rec.el.currentTime = t;
+      } catch (e) {}
+    });
     v.addEventListener('play', function () { onVideoPlay(rec); });
     v.addEventListener('pause', function () { onVideoPause(rec); });
     v.addEventListener('ended', function () { rec.resumeWanted = false; });
     if (videoIO) videoIO.observe(v);
+    /* A dynamically inserted node can be stashed by the head observer AFTER this track
+       call (both observers fire in the same checkpoint). Re-sync once, next task, so a
+       stripped src flips the record into the released state instead of leaving it
+       "attached" with no source. */
+    setTimeout(function () {
+      if (rec.released || rec.el.getAttribute('src')) return;
+      var d = rec.el.getAttribute('data-sh-src');
+      var kids = rec.el.getElementsByTagName('source');
+      var anySrc = false;
+      for (var k = 0; k < kids.length; k++) if (kids[k].getAttribute('src')) anySrc = true;
+      if (d || anySrc) {
+        rec.released = true;
+        rec.hasSrcAttr = !!d;
+        if (d) rec.url = d;
+        report.videos.released = countReleased();
+      }
+    }, 0);
+    return rec;
   }
 
   function initVideos() {
-    var all = doc.querySelectorAll('video');
     if (!hasIO) {
       report.videos.io = 'unsupported';
-      warn('IntersectionObserver unavailable — offscreen video suspension disabled.');
+      warn('IntersectionObserver unavailable — offscreen video lifecycle disabled.');
       return;
     }
     videoIO = new IntersectionObserver(function (entries) {
@@ -185,6 +411,7 @@
         var en = entries[i];
         var rec = recOf(en.target);
         if (!rec) continue;
+        var firstDelivery = !rec.known;
         rec.known = true;
         rec.visible = !!en.isIntersecting;
         if (!rec.visible) {
@@ -193,21 +420,256 @@
             pauseByRuntime(rec);
             report.videos.suspended++;
           }
+          if (rec.released) continue;
+          /* ⛔ First delivery + offscreen = a clip that was never visible: release it
+             at once instead of waiting out the hysteresis (which exists to stop
+             scroll-through thrash on LATER leaves). Clips the head pass parked never
+             held a decoder at all — this covers dynamic nodes and the no-head case. */
+          if (firstDelivery) releaseRec(rec, true);
+          else scheduleRelease(rec);
         } else {
-          if (rec.resumeWanted) report.videos.resumed++;
-          tryResume(rec);
+          clearDetach(rec);
+          if (rec.released) {
+            restoreRec(rec);
+          } else if (rec.pendingSrc) {
+            applyPending(rec);           /* switched while offscreen, not yet released */
+          } else if (rec.resumeWanted) {
+            report.videos.resumed++;
+            tryResume(rec);
+          }
         }
       }
+      report.videos.released = countReleased();
     }, { threshold: 0, rootMargin: '0px' });
     report.videos.io = 'root:null';
+    var all = doc.querySelectorAll('video');
     for (var i = 0; i < all.length; i++) trackVideo(all[i]);
+    report.videos.released = countReleased();
+  }
+
+  /* Videos created later (the editor's setMedia, console patches) get the same
+     lifecycle; bounded by MAX_VIDEOS. */
+  function initVideoWatch() {
+    if (!window.MutationObserver || !bodyEl) return;
+    var mo = new MutationObserver(function (list) {
+      for (var i = 0; i < list.length; i++) {
+        var added = list[i].addedNodes;
+        for (var j = 0; j < added.length; j++) {
+          var n = added[j];
+          if (n.nodeType !== 1) continue;
+          if (n.tagName === 'VIDEO') trackVideo(n);
+          else if (n.getElementsByTagName) {
+            var vs = n.getElementsByTagName('video');
+            for (var k = 0; k < vs.length; k++) trackVideo(vs[k]);
+          }
+        }
+      }
+    });
+    try { mo.observe(bodyEl, { childList: true, subtree: true }); } catch (e) {}
   }
 
   /* ========================================================================
-     2. CSS ANIMATIONS — pause offscreen targets, resume on re-entry.
+     1b. THE SHARED VIDEO LIFECYCLE API — window.__superhiveMedia.
+     The ONE entry point for page handlers that write a source or scrub a clip
+     (index.html routes the hero switcher, the fresh-URL path and the clip-bar
+     drag through here). "No caching" is structural: the API only ever attaches
+     the caller's original URL to the element, or parks it for later.
+     ====================================================================== */
+  var mediaApi = {
+    /* Source change request. Visible + known: attach now (time resets to 0 for the
+       NEW clip — it never inherits another clip's timestamp). Offscreen/hidden: park
+       the URL; it is attached when the clip becomes visible. */
+    setSource: function (v, url) {
+      if (!v || !url) return false;
+      if (v.tagName === 'IMG') {
+        v.setAttribute('data-sh-src', url);
+        var image = imageRec(v);
+        if (!image || image.visible) v.setAttribute('src', url);
+        return true;
+      }
+      var rec = recOf(v) || trackVideo(v);
+      if (!rec) { try { v.setAttribute('src', url); } catch (e) {} return true; }
+      rec.userPaused = false;
+      rec.autoIntent = true;
+      rec.time = 0;
+      rec.pendingSeek = null;
+      /* an API-driven switch always attaches through the src attribute, whatever
+         element shape (src attr or <source> children) it started with */
+      rec.hasSrcAttr = true;
+      if (rec.known && rec.visible && !doc.hidden) {
+        rec.url = url;
+        rec.pendingSrc = null;
+        attachSources(rec, url);
+        rec.resumeWanted = true;
+        tryResume(rec);
+      } else {
+        rec.pendingSrc = url;
+        /* parked: keep the export/edit metadata pointing at the new clip too */
+        if (v.getAttribute('src') == null) v.setAttribute('data-sh-src', url);
+        if (rec.known && !rec.visible && !rec.released) scheduleRelease(rec);
+      }
+      report.videos.released = countReleased();
+      return true;
+    },
+    /* clip-bar drag handshake: a clip that is being scrubbed is never released. */
+    seekHold: function (v, on) {
+      var rec = recOf(v);
+      if (!rec) return;
+      rec.scrub = Math.max(0, rec.scrub + (on ? 1 : -1));
+    },
+    /* host-visibility answer for the shared progress scheduler */
+    isVisible: function (v) {
+      var rec = recOf(v);
+      if (!rec) return !doc.hidden;
+      return !rec.released && rec.visible && !doc.hidden;
+    }
+  };
+  window.__superhiveMedia = mediaApi;
+
+  /* Images have fixed media slots; keep their geometry while parking original
+     URLs. In particular, detached GIFs stop contributing offscreen decode work.
+     The small intrinsic-size navigation logo stays attached. */
+  var images = [];
+  function imageRec(el) {
+    for (var i = 0; i < images.length; i++) if (images[i].el === el) return images[i];
+    return null;
+  }
+  function initImages() {
+    if (!hasIO) return;
+    var io = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        var el = entries[i].target, rec = imageRec(el);
+        rec.visible = entries[i].isIntersecting;
+        if (rec.visible) {
+          var url = el.getAttribute('data-sh-src');
+          if (url && el.getAttribute('src') !== url) el.setAttribute('src', url);
+        } else {
+          var src = el.getAttribute('src');
+          if (src) { el.setAttribute('data-sh-src', src); el.removeAttribute('src'); }
+        }
+      }
+    }, { threshold: 0, rootMargin: '0px' });
+    var all = doc.querySelectorAll('img');
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      if (el.closest('nav,header')) continue;
+      el.setAttribute('decoding', 'async');
+      images.push({ el: el, visible: false });
+      io.observe(el);
+    }
+  }
+
+  /* ========================================================================
+     2. REVEALS — one owner in embed mode: finite entry pop, hidden offscreen.
+     The two inline one-shot .reveal observers are gated off in index.html, so
+     nothing permanently reveals behind this. The held state is opacity +
+     visibility ONLY (no transform): the element's geometry is identical in
+     both states, so an intersection callback can never flip itself.
+     ====================================================================== */
+  var rvs = [];
+  var rvIO = null;
+
+  function revealRecFor(el) {
+    for (var i = 0; i < rvs.length; i++) if (rvs[i].el === el) return rvs[i];
+    return null;
+  }
+
+  function updateRevealCounts() {
+    var vis = 0, hid = 0;
+    for (var i = 0; i < rvs.length; i++) (rvs[i].visible ? vis++ : hid++);
+    report.reveal.visible = vis;
+    report.reveal.hidden = hid;
+  }
+
+  function revealShow(rv) {
+    var el = rv.el;
+    if (rv.visible) { el.classList.remove('sh-held'); return; }
+    rv.visible = true;
+    el.classList.remove('sh-held');
+    el.classList.remove('sh-pop');
+    void el.offsetWidth;               /* restart the finite pop on every re-entry */
+    el.classList.add('sh-pop');
+    updateRevealCounts();
+  }
+
+  function revealHide(rv) {
+    var el = rv.el;
+    if (el.contains(doc.activeElement)) return;   /* never hide a focus ancestor */
+    if (!rv.visible) return;
+    rv.visible = false;
+    el.classList.remove('sh-pop');
+    el.classList.add('sh-held');       /* visibility:hidden — geometry/anchors intact */
+    updateRevealCounts();
+  }
+
+  function initReveals() {
+    if (!hasIO) return;   /* early head CSS leaves everything visible — graceful degrade */
+    var els = doc.querySelectorAll('.reveal');
+    rvIO = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        var en = entries[i];
+        var rv = revealRecFor(en.target);
+        if (!rv) continue;
+        if (en.isIntersecting) revealShow(rv);
+        else revealHide(rv);
+      }
+    }, { threshold: 0, rootMargin: '0px' });
+    for (var i = 0; i < els.length && i < 300; i++) {
+      var el = els[i];
+      /* never hide a clip/media frame or a card whose only content is the clip
+         (the hero side rails): those stay always-visible. Their VIDEO is still
+         handled by the lifecycle above. */
+      if (el.matches('video') || (el.querySelector && el.querySelector('video'))) continue;
+      rvs.push({ el: el, visible: true });
+      rvIO.observe(el);
+    }
+    report.reveal.tracked = rvs.length;
+    updateRevealCounts();
+  }
+
+  doc.addEventListener('focusin', function (e) {
+    var t = e.target;
+    if (!t) return;
+    for (var i = 0; i < rvs.length; i++) {
+      if (rvs[i].el.contains(t) && !rvs[i].visible) revealShow(rvs[i]);
+    }
+  });
+
+  /* ========================================================================
+     3. CSS ANIMATIONS — pause offscreen targets; efficient mode additionally
+     holds the continuous decorative loops (finite pops and functional
+     feedback keep running).
      ====================================================================== */
   var animEls = [];       /* { el, anims:[Animation], held, holdStart, known, visible } */
   var animIO = null;
+
+  /* ⛔ Functional feedback that must NOT be held in efficient mode: the two bar
+     gradients, the loading spinner, and the two hover rings (transient, user-driven).
+     `seamOut` is exempt too: its frame 0 is a near-zero-width line, so holding it there
+     would gut the section seams — it keeps its 5s beat. */
+  var AMBIENT_KEEP = { clipFlow: 1, clipTrack: 1, clipSpin: 1, ringOut: 1, tipRing: 1, seamOut: 1 };
+
+  function isAmbientDecorative(an) {
+    if (!EFFICIENT || REDUCED) return false;
+    var t;
+    try { t = an.effect && an.effect.getComputedTiming ? an.effect.getComputedTiming() : null; } catch (e) { t = null; }
+    if (!t || t.iterations !== Infinity) return false;
+    if (AMBIENT_KEEP[an.animationName]) return false;
+    return true;
+  }
+
+  function holdAmbient(an) {
+    if (an.__sfAmbient) return;
+    an.__sfAmbient = true;
+    try {
+      an.pause();
+      /* Hold it at its REST frame, not wherever it happened to be: a sheen frozen
+         mid-sweep would leave a white band parked across a card. Frame 0 of the
+         ambient loops is their declared rest state. */
+      an.currentTime = 0;
+      report.animations.ambientHeld++;
+    } catch (e) { an.__sfAmbient = false; }
+  }
 
   function animRecFor(el) {
     for (var i = 0; i < animEls.length; i++) if (animEls[i].el === el) return animEls[i];
@@ -282,6 +744,8 @@
         if (animIO) animIO.observe(t);
       }
       if (rec.anims.indexOf(an) < 0) rec.anims.push(an);
+      /* efficient mode: hold the continuous decorative loops outright */
+      if (isAmbientDecorative(an)) holdAmbient(an);
       if (doc.hidden || (rec.known && !rec.visible)) holdRec(rec);
     }
     var total = 0;
@@ -325,7 +789,7 @@
   }
 
   /* ========================================================================
-     3. ROOT SCROLL LOCK — overflow:clip only when the content fits 16000 px.
+     4. ROOT SCROLL LOCK — overflow:clip only when the content fits 16000 px.
      ====================================================================== */
   var CLIP_CLASS = 'superhive-clip';
   var fitTimer = 0;
@@ -435,19 +899,96 @@
       }
       holdAllAnimations();
     } else {
-      for (i = 0; i < videos.length; i++) tryResume(videos[i]);
+      for (i = 0; i < videos.length; i++) {
+        rec = videos[i];
+        if (rec.released) { if (rec.known && rec.visible) restoreRec(rec); }
+        else if (rec.pendingSrc && rec.visible) applyPending(rec);
+        else tryResume(rec);
+      }
       resumeVisibleAnimations();
       scanAnimations();
     }
   });
 
+  /* ========================================================================
+     5. DIAGNOSTICS — ?diagnostics=1 only, nonpersistent, no invented metrics.
+     Live getters, so reading it always reflects the CURRENT state.
+     ====================================================================== */
+  function buildDebug() {
+    var dbg = {
+      embed: true,
+      effectsMode: EFFICIENT ? 'efficient' : 'full',
+      reducedMotion: REDUCED
+    };
+    function live(name, fn) {
+      Object.defineProperty(dbg, name, { enumerable: true, configurable: true, get: fn });
+    }
+    live('fit', function () {
+      return {
+        compatible: report.compatible,
+        rootClipped: report.rootClipped,
+        contentHeightPx: report.contentHeightPx,
+        accordionWorstHeightPx: report.accordionWorstHeightPx,
+        nestedVerticalScrollers: report.nestedVerticalScrollers
+      };
+    });
+    live('videos', function () {
+      var visible = 0, playing = 0, released = 0, urls = [];
+      for (var i = 0; i < videos.length; i++) {
+        var r = videos[i];
+        if (r.released) released++;
+        else if (r.known && r.visible) {
+          visible++;
+          if (!r.el.paused && !r.el.ended) playing++;
+        }
+        if (r.url) urls.push(r.url);
+      }
+      return {
+        tracked: videos.length,
+        attachedVisible: visible,
+        visiblePlaying: playing,
+        releasedOffscreen: released,
+        originalUrls: urls
+      };
+    });
+    live('reveal', function () {
+      return { tracked: report.reveal.tracked, visible: report.reveal.visible, hidden: report.reveal.hidden };
+    });
+    live('schedulerActive', function () {
+      var s = window.__clipScheduler;
+      return !!(s && s.isActive && s.isActive());
+    });
+    live('schedulerRateHz', function () {
+      var s = window.__clipScheduler;
+      return (s && s.rateHz) ? Math.round(s.rateHz) : null;
+    });
+    live('canvas', function () {
+      var cv = doc.getElementById('interactiveBg');
+      return {
+        interactiveBg: cv ? {
+          backingWidth: cv.width,
+          backingHeight: cv.height,
+          cssWidth: cv.clientWidth,
+          cssHeight: cv.clientHeight
+        } : null,
+        fxParticlesCanvases: doc.querySelectorAll('.fx-particles').length
+      };
+    });
+    return dbg;
+  }
+
   initVideos();
+  initVideoWatch();
+  initImages();
+  initReveals();
   initAnimations();
   applyFit();
-  setTimeout(applyFit, 2000);    /* after remote media + reveal transitions settle */
+  setTimeout(applyFit, 2000);    /* after remote media + reveal state settles */
 
   window.addEventListener('load', function () { scanAnimations(); applyFit(); });
+  doc.addEventListener('DOMContentLoaded', scanAnimations);  /* late-built .fx layers */
   if (doc.fonts && doc.fonts.ready && doc.fonts.ready.then) {
     doc.fonts.ready.then(function () { scanAnimations(); applyFit(); });
   }
+  if (/[?&]diagnostics=1(?:&|$)/.test(search)) window.__superhiveDebug = buildDebug();
 })();
