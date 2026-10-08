@@ -5275,7 +5275,7 @@ html.dark .hero-copy-card:hover {
              Color"); it was `--color-tertiary`, which resolves to WHITE in this page's second
              token block, so the two tones were indistinguishable. #0096ff is a literal on
              purpose: 6.42:1 on the dark header, 3.07:1 on the light one. -->
-        <span>Auto <span style="color:#0096ff">Face MoCap</span> Pro</span>
+        <span class="brand-stroke-stage brand-stroke-header"><video class="brand-stroke-video" muted playsinline preload="none" data-no-clip-bar aria-hidden="true" src="https://mr3dpageclips.carrd.co/assets/videos/video55.mp4?v=b4d60b51"></video><span class="brand-title-text" aria-hidden="true"><span class="stroke-letter" data-finish="0.625">A</span><span class="stroke-letter" data-finish="1.1667">u</span><span class="stroke-letter" data-finish="1.6667">t</span><span class="stroke-letter" data-finish="1.9167">o</span> <span class="brand-title-grad"><span class="stroke-letter" data-finish="2.5417">F</span><span class="stroke-letter" data-finish="3.125">a</span><span class="stroke-letter" data-finish="3.8333">c</span><span class="stroke-letter" data-finish="4.5417">e</span> <span class="stroke-letter" data-finish="5.7917">M</span><span class="stroke-letter" data-finish="6.0417">o</span><span class="stroke-letter" data-finish="6.625">C</span><span class="stroke-letter" data-finish="6.9583">a</span><span class="stroke-letter" data-finish="7.75">p</span></span> <span class="stroke-letter" data-finish="8.6667">P</span><span class="stroke-letter" data-finish="8.9583">r</span><span class="stroke-letter" data-finish="9.875">o</span></span></span>
       </a>
     </div>
 
@@ -9918,10 +9918,16 @@ html:not(.dark) .seam-label {background:#eaf5fc!important;}
 
 #workflow .afmp-intro-card .afmp-benefits-heading {margin-top:1.75rem;margin-bottom:1rem;}
 #workflow .afmp-intro-card p strong {color:var(--ink);}
+
+header.site-header .brand-stroke-header {white-space:nowrap;}
+header.site-header .brand-stroke-header .brand-title-text {font-size:inherit;font-weight:800;line-height:1;letter-spacing:inherit;filter:none;color:#f2f7fd;}
+header.site-header .brand-stroke-header .brand-title-grad {background-image:var(--brand-grad);-webkit-text-fill-color:transparent;background-clip:text;-webkit-background-clip:text;}
+html:not(.dark) header.site-header .brand-stroke-header .brand-title-text {color:#0b1a2b;}
 </style>
 <script id="brandStrokeSync">
 (function(){
- var stage=document.querySelector('.brand-stroke-stage'),v=stage&&stage.querySelector('video'); if(!v)return;
+ function initBrandStroke(stage){
+ var v=stage.querySelector('video'); if(!v)return;
  v.playbackRate=3.4722223333; v.defaultPlaybackRate=3.4722223333;
  v.addEventListener('loadedmetadata',function(){if(isFinite(v.duration)&&v.duration>0){v.playbackRate=v.duration/3;v.defaultPlaybackRate=v.duration/3;}});
  var letters=stage.querySelectorAll('.stroke-letter'),visible=false,done=false,ticket=null;
@@ -9937,6 +9943,8 @@ html:not(.dark) .seam-label {background:#eaf5fc!important;}
  v.addEventListener('error',function(){done=true;stop();stage.classList.remove('is-drawing');});
  document.addEventListener('visibilitychange',gate);
  if(!reduced&&window.AFMP&&window.AFMP.watch){window.AFMP.watch(stage,function(on){visible=on;gate();},false);}
+}
+ document.querySelectorAll('.brand-stroke-stage').forEach(initBrandStroke);
 })();
 </script>
 </body>
