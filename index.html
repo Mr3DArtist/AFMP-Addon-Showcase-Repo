@@ -7697,6 +7697,21 @@ html:not(.dark) .card-fx > .fx-dots {
 })();
 </script>
 
+<!-- ============================================================ -->
+<!-- SUPERHIVE EMBED RUNTIME — added in the second bounded pass.  -->
+<!-- Loaded with defer, and INERT unless the URL query carries    -->
+<!-- ?embed=superhive. Suspends offscreen autoplay videos and CSS -->
+<!-- animations via IntersectionObserver root:null (which sees    -->
+<!-- the host's clipping across the iframe boundary), keeps       -->
+<!-- explicit user pauses, and applies overflow:clip to html/body -->
+<!-- ONLY while the deepest content fits the 16000px embed        -->
+<!-- viewport. If it does not fit, nothing is clipped and the     -->
+<!-- incompatibility is recorded in window.__superhiveEmbed and   -->
+<!-- reported in OPTIMIZATION-REPORT.md. No parent DOM access,    -->
+<!-- no wheel/touch handlers, nav scrollIntoView left untouched.  -->
+<!-- ============================================================ -->
+<script src="assets/js/embed-runtime.js" defer></script>
+
 <!-- ⛔ NO SCRIPT SIZES `.topbar-backing`. It is a fixed 20px strip holding two corner
      tiles, so it is independent of the bar's height — the bar can wrap to two rows on a
      phone and the white still ends exactly at the corner arc, with no white band below.
