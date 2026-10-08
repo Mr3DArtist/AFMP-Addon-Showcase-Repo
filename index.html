@@ -416,13 +416,20 @@ header.site-header {
   background: color-mix(in srgb, var(--bg) 62%, transparent);
 }
 .clip-bar-fill {
-  width: 0;
+  /* ⛔ FULL-WIDTH BOX, SCALED — never `width: 0` tweened by JS. The fill keeps the
+     bar's exact geometry (rounded ends, animated gradient, glow) and only
+     `transform: scaleX(<ratio>)` moves, written by the shared 12Hz scheduler, so
+     playback and scrubbing never trigger layout. `transform-origin: left` grows
+     the fill from the bar's start. */
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
   background: linear-gradient(45deg, #0096ff, #22d3ee, #0096ff, #3b82f6, #0096ff);
   background-size: 400%;
   animation: glowing 20s linear infinite;
   box-shadow: 0 0 12px color-mix(in srgb, #0096ff 70%, transparent);
-  /* short: the bar is redrawn every frame now, and a long transition would lag it */
-  transition: width .06s linear;
+  /* short: the bar is redrawn by the shared scheduler, and a long transition would lag it */
+  transition: transform .06s linear;
 }
 /* the hero's own bar keeps the wider inset and higher lift asked for earlier */
 .hero-media { --clip-bar-inset: 22px; --clip-bar-lift: 16px; --clip-bar-h: 5px; }
@@ -4719,6 +4726,133 @@ html:not(.dark) .card-fx > .fx-dots {
   });
 })();
 </script>
+
+<!-- ============================================================ -->
+<!-- EMBED EARLY GATE + SOURCE DEFERRAL — v2 (no-cache pass).      -->
+<!-- Runs during HEAD parsing, before any media element exists.    -->
+<!-- ⛔ EMBED ONLY (`?embed=superhive`). Standalone never enters    -->
+<!-- this block: its sources are never deferred and the page keeps -->
+<!-- its exact previous behaviour. No downloads, no cache, no blob -->
+<!-- — the ORIGINAL URL is parked in data-sh-src and restored.     -->
+<!-- ============================================================ -->
+<script>
+(function () {
+  'use strict';
+  var q = window.location.search || '';
+  if (!/[?&]embed=superhive(?:&|$)/.test(q)) return;
+  var full = /[?&]effects=full(?:&|$)/.test(q);
+  window.__superhiveEmbedMode = true;
+  window.__superhiveEffects = full ? 'full' : 'efficient';
+  window.__shEfficient = !full;
+
+  var rootEl = document.documentElement;
+  rootEl.classList.add('superhive-embed');
+
+  /* ---- reveal ownership hand-off, at FIRST PAINT ----------------------------
+     In embed mode the deferred runtime owns reveal state (root:null on the HOST
+     viewport). If it never runs, the page must still be fully visible — so the
+     natural state is VISIBLE here, the offscreen state is a class (`sh-held`,
+     opacity + visibility only, NO transform, so the observer target's geometry
+     never changes and intersection cannot oscillate), and entry is one finite
+     220ms keyframe pop. Reduced-motion: appearance is immediate. */
+  var css =
+    'html.superhive-embed .reveal{opacity:1;visibility:visible;transform:none;}' +
+    'html.superhive-embed .reveal.sh-held{opacity:0;visibility:hidden;}' +
+    'html.superhive-embed .reveal.sh-pop{animation:shEntryPop .22s cubic-bezier(.22,.61,.36,1) both;}' +
+    '@keyframes shEntryPop{from{opacity:0;transform:scale(1.015);}to{opacity:1;transform:none;}}' +
+    '@media (prefers-reduced-motion:reduce){html.superhive-embed .reveal.sh-pop{animation:none;}}';
+  /* efficient mode: the mouse-follow glow is disabled here AND at its script
+     gate, so no orphaned static glow sits in the top-left corner. */
+  if (!full) css += 'html.superhive-embed .mouse-glow{display:none!important;}';
+  var styleEl = document.createElement('style');
+  styleEl.setAttribute('data-superhive-early', '');
+  styleEl.textContent = css;
+  (document.head || rootEl).appendChild(styleEl);
+
+  /* ---- media source deferral ------------------------------------------------
+     ⛔ Every parsed <video src> / <source src> is parked in `data-sh-src` and the
+     src attribute is removed BEFORE the media element can pick a resource. An
+     offscreen clip therefore starts with NO decoder and no fetch; the runtime
+     re-attaches the ORIGINAL URL when (and only when) the clip becomes visible.
+     The parked value IS the original URL — it is never rewritten, copied or
+     cached, and nothing here fetches anything. */
+  var DATA = 'data-sh-src';
+  function stash(v) {
+    var s = v.getAttribute('src');
+    if (s) {
+      if (!v.hasAttribute(DATA)) v.setAttribute(DATA, s);
+      v.removeAttribute('src');
+    }
+    var kids = v.getElementsByTagName('source');
+    for (var i = 0; i < kids.length; i++) {
+      var sv = kids[i].getAttribute('src');
+      if (sv) {
+        if (!kids[i].hasAttribute(DATA)) kids[i].setAttribute(DATA, sv);
+        kids[i].removeAttribute('src');
+      }
+    }
+  }
+  function scan(node) {
+    if (!node || node.nodeType !== 1) return;
+    if (node.tagName === 'VIDEO') { stash(node); return; }
+    function stashImage(img) {
+      if (img.closest('nav,header')) return;
+      var src = img.getAttribute('src');
+      if (src) { img.setAttribute(DATA, src); img.removeAttribute('src'); }
+    }
+    if (node.tagName === 'IMG') { stashImage(node); return; }
+    if (node.getElementsByTagName) {
+      var vs = node.getElementsByTagName('video');
+      for (var i = 0; i < vs.length; i++) stash(vs[i]);
+      var imgs = node.getElementsByTagName('img');
+      for (var j = 0; j < imgs.length; j++) stashImage(imgs[j]);
+    }
+  }
+  if ('MutationObserver' in window) {
+    var mo = new MutationObserver(function (list) {
+      for (var i = 0; i < list.length; i++) {
+        var added = list[i].addedNodes;
+        for (var j = 0; j < added.length; j++) scan(added[j]);
+      }
+    });
+    try { mo.observe(rootEl, { childList: true, subtree: true }); } catch (e) {}
+  }
+  window.__superhiveStashVideo = stash;
+
+  /* ---- editor export helper -------------------------------------------------
+     The built-in editor serializes document.documentElement.outerHTML. A saved
+     page must be standalone-valid, so parked sources are restored for that ONE
+     synchronous serialization and re-parked immediately after — still the same
+     original URLs, still no cache, and an already-attached (visible) clip is
+     never touched. */
+  window.__superhiveExportHTML = function () {
+    if (window.__superhiveExporting) return '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    window.__superhiveExporting = true;
+    var all = document.querySelectorAll('video[' + DATA + '], source[' + DATA + '], img[' + DATA + ']');
+    var list = [], i, el;
+    for (i = 0; i < all.length; i++) {
+      if (all[i].getAttribute('src') == null) list.push(all[i]);
+    }
+    var saved = [];
+    for (i = 0; i < list.length; i++) {
+      el = list[i];
+      saved.push(el.getAttribute(DATA));
+      el.setAttribute('src', el.getAttribute(DATA));
+    }
+    var autoplayNodes = document.querySelectorAll('video[data-sh-autoplay]');
+    for (i = 0; i < autoplayNodes.length; i++) autoplayNodes[i].setAttribute('autoplay', '');
+    var out = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    for (i = 0; i < autoplayNodes.length; i++) autoplayNodes[i].removeAttribute('autoplay');
+    for (i = 0; i < list.length; i++) {
+      el = list[i];
+      el.removeAttribute('src');
+      el.setAttribute(DATA, saved[i]);
+    }
+    window.__superhiveExporting = false;
+    return out;
+  };
+})();
+</script>
 </head>
 <body>
 <!-- ============================================================ -->
@@ -6125,8 +6259,10 @@ html:not(.dark) .card-fx > .fx-dots {
   'use strict';
 
   /* ---------- 0. Mouse-follow background glow ---------- */
+  /* ⛔ Efficient embed mode: loop disabled (the early head gate also hides the layer,
+     so no orphaned glow sits at translate(0,0)). effects=full / standalone untouched. */
   var glow = document.querySelector('.mouse-glow');
-  if (glow) {
+  if (glow && !window.__shEfficient) {
     var gX = 0, gY = 0, tX = 0, tY = 0, gRaf = null;
     function glowTick() {
       gX += (tX - gX) * 0.95;
@@ -6274,7 +6410,13 @@ html:not(.dark) .card-fx > .fx-dots {
 
   /* ---------- 6. Scroll-reveal animations ---------- */
   var revealEls = document.querySelectorAll('.reveal');
-  if ('IntersectionObserver' in window) {
+  if (window.__superhiveEmbedMode) {
+    /* EMBED: the runtime owns reveal state — offscreen hide + finite 220ms entry pop,
+       observed root:null against the HOST viewport. This one-shot "add .visible and
+       unobserve" observer is deliberately NOT started here, because it would permanently
+       reveal everything behind the new owner. If the runtime never runs, the early head
+       style has already made every .reveal natural/visible, so nothing can be stranded. */
+  } else if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting) {
@@ -6460,17 +6602,43 @@ html:not(.dark) .card-fx > .fx-dots {
      and the `v=` does nothing.
      ⛔ <img> as well as <video>: an image needs no .load() — assigning src is enough
      (and load() is not a function on an <img>). */
+  /* ---------- Shared video-source handoff ----------
+     ⛔ THE ONLY PLACE the page's own handlers write a clip's source (fresh tokens, the
+     hero switcher). In embed mode the runtime owns the decoder lifecycle, so a switch
+     must go through its API: the runtime decides whether the clip is visible enough to
+     attach now, or parks the URL until it becomes visible. Offscreen switches therefore
+     never start a load. Before the deferred runtime is up (only possible during the
+     parse-time hero apply(0)), the parked `data-sh-src` from the head-side deferral is
+     updated instead — never a real load. Standalone: the plain src + play() path. */
+  function setVideoSrcCompat(v, url, playNow) {
+    var api = window.__superhiveMedia;
+    if (api && api.setSource) { api.setSource(v, url); return; }   // plays per visibility + intent
+    var parked = v.getAttribute('data-sh-src');
+    if (v.getAttribute('src') == null && parked != null) {
+      if (parked !== url) v.setAttribute('data-sh-src', url);
+      return;   // embed deferral: the runtime attaches it when the clip is visible
+    }
+    v.setAttribute('src', url);
+    if (playNow) {
+      var p = v.play();
+      if (p && p.catch) p.catch(function () {});
+    } else if (v.tagName === 'VIDEO') {
+      try { v.load(); } catch (e) {}   // the legacy fresh-token path did exactly this
+    }
+  }
+
   (function freshClipSrcs() {
     var t = Date.now();
     var els = document.querySelectorAll('video[data-fresh], img[data-fresh]');
     for (var i = 0; i < els.length; i++) {
       var el = els[i];
-      var s = el.getAttribute('src');
+      var s = el.getAttribute('src') || el.getAttribute('data-sh-src');
       if (!s) continue;
       // keep a real query string (carrd's own ?v=...), replace a token from a previous run
       var base = s.replace(/([?&])t=\d+&?/, '$1').replace(/[?&]$/, '');
-      el.setAttribute('src', base + (base.indexOf('?') < 0 ? '?' : '&') + 't=' + t);
-      if (el.tagName === 'VIDEO') { try { el.load(); } catch (e) {} }
+      var url = base + (base.indexOf('?') < 0 ? '?' : '&') + 't=' + t;
+      if (el.tagName === 'VIDEO') { setVideoSrcCompat(el, url); }
+      else { el.setAttribute('src', url); }
     }
   })();
 
@@ -6478,19 +6646,77 @@ html:not(.dark) .card-fx > .fx-dots {
      Injects a bar into each video's parent and drives it from that video's own
      playback, so every clip on the page gets the same bar without anyone having
      to remember to add markup. Runs BEFORE the hero player below, which reuses
-     drawClipBar(). */
+     drawClipBar().
+
+     ⛔⛔ ONE SHARED 10–15Hz SCHEDULER — NOT ONE RAF PER VIDEO. The old per-video loop
+     pumped at display rate for every playing clip, including clips the host viewport
+     cannot see. Here a single timer ticks ~12Hz and is only scheduled while at least one
+     bar is active: its clip is playing AND visible (host visibility via the runtime's
+     `__superhiveMedia.isVisible` in embed; the page's own viewport via the standalone
+     IntersectionObserver below), or the user is actively dragging it. Idle, offscreen
+     and hidden-document states all stop the loop. The media events stay as the fallback
+     for paused / seeking / pre-play states, where a loop should not run. */
   var CLIP_BARS = [];
-  function clipBarFill(v) {
-    for (var i = 0; i < CLIP_BARS.length; i++) if (CLIP_BARS[i].v === v) return CLIP_BARS[i].fill;
+  var CLIP_TICK_MS = 83;              /* ~12Hz — inside the brief's 10–15Hz window */
+  var clipTick = { timer: 0 };
+
+  function clipBarRec(v) {
+    for (var i = 0; i < CLIP_BARS.length; i++) if (CLIP_BARS[i].v === v) return CLIP_BARS[i];
     return null;
   }
+  function clipBarFill(v) {
+    var r = clipBarRec(v);
+    return r ? r.fill : null;
+  }
+  /* ⛔ `transform: scaleX(ratio)` on a width:100% fill — never `style.width`. The fill
+     keeps the bar's exact box (rounded ends, gradient, glow); only the transform moves,
+     so no layout work is triggered by playback or scrubbing. */
   function drawClipBar(v) {
     var fill = clipBarFill(v);
     if (!fill) return;
     var d = v.duration;
-    fill.style.width = (d && isFinite(d) && d > 0)
-      ? Math.min(100, v.currentTime / d * 100).toFixed(2) + '%' : '0%';
+    var ratio = (d && isFinite(d) && d > 0) ? (v.currentTime / d) : 0;
+    if (!(ratio >= 0)) ratio = 0;
+    if (ratio > 1) ratio = 1;
+    fill.style.transform = 'scaleX(' + ratio + ')';
   }
+  function clipBarVisible(rec) {
+    var api = window.__superhiveMedia;
+    if (api && api.isVisible) return api.isVisible(rec.v);
+    return rec.vis !== false && !document.hidden;
+  }
+  function clipBarActive(rec) {
+    if (rec.scrub) return true;              /* dragging keeps it alive while paused */
+    var v = rec.v;
+    return !v.paused && !v.ended && clipBarVisible(rec);
+  }
+  function anyClipActive() {
+    for (var i = 0; i < CLIP_BARS.length; i++) if (clipBarActive(CLIP_BARS[i])) return true;
+    return false;
+  }
+  function clipTickFn() {
+    clipTick.timer = 0;
+    if (document.hidden) return;
+    for (var i = 0; i < CLIP_BARS.length; i++) {
+      if (clipBarActive(CLIP_BARS[i])) drawClipBar(CLIP_BARS[i].v);
+    }
+    clipSchedulerWake();
+  }
+  function clipSchedulerWake() {
+    if (clipTick.timer || document.hidden || !anyClipActive()) return;
+    clipTick.timer = setTimeout(clipTickFn, CLIP_TICK_MS);
+  }
+  /* read by the embed diagnostics as `schedulerActive` */
+  window.__clipScheduler = {
+    rateHz: 1000 / CLIP_TICK_MS,
+    isActive: function () { return !!clipTick.timer; }
+  };
+  /* handshake with the embed lifecycle: no decoder release mid-scrub */
+  function clipSeekHold(v, on) {
+    var api = window.__superhiveMedia;
+    if (api && api.seekHold) api.seekHold(v, on);
+  }
+
   (function buildClipBars() {
     var vids = document.querySelectorAll('video');
     for (var i = 0; i < vids.length; i++) {
@@ -6508,32 +6734,23 @@ html:not(.dark) .card-fx > .fx-dots {
         fill.className = 'clip-bar-fill';
         bar.appendChild(fill);
         host.appendChild(bar);
-        CLIP_BARS.push({ v: v, fill: fill });
+        var barRec = { v: v, fill: fill, vis: true, scrub: false };
+        CLIP_BARS.push(barRec);
         ['timeupdate', 'loadedmetadata', 'seeked', 'ended', 'durationchange'].forEach(function (ev) {
           v.addEventListener(ev, function () { drawClipBar(v); });
         });
         drawClipBar(v);
 
-        /* timeupdate is throttled by the spec to roughly 4x/SECOND, so a bar driven
-           only by it steps in ~250ms jumps: on a very short clip that is a handful of
-           visible stutters, and it cannot get smoother however short the clip is.
-           requestAnimationFrame drives it once per frame instead, so the bar is as
-           smooth on a 1s clip as on a 60s one. The listeners above stay as the
-           fallback for paused, seeking and pre-play states, where no loop runs. */
-        var barRaf = 0;
-        var barTick = function () {
-          barRaf = (v.paused || v.ended) ? 0 : requestAnimationFrame(barTick);
-          drawClipBar(v);
-        };
-        var barStart = function () {
-          if (!barRaf && !v.paused && !v.ended && window.requestAnimationFrame) {
-            barRaf = requestAnimationFrame(barTick);
-          }
-        };
-        var barStop = function () { if (barRaf) { cancelAnimationFrame(barRaf); barRaf = 0; } };
-        ['play', 'playing', 'seeking'].forEach(function (ev) { v.addEventListener(ev, barStart); });
-        ['pause', 'ended'].forEach(function (ev) { v.addEventListener(ev, barStop); });
-        if (!v.paused && !v.ended) barStart();
+        /* ⛔ NO per-video requestAnimationFrame here any more. These listeners only
+           wake the ONE shared scheduler; the events above remain the fallback for
+           states where no loop runs. */
+        ['play', 'playing', 'seeking'].forEach(function (ev) {
+          v.addEventListener(ev, function () { clipSchedulerWake(); drawClipBar(v); });
+        });
+        ['pause', 'ended'].forEach(function (ev) {
+          v.addEventListener(ev, function () { drawClipBar(v); });
+        });
+        if (!v.paused && !v.ended) clipSchedulerWake();
 
         // loading spinner — same idea, one per clip
         var spin = document.createElement('div');
@@ -6569,6 +6786,9 @@ html:not(.dark) .card-fx > .fx-dots {
         bar.addEventListener('pointerdown', function (e) {
           e.preventDefault(); e.stopPropagation();
           dragging = true;
+          barRec.scrub = true;              /* scheduler stays on even while paused */
+          clipSeekHold(v, true);            /* lifecycle must not detach mid-scrub */
+          clipSchedulerWake();
           try { bar.setPointerCapture(e.pointerId); } catch (err) {}
           seekTo(e.clientX);
         });
@@ -6580,6 +6800,8 @@ html:not(.dark) .card-fx > .fx-dots {
         var endSeek = function (e) {
           if (!dragging) return;
           dragging = false;
+          barRec.scrub = false;
+          clipSeekHold(v, false);
           e.stopPropagation();
           try { bar.releasePointerCapture(e.pointerId); } catch (err) {}
         };
@@ -6588,6 +6810,22 @@ html:not(.dark) .card-fx > .fx-dots {
         bar.addEventListener('click', function (e) { e.stopPropagation(); });
       })(vids[i]);
     }
+  })();
+
+  /* Standalone only: without the embed runtime there is no host-visibility source for
+     the scheduler, so one IntersectionObserver keeps a visible-set for the bar videos.
+     In embed mode (`__superhiveEmbedMode`) the runtime's root:null answer is used
+     instead — a page-viewport observer would be wrong inside the 16000px iframe. */
+  (function barVisibilitySet() {
+    if (window.__superhiveEmbedMode || !('IntersectionObserver' in window)) return;
+    var viz = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        var rec = clipBarRec(entries[i].target);
+        if (rec) rec.vis = entries[i].isIntersecting;
+      }
+      clipSchedulerWake();
+    }, { threshold: 0 });
+    for (var i = 0; i < CLIP_BARS.length; i++) viz.observe(CLIP_BARS[i].v);
   })();
 
   /* ---------- 8. Hero clip player — progress bar + play/pause ----------
@@ -6773,9 +7011,11 @@ html:not(.dark) .card-fx > .fx-dots {
       idx = Math.max(0, Math.min(n - 1, i));
       var s = HERO_SLIDES[idx] || {};
       if (s.src && heroVideo.getAttribute('src') !== s.src) {
-        heroVideo.setAttribute('src', s.src);  // setting src reloads the element
-        var pr = heroVideo.play();             // muted, so autoplay is allowed
-        if (pr && pr.catch) pr.catch(function () {});
+        /* ⛔ The ONE shared handoff (see setVideoSrcCompat above). In embed mode the
+           runtime attaches the clip only when it is visible, so switching characters
+           while the hero is offscreen parks the URL instead of starting a load. A
+           fresh source also resets the runtime's saved time for this clip. */
+        setVideoSrcCompat(heroVideo, s.src, true);   // hero switches autoplay the new clip
       }
       if (leftBadge && s.tag) leftBadge.textContent = s.tag;
       if (rightName && s.name) rightName.textContent = s.name;
@@ -7318,7 +7558,15 @@ html:not(.dark) .card-fx > .fx-dots {
       } else {
         modal.querySelector('#urlLabel').textContent = 'Clip URL (image or video)';
         var ed = el.querySelector('.ed-media');
-        fUrl.value = ed ? (ed.tagName === 'VIDEO' ? (ed.querySelector('source') ? ed.querySelector('source').src : '') : ed.src) : '';
+        /* ⛔ A clip parked by the embed source deferral keeps its ORIGINAL URL in
+           data-sh-src (that metadata is what "preserve editor URL metadata" means
+           here) — read it as a fallback so the inspector never shows an empty field
+           for a clip that is currently offscreen. */
+        fUrl.value = ed ? (ed.tagName === 'VIDEO'
+          ? (ed.querySelector('source')
+              ? (ed.querySelector('source').src || ed.querySelector('source').getAttribute('data-sh-src') || '')
+              : (ed.getAttribute('src') || ed.getAttribute('data-sh-src') || ''))
+          : ed.src) : '';
         fNewTab.checked = false;
         fRemove.style.display = ed ? 'inline-block' : 'none';
       }
@@ -7401,9 +7649,19 @@ html:not(.dark) .card-fx > .fx-dots {
     if (toggle) toggle.classList.remove('active');
   }
 
+  /* ⛔ In embed mode the sources of offscreen clips are parked in data-sh-src (the
+     runtime re-attaches them from there, using the same original URLs). A saved or
+     copied document must be standalone-valid, so the early embed gate's export helper
+     restores the parked srcs for the ONE synchronous serialization and re-parks them
+     immediately after. Everything else falls through to plain outerHTML. */
+  function exportHTML() {
+    if (window.__superhiveExportHTML) { try { return window.__superhiveExportHTML(); } catch (e) {} }
+    return '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  }
+
   function saveHTML() {
     cleanForExport();
-    var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    var html = exportHTML();
     var blob = new Blob([html], { type: 'text/html' });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -7414,7 +7672,7 @@ html:not(.dark) .card-fx > .fx-dots {
 
   function copyHTML() {
     cleanForExport();
-    var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    var html = exportHTML();
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(html).then(function () { flash('HTML copied!'); }).catch(function () { flash('Copy not available'); });
     } else { flash('Copy not available'); }
@@ -7440,7 +7698,9 @@ html:not(.dark) .card-fx > .fx-dots {
   'use strict';
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var glow = document.querySelector('.mouse-glow');
-  if (glow && !reduceMotion) {
+  /* ⛔ Efficient embed mode: this second glow loop is off too — otherwise it would
+     survive as a hidden duplicate of the block gated above. */
+  if (glow && !reduceMotion && !window.__shEfficient) {
     var gX = 0, gY = 0, tX = 0, tY = 0, raf = null;
     function tick() {
       gX += (tX - gX) * 0.95;
@@ -7452,7 +7712,11 @@ html:not(.dark) .card-fx > .fx-dots {
     window.addEventListener('mousemove', function (e) { tX = e.clientX; tY = e.clientY; if (!raf) raf = requestAnimationFrame(tick); }, { passive: true });
   }
   var reveals = document.querySelectorAll('.reveal');
-  if ('IntersectionObserver' in window) {
+  if (window.__superhiveEmbedMode) {
+    /* EMBED: the runtime owns reveal state (offscreen hide + finite entry pop against
+       the HOST viewport). Starting this second one-shot observer would permanently
+       reveal everything behind it. */
+  } else if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('visible'); io.unobserve(en.target); } });
     }, { threshold: 0.12 });
@@ -7493,6 +7757,11 @@ html:not(.dark) .card-fx > .fx-dots {
   /* ⛔ a still page should stay still: the static dot field IS the reduced-motion state,
      and the `#cardFx` block already pins it back on for anyone who asks for no motion. */
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  /* ⛔ EFFICIENT EMBED MODE (the default): the hover field is off — the static `.fx-dots`
+     pattern is the resting state, no canvas is ever created and no particle RAF can
+     survive as a hidden duplicate. `?effects=full` restores it; standalone untouched. */
+  if (window.__shEfficient) return;
 
   /* ⛔ ONE LIST — the features text cards, which is the context the owner asked in. Add
      `'#shapekeys .quickfog-outer'` to put the same hover on the Shapekeys cards.
