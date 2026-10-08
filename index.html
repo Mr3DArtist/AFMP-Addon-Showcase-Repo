@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="dark" data-embed-parent-origin="">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -206,8 +206,7 @@ header.site-header {
      corner while the bar is at rest. That is the requested look, not a defect.
      ⛔ `border-bottom` follows the radius, so the hairline still curves with the shape
      rather than running straight past it. */
-  background: color-mix(in srgb, var(--bg) 50%, transparent);
-  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  background: rgba(0, 0, 0, 0.3);
   border-bottom: 1px solid var(--border);
   border-radius: 20px;
   transition: box-shadow .3s ease, background .45s ease;
@@ -356,9 +355,8 @@ header.site-header {
   position: absolute; inset: 0; margin: auto; z-index: 2;
   width: 84px; height: 84px; border-radius: 50%;
   display: grid; place-items: center; cursor: pointer;
-  background: color-mix(in srgb, var(--ink) 10%, transparent);
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid color-mix(in srgb, var(--ink) 28%, transparent);
-  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   color: var(--ink);
   transition: transform .3s ease, background .3s ease;
 }
@@ -367,9 +365,8 @@ header.site-header {
 .hero-media .pill {
   position: absolute; z-index: 2; bottom: 18px; left: 50%; transform: translateX(-50%);
   padding: .5rem 1.1rem; border-radius: 999px; font-size: .78rem; font-weight: 600;
-  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border-strong); color: var(--ink);
-  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
 }
 
 /* ---- Clip progress bars — EVERY clip on the page ----
@@ -441,10 +438,9 @@ header.site-header {
      frame is invisible in practice (measured — at full opacity it could not be
      picked out of a screenshot). The dark disc + blur keeps it legible over any
      frame, and the azure arc stays the moving part. */
-  background: color-mix(in srgb, #011a60 62%, transparent);
+  background: rgba(0, 0, 0, 0.3);
   border: 3px solid color-mix(in srgb, var(--ink) 34%, transparent);
   border-top-color: #0096ff;
-  -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
   box-shadow: 0 0 16px color-mix(in srgb, #0096ff 45%, transparent),
               inset 0 0 10px color-mix(in srgb, #000 30%, transparent);
   animation: clipSpin .8s linear infinite;
@@ -480,8 +476,7 @@ header.site-header {
   padding: .34rem .95rem; border-radius: 999px;
   font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
   color: var(--ink); text-decoration: none; white-space: nowrap;
-  background: color-mix(in srgb, var(--bg) 68%, transparent);
-  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.3);
   transition: transform .25s ease, box-shadow .25s ease;
 }
 .hero-media .hm-badge svg { width: 13px; height: 13px; flex: none; opacity: .9; }
@@ -554,8 +549,7 @@ header.site-header {
   position: absolute; z-index: 7; top: auto; bottom: calc(100% + 27px);
   /* a soft halo so the pill sits ON the footage rather than on top of it */
   box-shadow: 0 0 22px -6px color-mix(in srgb, #0096ff 60%, transparent);
-  background: color-mix(in srgb, var(--bg) 68%, transparent);
-  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.3);
   /* the arrow carries the same gradient ring as the badges, so the ring replaces
      .g-arrow's own 1px outline rather than doubling it */
   border-color: transparent;
@@ -815,9 +809,8 @@ header.site-header {
   position: absolute; z-index: 2; top: 12px; left: 50%; transform: translateX(-50%);
   padding: .35rem .9rem; border-radius: 999px; font-size: .68rem; font-weight: 800;
   letter-spacing: .14em; text-transform: uppercase; white-space: nowrap;
-  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border-strong); color: var(--muted);
-  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
 }
 .hero-video-card .yt-caption { margin: .7rem 0 0; text-align: center; font-size: .82rem; color: var(--muted); }
 /* with no video id the frame is inert, so the button reads as "waiting"
@@ -894,18 +887,16 @@ header.site-header {
   position: absolute; z-index: 2; top: 14px; left: 14px;
   padding: .35rem .8rem; border-radius: 999px; font-size: .7rem; font-weight: 700;
   letter-spacing: .1em; text-transform: uppercase;
-  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border-strong); color: var(--ink);
-  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
 }
 .feature-media .media-reel {
   position: absolute; z-index: 2; right: 14px; bottom: 14px;
   display: flex; gap: .45rem; align-items: center;
   font-size: .74rem; font-weight: 600; color: var(--ink);
   padding: .4rem .8rem; border-radius: 999px;
-  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border-strong);
-  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
 }
 .media-reel .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--color-tertiary); animation: pulse 1.6s ease-in-out infinite; }
 @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 var(--glow-tertiary); } 50% { box-shadow: 0 0 0 6px transparent; } }
@@ -947,9 +938,9 @@ header.site-header {
 .card-visual .v-icon {
   position: absolute; inset: 0; margin: auto; width: 46px; height: 46px;
   display: grid; place-items: center; border-radius: 14px;
-  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid color-mix(in srgb, var(--ink) 26%, transparent);
-  color: var(--ink); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  color: var(--ink);
 }
 .card-visual .v-icon svg { width: 22px; height: 22px; }
 .card-body { padding: 1.1rem 1.2rem 1.3rem; }
@@ -1392,9 +1383,8 @@ header.site-header {
      INK. Kept in em, so the correction stays proportional as the badge scales with
      the card. */
   padding: .183em .457em .103em; border-radius: .893em;
-  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  background: rgba(0, 0, 0, 0.3);
   border: .089em solid var(--border-strong);
-  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   transform-origin: bottom left;
   transition: transform .55s cubic-bezier(.22,.61,.36,1);
 }
@@ -2420,15 +2410,10 @@ h1,h2,h3,h4,.site-header .brand,.section-title,.g-title,.g-name,.acc-head,.vb-ve
    ============================================================ */
 .quickfog-outer,.specs-bar,.spec-item,.compare-card,.time-chip,.accordion,.acc-head,.feature-card,.feature-media,.c-card,.img-frame,.g-frame,.rating-card,.hero-media,.tag{
   position:relative;
-  background-color:var(--card-bg);
-  background-image:
-    linear-gradient(115deg,transparent 25%,rgba(255,255,255,.16) 41%,rgba(255,255,255,.04) 53%,transparent 65%),
-    radial-gradient(130% 95% at 50% -18%,rgba(255,255,255,.20),rgba(255,255,255,.04) 55%),
-    linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 60%);
-  background-size:200% 100%,auto,auto;
-  background-position:120% 0,0 0,0 0;
-  -webkit-backdrop-filter:blur(30px) saturate(1.8);
-  backdrop-filter:blur(30px) saturate(1.8);
+  background-color:rgba(0,0,0,.3);
+  background-image:none;
+  background-size:auto;
+  background-position:0 0;
   border-color:rgba(255,255,255,.16);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.30),
@@ -2443,9 +2428,7 @@ h1,h2,h3,h4,.site-header .brand,.section-title,.g-title,.g-name,.acc-head,.vb-ve
    directly under it so the opt-out stays next to what it opts out of.) */
 .hero-video-card.quickfog-outer:hover{background-position:120% 0,0 0,0 0}
 .btn,.btn-ghost,.theme-toggle,.g-arrow,.menu-btn,.action-btn,.faq-btn,.version-badge,.step-num{
-  background-color:var(--card-bg);
-  -webkit-backdrop-filter:blur(20px) saturate(1.6);
-  backdrop-filter:blur(20px) saturate(1.6);
+  background-color:rgba(0,0,0,.3);
   border-color:rgba(255,255,255,.18);
 }
 html:not(.dark) .btn,html:not(.dark) .theme-toggle,html:not(.dark) .g-arrow,html:not(.dark) .faq-btn,html:not(.dark) .version-badge,html:not(.dark) .step-num{border-color:rgba(0,0,0,.16)}
@@ -2637,10 +2620,8 @@ html:not(.dark) .price-card:hover,html:not(.dark) .workflow-card:hover,html:not(
      `92%` does not, so the cards overflowed the strip wherever a scrollbar showed. */
   border:1px solid var(--border-strong);
   border-radius:22px;
-  background:var(--card-bg);
+  background:rgba(0,0,0,.3);
   padding:var(--strip-pad);
-  -webkit-backdrop-filter:blur(30px) saturate(1.8);
-  backdrop-filter:blur(30px) saturate(1.8);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.30),
     inset 0 -1px 0 rgba(255,255,255,.06);
@@ -2664,10 +2645,8 @@ html:not(.dark) .m3-wrap:hover{outline-color:transparent}
   position:relative;
   border:1px solid var(--border-strong);
   border-radius:22px;
-  background:var(--card-bg);
+  background:rgba(0,0,0,.3);
   padding:.55rem;
-  -webkit-backdrop-filter:blur(30px) saturate(1.8);
-  backdrop-filter:blur(30px) saturate(1.8);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.30),inset 0 -1px 0 rgba(255,255,255,.06);
   /* transparent at rest: the ring is painted only by @keyframes ringOut on hover */
   outline:1px solid transparent;
@@ -2687,15 +2666,10 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   position:relative;
   border:1px solid var(--border-strong);
   border-radius:22px;
-  background-color:var(--card-bg);
-  background-image:
-    linear-gradient(115deg,transparent 25%,rgba(255,255,255,.16) 41%,rgba(255,255,255,.04) 53%,transparent 65%),
-    radial-gradient(130% 95% at 50% -18%,rgba(255,255,255,.20),rgba(255,255,255,.04) 55%),
-    linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 60%);
-  background-size:200% 100%,auto,auto;
-  background-position:120% 0,0 0,0 0;
-  -webkit-backdrop-filter:blur(30px) saturate(1.8);
-  backdrop-filter:blur(30px) saturate(1.8);
+  background-color:rgba(0,0,0,.3);
+  background-image:none;
+  background-size:auto;
+  background-position:0 0;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.30),
     inset 0 -1px 0 rgba(255,255,255,.06);
@@ -2826,21 +2800,14 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   padding:.5rem 1.2rem;
   border:1px solid color-mix(in srgb,var(--color-tertiary) 30%,transparent);
   border-radius:999px;
-  -webkit-backdrop-filter:blur(14px) saturate(1.4);
-  backdrop-filter:blur(14px) saturate(1.4);
-  background:color-mix(in srgb,var(--card-bg) 40%,transparent);
+  background:rgba(0,0,0,.3);
 }
 .price-card,.workflow-card,.support-card,.catalog-card{
   position:relative;
-  background-color:var(--card-bg);
-  background-image:
-    linear-gradient(115deg,transparent 25%,rgba(255,255,255,.16) 41%,rgba(255,255,255,.04) 53%,transparent 65%),
-    radial-gradient(130% 95% at 50% -18%,rgba(255,255,255,.20),rgba(255,255,255,.04) 55%),
-    linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 60%);
-  background-size:200% 100%,auto,auto;
-  background-position:120% 0,0 0,0 0;
-  -webkit-backdrop-filter:blur(30px) saturate(1.8);
-  backdrop-filter:blur(30px) saturate(1.8);
+  background-color:rgba(0,0,0,.3);
+  background-image:none;
+  background-size:auto;
+  background-position:0 0;
   border-color:rgba(255,255,255,.16);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.30),
@@ -2972,11 +2939,11 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
    ⚠ Re-measure contrast with `_hero_card_check.js`: the frost softens the dome behind the
    heading, and the heading's glow is what carries the contrast at the dome's fade. */
 .hero-copy-card {
-  background: transparent !important;
+  background: rgba(0, 0, 0, .3) !important;
   background-image: none !important;
   box-shadow: none !important;
-  -webkit-backdrop-filter: blur(1.5px) !important;
-          backdrop-filter: blur(1.5px) !important;
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
 }
 .hero-center h1{font-size:clamp(1.6rem,3.2vw,2.7rem)!important;padding:0 0 .5rem!important}
 .hero-center .hero-sub{font-size:clamp(.8rem,1.3vw,.95rem)!important;margin:0 auto!important;max-width:52ch!important}
@@ -3256,7 +3223,7 @@ html:not(.dark) body {
 .compare-card.old,
 .compare-card.new,
 .compare-card:hover {
-  background: transparent !important;
+  background: rgba(0,0,0,.3) !important;
   background-image: none !important;
   border: 0 !important;
   box-shadow: none !important;
@@ -3348,12 +3315,11 @@ html:not(.dark) .compare-card h3 {
    of this very warning contained it, which ended the comment early and produced
    the identical bug one layer down. `_orphan_css_check.js` catches it. */
 html.dark .price-card {
-  background-color: transparent;
+  background-color: rgba(0, 0, 0, 0.3);
   /* layer 1 is the CURSOR GLOW — --mx/--my come from #pricingGlow */
   background-image:
     radial-gradient(300px circle at var(--mx, 50%) var(--my, 0%),
-      color-mix(in srgb, #0096ff 22%, transparent), transparent 68%),
-    linear-gradient(180deg, #121722 0%, #0b0e14 100%);
+      color-mix(in srgb, #0096ff 22%, transparent), transparent 68%);
   border: 1px solid rgba(255, 255, 255, .10);
   border-radius: 12px;
   padding: 1.5rem;
@@ -3496,7 +3462,12 @@ html:not(.dark) .offer-band::after {
    ⛔ z-index -2: above the canvas background (the body gradient ramp), below
    body::before (ambient glows) and body::after (film grain), both at -1. */
 #interactiveBg {
-  position: fixed; inset: 0;
+  /* ⛔ NOT inset:0. The particle module sizes AND places this box (see measure()):
+     in a normal window it is 0,0 x innerWidth x innerHeight — identical to inset:0 —
+     but inside a 16000px-tall store iframe inset:0 would ask for a 16000px backing
+     store (74M device pixels at DPR 2). The module caps the height and moves the box
+     over the parent-visible band instead. */
+  position: fixed; top: 0; left: 0; right: 0; bottom: auto;
   width: 100%; height: 100%;
   z-index: -2; pointer-events: none;
   display: block;
@@ -3972,11 +3943,11 @@ html.dark .card-fx > .fx-pool {
    ⚠ Re-measure the copy's contrast if the page behind it ever lightens — this card is long
    and its three paragraphs run the full width. */
 #workflow .afmp-intro-card {
-  background: transparent !important;
+  background: rgba(0, 0, 0, .3) !important;
   background-image: none !important;
   box-shadow: none !important;
-  -webkit-backdrop-filter: blur(1.5px) !important;
-          backdrop-filter: blur(1.5px) !important;
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
 }
 
 /* ------------------------------------------------------- the travelling outline
@@ -4060,7 +4031,7 @@ html.dark .card-fx > .fx-pool {
    `#interactiveBg` canvas. With it gone the text sits directly on the page gradient —
    its contrast is re-measured in `_surface_probe.js`, not assumed. */
 #shapekeys .quickfog-outer {
-  background: transparent !important;
+  background: rgba(0, 0, 0, .3) !important;
   background-image: none !important;
   box-shadow: none !important;
   -webkit-backdrop-filter: none !important;
@@ -4143,7 +4114,7 @@ html.dark .card-fx > .fx-pool {
    change: `#workflow .feature-text > .quickfog-outer { opacity: .3 }` and delete this
    pseudo. Measured against the dark page, a #f5f5f5 heading at 30% lands at about 2.2:1. */
 #workflow .feature-text > .quickfog-outer {
-  background-color: transparent !important;
+  background-color: rgba(0, 0, 0, .3) !important;
   background-image: none !important;
   /* ⛔ this stays for the LIGHT theme, which has no ring of its own — see the dark rule
      below, which is more specific and replaces it there. Without it the page-wide glass
@@ -4226,8 +4197,8 @@ html.dark #workflow .feature-text > .quickfog-outer:hover {
      roughly a third of whatever radius is set here, and the instruction would quietly cancel
      itself. The fill is transparent and the blur is at full strength. */
   background: none;
-  -webkit-backdrop-filter: blur(1.5px);
-          backdrop-filter: blur(1.5px);
+  -webkit-backdrop-filter: none;
+          backdrop-filter: none;
 }
 
 /* ⛔⛔ THE PRICING CARD'S BLUE. Owner: *"also add the blue color just like in the pricing
@@ -4346,8 +4317,8 @@ html.dark #workflow .feature-text > .quickfog-outer::before {
    ⛔ 0 positioned children (measured): `.vs-badge` static, `h3` static, `ul` static,
    `.time-chip` relative — so no `.fx-abs` snapshot, unlike the hero clip. */
 #workflow .compare-card {
-  -webkit-backdrop-filter: blur(1.5px) !important;
-          backdrop-filter: blur(1.5px) !important;
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
 }
 /* the pair's own old hover, off — same shape as rules 3 and 4 */
 #workflow .compare-card:hover,
@@ -4387,49 +4358,6 @@ html.dark #workflow .feature-text > .quickfog-outer::before {
   border-color: color-mix(in srgb, #0096ff 45%, transparent);
   color: #8fd0ff;
 }
-
-/* ------------------------------------- 8. THE VISIBILITY GATE
-   Owner: *"it's still using 30% cpu and 20% gpu i want you to optimze it"*, then *"make it use
-   as little as possible"*.
-
-   ⛔⛔ MEASURED FIRST, AND IT EXONERATES EVERYTHING I HAD ALREADY OPTIMISED. With one suspect
-   disabled at a time, over three seconds each:
-       baseline (all on)                 1.356s of task time
-       particle field OFF                1.420s   ->  saved NOTHING
-       every backdrop-filter OFF         1.400s   ->  saved NOTHING
-       .fx-ring + .fx-dots + .fx-pool OFF 0.927s  ->  saved 0.429s, 32% of the page
-   ⛔ So the background field is NOT the cost any more — the batching took its script time to
-   26ms per 3 seconds and this proves it. The cost is the PER-CARD pattern layers, and the
-   reason is simply how many of them there are: **20 `.card-fx` cards, each with a ring and a
-   dot field, so 40 layers animating every frame — while exactly ONE card is on screen.**
-   Nineteen twentieths of that work is spent drawing something nobody can see.
-   ⛔⛔ WHY THE ANIMATIONS ARE EXPENSIVE RATHER THAN MERELY PRESENT. `dotWave` animates
-   `mask-position` and `fxOrbit` animates a `@property` angle feeding a conic-gradient. Neither
-   can be composited — a transform can, but these are not transforms — so both force the card
-   to be REPAINTED every frame, for the whole time they run.
-   ⛔⛔ ONLY `animation-name` IS TOGGLED, deliberately. Setting the `animation` shorthand here
-   would reset `animation-duration` and `animation-delay`, and the delay is what staggers the
-   wave across the section (`.card-fx:nth-of-type(2n) > .fx-dots { animation-delay: -.9s }`).
-   Same specificity plus later source order would have silently un-staggered every card and
-   made the whole section pulse in lockstep.
-   ⛔ The class is added by `#fxVisibility` at the end of the body, which watches every
-   `.card-fx` with an IntersectionObserver and a 200px `rootMargin`, so a card is live slightly
-   BEFORE it enters the viewport and nothing pops. This is the technique the `#cardFx` block
-   records as holding a full rollout to 2-12 live at any scroll position. */
-/* ⛔⛔ THE CARD LAYERS ARE GATED BY THE GENERIC PAUSE INSTEAD, AND THIS RULE IS DELETED.
-   Owner: *"why did you pause the animations"* — which found a real defect.
-   ⛔⛔ `animation-name: none` DOES NOT PAUSE AN ANIMATION, IT DESTROYS AND RECREATES IT.
-   Removing the name and putting it back restarts the animation from zero, so every card's
-   dot wave and orbiting ring visibly JUMPED BACK TO THE START as it scrolled into view. The
-   `rootMargin` made it worse rather than better: the restart happened 200px BEFORE the card
-   appeared, exactly where the eye could watch it happen.
-   ⛔ The reason this rule existed was to avoid resetting `animation-duration` and
-   `animation-delay` (the stagger across the section). Pausing never touches either, so the
-   generic gate in `#fxAnimGate` gets the same saving AND keeps the phase. The 32% it was
-   built to recover is still recovered — the measurement is in that block.
-   ⛔ `.fx-live` is left in the CSS and in `#fxVisibility`'s class toggle only as a hook; no
-   rule reads it now. If a rule is ever added back here, it MUST use `animation-play-state`
-   rather than `animation-name`, for the reason above. */
 
 /* ------------------------------------- 6. the hover COLOUR, on the rest of the cards
    Owner: *"the hover over color does not show also add that"*.
@@ -4646,6 +4574,36 @@ html.dark .hero-copy-card:hover {
    the base rule keeps the height in step, so there is nothing left to override here. */
 }
 </style>
+<style id="afmpOffscreen">
+/* ============================================================
+   OFF-SCREEN GATE + ANIMATED-GIF POSTER
+   ⛔ `animation-play-state` IS NOT AN INHERITED PROPERTY, so pausing a root does NOT
+   pause its descendants or their pseudo-elements. All three selectors are required:
+   the element, every descendant, and BOTH pseudo-elements of every descendant — the
+   orbiting ring on .card-fx > .fx-ring, the sheen on .btn-primary::after and the seam
+   sweep on a section's ::before are pseudo-elements, and a rule that stops at `*`
+   leaves every one of them running off screen.
+   ⛔ PAUSED, NOT REMOVED. The class is toggled both ways, so an effect that scrolls
+   back into view RESUMES from where it stopped instead of restarting; and an animation
+   that had already finished stays finished. */
+.afx-off,
+.afx-off *,
+.afx-off *::before,
+.afx-off *::after { animation-play-state: paused !important; }
+
+/* ---- animated GIF, off screen ----
+   ⛔ The poster is an absolutely positioned snapshot in the image's own measured box,
+   so taking the live <img> out of painting cannot move anything: `visibility` keeps
+   the image's place in the layout, which `display: none` would not — and a collapsed
+   box would drop the offer band's whole right-hand cell. */
+.gif-poster {
+  position: absolute; display: none; pointer-events: none;
+  border-radius: inherit;
+}
+.afx-gif-off > .gif-poster { display: block; }
+.afx-gif-off > img.gif-clip { visibility: hidden; }
+</style>
+
 <style id="accordionChat">
 /* ============================================================ */
 /* CHAT-STYLE ACCORDION — Specs & FAQ.                            */
@@ -5401,7 +5359,7 @@ html.dark .hero-copy-card:hover {
       <!-- Hero clip — hosted on the Mr3D carrd CDN (was a placeholder pointing at
            assets/videos/hero-demo.mp4, which was never added). Swap the src to use
            a local file instead. -->
-      <video autoplay muted loop playsinline aria-label="Auto Face MoCap Pro demo preview" src="https://mr3dpageclips.carrd.co/assets/videos/video44.mp4?v=f823f065" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+      <video muted loop playsinline data-autoplay aria-label="Auto Face MoCap Pro demo preview" src="https://mr3dpageclips.carrd.co/assets/videos/video44.mp4?v=f823f065" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
       <div class="grid-lines"></div>
       <!-- the progress bar is injected by the page script, for this clip and every
            other <video> on the page (see "Clip progress bars" in the CSS) -->
@@ -5490,7 +5448,7 @@ html.dark .hero-copy-card:hover {
            ⛔ The CARD is the invariant, the clip is not — it was pulled and swapped twice
            in one afternoon; never delete this .hero-side div, only its src changes. -->
       <div class="quickfog-outer hero-side reveal">
-        <video autoplay muted loop playsinline data-no-clip-bar src="https://mr3dpageclips.carrd.co/assets/videos/video52.mp4?v=95329a86" aria-label="Demo clip (left)"></video>
+        <video muted loop playsinline data-autoplay data-no-clip-bar src="https://mr3dpageclips.carrd.co/assets/videos/video52.mp4?v=95329a86" aria-label="Demo clip (left)"></video>
       </div>
       <div class="hero-center">
         <div class="quickfog-outer hero-copy-card">
@@ -5535,7 +5493,7 @@ html.dark .hero-copy-card:hover {
            data-no-clip-bar: decorative loop, nothing to scrub.
            ⛔ The CARD is the invariant, the clip is not — do not delete this .hero-side. -->
       <div class="quickfog-outer hero-side reveal">
-        <video autoplay muted loop playsinline data-no-clip-bar src="https://mr3dpageclips.carrd.co/assets/videos/video51.mp4?v=5a2a2d09" aria-label="Demo clip (right)"></video>
+        <video muted loop playsinline data-autoplay data-no-clip-bar src="https://mr3dpageclips.carrd.co/assets/videos/video51.mp4?v=5a2a2d09" aria-label="Demo clip (right)"></video>
       </div>
     </div>
   </div>
@@ -5748,7 +5706,7 @@ html.dark .hero-copy-card:hover {
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Video to character preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video54.mp4?v=18e0faa3" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video muted loop playsinline data-autoplay src="https://mr3dpageclips.carrd.co/assets/videos/video54.mp4?v=18e0faa3" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Video to Character</span>
         </div>
       </div>
@@ -5788,12 +5746,12 @@ html.dark .hero-copy-card:hover {
              its "Rig Mapping" badge removed (it labelled a row that no longer exists). 16:9, so
              it is uncropped at whatever size it is given. -->
         <div class="feature-media" role="img" aria-label="Rig mapping preview" style="flex:0 1 70%;width:70%;min-width:0;margin:0;">
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video37.mp4?v=4b53155c" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video muted loop playsinline data-autoplay src="https://mr3dpageclips.carrd.co/assets/videos/video37.mp4?v=4b53155c" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
         </div>
         <!-- The Final Take clip, moved out of its own row. Its cell is the clip's own portrait
              shape, so it fills it: no letterbox bands and still never cropped. -->
         <div class="feature-media" role="img" aria-label="Finished performance preview" style="flex:0 1 30%;width:30%;min-width:0;margin:0;aspect-ratio:464/832">
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video42.mp4?v=2ac0643f" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1"></video>
+          <video muted loop playsinline data-autoplay src="https://mr3dpageclips.carrd.co/assets/videos/video42.mp4?v=2ac0643f" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1"></video>
           <span class="media-tag">Final Take</span>
         </div>
       </div>
@@ -5813,7 +5771,7 @@ html.dark .hero-copy-card:hover {
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="ARKit shape keys preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video41.mp4?v=2983c6a1" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video muted loop playsinline data-autoplay src="https://mr3dpageclips.carrd.co/assets/videos/video41.mp4?v=2983c6a1" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">ARKit Shape Keys</span>
         </div>
       </div>
@@ -5832,7 +5790,7 @@ html.dark .hero-copy-card:hover {
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Side by side preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video38.mp4?v=9bc7cfe1" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video muted loop playsinline data-autoplay src="https://mr3dpageclips.carrd.co/assets/videos/video38.mp4?v=9bc7cfe1" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Side by Side</span>
         </div>
       </div>
@@ -5852,7 +5810,7 @@ html.dark .hero-copy-card:hover {
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Register character preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video39.mp4?v=91e84c89" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video muted loop playsinline data-autoplay src="https://mr3dpageclips.carrd.co/assets/videos/video39.mp4?v=91e84c89" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Register Character</span>
         </div>
       </div>
@@ -5871,7 +5829,7 @@ html.dark .hero-copy-card:hover {
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Lipsync preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video43.mp4?v=49f0fe46" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video muted loop playsinline data-autoplay src="https://mr3dpageclips.carrd.co/assets/videos/video43.mp4?v=49f0fe46" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Lipsync</span>
         </div>
       </div>
@@ -5891,7 +5849,7 @@ html.dark .hero-copy-card:hover {
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Tracking preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video40.mp4?v=7fad27eb" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video muted loop playsinline data-autoplay src="https://mr3dpageclips.carrd.co/assets/videos/video40.mp4?v=7fad27eb" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Tracking</span>
         </div>
       </div>
@@ -5922,7 +5880,7 @@ html.dark .hero-copy-card:hover {
         <div class="feature-media" role="img" aria-label="Facial tuning preview" style="margin:0;">
           <!-- The owner swaps this clip; the ?v= token is what stops carrd's 7-day cache
                (and its edge copy) pinning the old one — same reason the hero rails carry it. -->
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video50.mp4?v=b63d3f92" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video muted loop playsinline data-autoplay src="https://mr3dpageclips.carrd.co/assets/videos/video50.mp4?v=b63d3f92" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Facial Tuning</span>
         </div>
       </div>
@@ -5956,7 +5914,7 @@ html.dark .hero-copy-card:hover {
                and re-timing takes, not the bake-to-drivers story the copy below still tells.
                The ?v= token is the file's ETag (refreshed by /updateclips) — the CDN's 7-day
                cache would otherwise pin the old bytes for a week. -->
-          <video autoplay muted loop playsinline src="https://mr3dpageclips.carrd.co/assets/videos/video53.mp4?v=8ba541a2" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video muted loop playsinline data-autoplay src="https://mr3dpageclips.carrd.co/assets/videos/video53.mp4?v=8ba541a2" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Layered Mocaps</span>
         </div>
       </div>
@@ -5975,7 +5933,7 @@ html.dark .hero-copy-card:hover {
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Live preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="assets/videos/live-preview.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video muted loop playsinline data-autoplay src="assets/videos/live-preview.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Live Preview</span>
         </div>
       </div>
@@ -5994,7 +5952,7 @@ html.dark .hero-copy-card:hover {
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Export preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="assets/videos/export.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video muted loop playsinline data-autoplay src="assets/videos/export.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Export</span>
         </div>
       </div>
@@ -6014,7 +5972,7 @@ html.dark .hero-copy-card:hover {
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Expression presets preview" style="margin:0;">
-          <video autoplay muted loop playsinline src="assets/videos/presets.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video muted loop playsinline data-autoplay src="assets/videos/presets.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Presets</span>
         </div>
       </div>
@@ -6590,7 +6548,11 @@ html.dark .hero-copy-card:hover {
 
   /* ---------- 0. Mouse-follow background glow ---------- */
   var glow = document.querySelector('.mouse-glow');
-  if (glow) {
+  /* ⛔ the CSS already hides .mouse-glow under prefers-reduced-motion, but the rAF
+     chain still woke on every mousemove and animated an element nobody could see */
+  var calmMotion = false;
+  try { calmMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  if (glow && !calmMotion) {
     var gX = 0, gY = 0, tX = 0, tY = 0, gRaf = null;
     function glowTick() {
       gX += (tX - gX) * 0.95;
@@ -6699,6 +6661,7 @@ html.dark .hero-copy-card:hover {
         var show = p.getAttribute('data-tab') === tab.getAttribute('data-tab');
         p.classList.toggle('active', show);
       });
+      if (window.AFMP && window.AFMP.scheduleRects) window.AFMP.scheduleRects();
     });
   });
 
@@ -6724,6 +6687,7 @@ html.dark .hero-copy-card:hover {
         head.setAttribute('aria-expanded', 'true');
         body.style.maxHeight = body.scrollHeight + 'px';
       }
+      if (window.AFMP && window.AFMP.scheduleRects) window.AFMP.scheduleRects();
     });
   });
 
@@ -6884,7 +6848,14 @@ html.dark .hero-copy-card:hover {
     gStop();
     if (reduceMotion) return;
     gTimer = setInterval(function () {
+      /* ⛔ OFF-SCREEN CAROUSELS DO NOT ADVANCE. document.hidden was the only guard,
+         and it says nothing about the gallery having been scrolled past — the strip
+         kept scrolling itself (and re-measuring and repainting) for as long as the
+         page was open. isOnScreen() is IntersectionObserver-backed, so it is also
+         correct inside a cross-origin store iframe, where innerHeight is the FRAME's
+         height and would report everything as visible. */
       if (document.hidden) return;
+      if (window.AFMP && !window.AFMP.isOnScreen(viewport)) return;
       var cur = gCurrent();
       if (cur >= gMaxIndex()) { gGo(0); } else { gGo(cur + 1); }
     }, 4200);
@@ -7072,9 +7043,17 @@ html.dark .hero-copy-card:hover {
     var heroDrawBar = function () { drawClipBar(heroVideo); };
     var heroToggle = function () {
       if (heroVideo.paused || heroVideo.ended) {
+        /* ⛔ an explicit play clears the manual-pause flag, so the visibility manager
+           may keep it running when it scrolls back into range */
+        if (window.AFMP) window.AFMP.setUserPaused(heroVideo, false);
         var pr = heroVideo.play();
         if (pr && pr.catch) pr.catch(function () {});   // the autoplay policy can refuse
       } else {
+        /* ⛔⛔ A USER PAUSE IS A DURABLE INTENT. The visibility manager pauses every clip
+           that leaves the screen and resumes it on the way back; without this flag it
+           could not tell "the visitor stopped this" from "this scrolled away", and a
+           deliberate pause would silently undo itself on the next scroll. */
+        if (window.AFMP) window.AFMP.setUserPaused(heroVideo, true);
         heroVideo.pause();
       }
       heroSetState();
@@ -7238,8 +7217,24 @@ html.dark .hero-copy-card:hover {
       var s = HERO_SLIDES[idx] || {};
       if (s.src && heroVideo.getAttribute('src') !== s.src) {
         heroVideo.setAttribute('src', s.src);  // setting src reloads the element
-        var pr = heroVideo.play();             // muted, so autoplay is allowed
-        if (pr && pr.catch) pr.catch(function () {});
+        /* ⛔ THE SLIDE CHANGE IS A FRESH INTENT — it clears any manual pause (that is
+           what this line always did), and then hands the actual play() to the
+           visibility manager so an OFF-SCREEN hero cannot be started by a script.
+           A visible hero plays immediately, exactly as before. */
+        if (window.AFMP) {
+          window.AFMP.setUserPaused(heroVideo, false);
+          window.AFMP.playIfVisible(heroVideo);
+        } else {
+          /* ⛔⛔ NO FALLBACK `play()` HERE. This script is earlier in the document than
+             the gate, so on the FIRST call `window.AFMP` does not exist yet — and the
+             old fallback played the clip on the spot, which is an off-screen clip
+             starting while the document is still parsing, in a store embed where the
+             hero is nowhere near the slice the buyer is looking at. The intent is
+             recorded instead and handed to the gate, which is the only thing that
+             knows whether the hero is on screen. ⛔ Same rule as the markup: nothing
+             starts a clip except the visibility manager. */
+          (window.__afmpPending = window.__afmpPending || []).push(heroVideo);
+        }
       }
       if (leftBadge && s.tag) leftBadge.textContent = s.tag;
       if (rightName && s.name) rightName.textContent = s.name;
@@ -7251,6 +7246,8 @@ html.dark .hero-copy-card:hover {
       }
       if (prevBtn) prevBtn.hidden = (idx === 0);          // nothing to the left
       if (nextBtn) nextBtn.hidden = (idx === n - 1);      // nothing to the right
+      /* the clip, its badges and the dot row can all change the box — re-measure */
+      if (window.AFMP && window.AFMP.scheduleRects) window.AFMP.scheduleRects();
       if (dotsBox) {
         // ⛔ The dot no longer renders its own label: that lives in the bubble above
         // it (.hm-tips), which is on screen for EVERY clip. Writing textContent here
@@ -7295,7 +7292,12 @@ html.dark .hero-copy-card:hover {
     // Grotesk lands — aim once at load and they can be aimed at the wrong row.
     aimTips();
     addEventListener('resize', aimTips);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(aimTips);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () {
+      aimTips();
+      /* the web font landing re-lays out every clip box — the field's exclusion
+         rectangles have to be measured again against the new layout */
+      if (window.AFMP && window.AFMP.scheduleRects) window.AFMP.scheduleRects();
+    });
   })();
 
   /* ---------- 9. Full catalog — 2-col × 4-row paginated grid ---------- */
@@ -7396,6 +7398,9 @@ html.dark .hero-copy-card:hover {
   if (catPages[0]) catPages[0].classList.add('active');
 
   function catShow(i) {
+    /* a carousel page swap is a layout change the particle field cannot see from
+       scroll/resize alone — tell it to re-measure its clip rectangles */
+    if (window.AFMP && window.AFMP.scheduleRects) window.AFMP.scheduleRects();
     catIdx = Math.max(0, Math.min(catPages.length - 1, i));
     catPages.forEach(function (p, idx) { p.classList.toggle('active', idx === catIdx); });
     catPrev.disabled = catIdx <= 0;
@@ -7427,6 +7432,7 @@ html.dark .hero-copy-card:hover {
     if (reduceMotion) return;
     catTimer = setInterval(function () {
       if (document.hidden) return;
+      if (window.AFMP && !window.AFMP.isOnScreen(catViewport)) return;
       catShow(catIdx >= catPages.length - 1 ? 0 : catIdx + 1);
     }, 6000);
   }
@@ -7599,7 +7605,15 @@ html.dark .hero-copy-card:hover {
     }
     var play = function () {
       var f = document.createElement('iframe');
-      f.src = 'https://www.youtube-nocookie.com/embed/' + m[1] + '?autoplay=1&rel=0';
+      /* ⛔ `enablejsapi=1` IS WHAT MAKES THE PLAYER CONTROLLABLE, and it is the reason
+         the off-screen gate can stop it at all (see "IFRAME PLAYERS" in the off-screen
+         gate): a cross-origin player cannot be paused like a <video>, so the gate posts
+         the player's own commands to this frame. `origin` names THIS page, which is the
+         only origin the widget will take commands from. Nothing is fetched until the
+         visitor clicks, and nothing is fetched at all while data-yt is empty. */
+      var q = '?autoplay=1&rel=0&enablejsapi=1';
+      try { if (location.origin && location.origin !== 'null') q += '&origin=' + encodeURIComponent(location.origin); } catch (e) {}
+      f.src = 'https://www.youtube-nocookie.com/embed/' + m[1] + q;
       f.title = 'Auto Face MoCap Pro demo';
       f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
       f.allowFullscreen = true;
@@ -7634,270 +7648,11 @@ html.dark .hero-copy-card:hover {
   }
 })();
 </script>
-<script>
-/* ============================================================
-   INLINE PAGE EDITOR — click to edit text / links / clips
-   Toggle with the "Edit" button in the header (or ?edit=1)
-   ============================================================ */
-(function () {
-  'use strict';
-  var toggle = document.getElementById('editToggle');
-  if (!toggle) return;
-
-  /* PRIVATE: only unlock with ?edit=ADMIN_KEY (or after already unlocked this session) */
-  var ADMIN_KEY = 'mr3d-edit-2026'; // ← change this to your own private key
-  var authed = sessionStorage.getItem('pageedit') === '1';
-  var autoEdit = false;
-  if (!authed) {
-    var am = window.location.search.match(/[?&]edit=([^&]+)/);
-    if (am && am[1] === ADMIN_KEY) { authed = true; autoEdit = true; sessionStorage.setItem('pageedit', '1'); }
-  }
-  if (!authed) return; // public visitors: no editor at all
-  toggle.classList.add('unlocked');
-
-  var editing = false;
-  var body = document.body;
-  var toolbar = null, modal = null;
-  var current = null, currentIsLink = false, currentIsMedia = false;
-  var fText = null, fUrl = null, fNewTab = null, fTextColor = null, fBgColor = null, fFont = null, fRemove = null;
-
-  var TEXT_SEL = 'h1,h2,h3,h4,h5,p,li,strong,em,.g-name,.g-title,.g-sub,.section-title,.section-sub,.plan,.price,.price-desc,.feature-title,.feature-copy,.tag,.offer-name,.support-card h3,.support-card p,.workflow-card h3,.workflow-card p,.pb-kicker,.pb-title,.pb-valid,.pw-title,.purchase-warning p,.so-kicker,.so-title,.so-valid,.acc-head > span:first-child,.ver-date,.footer-col h4,.footer-col a,.footer-brand p,.g-ph-tag,.license-note,.coupon-hint';
-  var MEDIA_SEL = '.feature-media,.hero-media,.g-ph,.c-ph,.card-visual';
-
-  function buildToolbar() {
-    toolbar = document.createElement('div');
-    toolbar.className = 'editor-toolbar';
-    toolbar.style.display = 'none';
-    var hint = document.createElement('span');
-    hint.style.cssText = 'font-size:.72rem;color:var(--muted);margin-right:.4rem;max-width:340px;';
-    hint.textContent = 'Click any text to edit · click a button or clip to set its link / media URL';
-    var doneBtn = document.createElement('button'); doneBtn.textContent = 'Done';
-    doneBtn.addEventListener('click', function () { setEditing(false); });
-    var copyBtn = document.createElement('button'); copyBtn.textContent = 'Copy HTML';
-    copyBtn.addEventListener('click', copyHTML);
-    var saveBtn = document.createElement('button'); saveBtn.className = 'ed-save'; saveBtn.textContent = 'Save HTML';
-    saveBtn.addEventListener('click', saveHTML);
-    toolbar.appendChild(hint); toolbar.appendChild(doneBtn); toolbar.appendChild(copyBtn); toolbar.appendChild(saveBtn);
-    body.appendChild(toolbar);
-  }
-
-  function buildModal() {
-    modal = document.createElement('div');
-    modal.className = 'editor-modal';
-    modal.innerHTML =
-      '<div class="box">' +
-        '<h4>Edit element</h4>' +
-        '<div class="hint" id="edHint">Click an element to edit its text, colors and link.</div>' +
-        '<div class="hint" style="margin-top:.8rem;">Text</div>' +
-        '<textarea id="edText" rows="3" placeholder="Type new text..."></textarea>' +
-        '<div class="color-row"><label for="edTextColor">Text color</label><input id="edTextColor" type="color" /></div>' +
-        '<div class="color-row"><label for="edBgColor">Background color</label><input id="edBgColor" type="color" /></div>' +
-        '<div class="color-row"><label for="edFont">Font size (px)</label><input id="edFont" type="number" min="8" max="120" /></div>' +
-        '<div class="hint" style="margin-top:.8rem;" id="urlLabel">Link URL</div>' +
-        '<input id="edUrl" type="text" placeholder="https://... or #section" />' +
-        '<label style="display:flex;align-items:center;gap:.5rem;margin-top:.6rem;font-size:.82rem;color:var(--muted);"><input id="edNewTab" type="checkbox" /> Open in a new tab</label>' +
-        '<div class="row">' +
-          '<button class="del" id="edRemove" style="display:none;">Remove</button>' +
-          '<button id="edReset" title="Clear the inline color/font changes">Reset style</button>' +
-          '<button id="edCancel">Cancel</button>' +
-          '<button class="ok" id="edOk">Save</button>' +
-        '</div>' +
-      '</div>';
-    body.appendChild(modal);
-    fText = modal.querySelector('#edText');
-    fUrl = modal.querySelector('#edUrl');
-    fNewTab = modal.querySelector('#edNewTab');
-    fTextColor = modal.querySelector('#edTextColor');
-    fBgColor = modal.querySelector('#edBgColor');
-    fFont = modal.querySelector('#edFont');
-    fRemove = modal.querySelector('#edRemove');
-    modal.querySelector('#edCancel').addEventListener('click', closeModal);
-    modal.querySelector('#edOk').addEventListener('click', saveCurrent);
-    modal.querySelector('#edReset').addEventListener('click', resetStyle);
-    modal.querySelector('#edRemove').addEventListener('click', removeCurrent);
-    modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
-  }
-
-  function setEditing(on) {
-    editing = on;
-    toggle.classList.toggle('active', on);
-    body.classList.toggle('edit-mode', on);
-    toolbar.style.display = on ? 'flex' : 'none';
-    if (!on) closeModal();
-  }
-
-  function hex(c) {
-    if (!c || c === 'rgba(0, 0, 0, 0)' || c === 'transparent') return '#000000';
-    if (c[0] === '#') return c;
-    var m = c.match(/rgba?\((\d+)[,\s]+(\d+)[,\s]+(\d+)/);
-    if (m) {
-      return '#' + [m[1], m[2], m[3]].map(function (n) { var h = (+n).toString(16); return h.length < 2 ? '0' + h : h; }).join('');
-    }
-    return '#000000';
-  }
-
-  // Click any element in edit mode → open the inspector
-  document.addEventListener('click', function (e) {
-    if (!editing) return;
-    if (e.target.closest('.editor-toolbar') || e.target.closest('.editor-modal')) return;
-    e.preventDefault();
-    var t = e.target;
-    var textEl = t.closest(TEXT_SEL);
-    var linkEl = t.closest('a');
-    var mediaEl = t.closest(MEDIA_SEL);
-    var el;
-    if (textEl && !linkEl && !mediaEl) el = textEl;
-    else if (mediaEl) el = mediaEl;
-    else if (linkEl) el = linkEl;
-    else el = textEl || linkEl || t;
-    openInspector(el);
-  }, true);
-
-  function openInspector(el) {
-    current = el;
-    currentIsLink = el.tagName === 'A';
-    currentIsMedia = !!el.closest(MEDIA_SEL);
-    var hasIcon = el.querySelector && (el.querySelector('svg') || el.querySelector('img') || el.querySelector('video'));
-
-    // Text
-    if (hasIcon) { fText.disabled = true; fText.value = ''; fText.placeholder = 'Text hidden (icon/link element)'; }
-    else { fText.disabled = false; fText.value = (el.innerText || '').replace(/\s+/g, ' ').trim(); }
-
-    // Colors + font
-    var cs = getComputedStyle(el);
-    fTextColor.value = hex(el.style.color || cs.color);
-    fBgColor.value = hex(el.style.backgroundColor || cs.backgroundColor);
-    fFont.value = parseInt(el.style.fontSize || cs.fontSize, 10) || '';
-
-    // URL / link / media
-    if (currentIsLink || currentIsMedia) {
-      fUrl.style.display = 'block';
-      modal.querySelector('#urlLabel').style.display = 'block';
-      fNewTab.style.display = 'flex';
-      if (currentIsLink) {
-        modal.querySelector('#urlLabel').textContent = 'Link URL';
-        fUrl.value = el.getAttribute('href') || '';
-        fNewTab.checked = el.target === '_blank';
-        fRemove.style.display = 'none';
-      } else {
-        modal.querySelector('#urlLabel').textContent = 'Clip URL (image or video)';
-        var ed = el.querySelector('.ed-media');
-        fUrl.value = ed ? (ed.tagName === 'VIDEO' ? (ed.querySelector('source') ? ed.querySelector('source').src : '') : ed.src) : '';
-        fNewTab.checked = false;
-        fRemove.style.display = ed ? 'inline-block' : 'none';
-      }
-    } else {
-      fUrl.style.display = 'none';
-      modal.querySelector('#urlLabel').style.display = 'none';
-      fNewTab.style.display = 'none';
-      fRemove.style.display = 'none';
-    }
-    modal.classList.add('open');
-    fText.focus();
-  }
-
-  function saveCurrent() {
-    if (!current) return;
-    // Text (only when safe to edit)
-    if (!fText.disabled && fText.value.trim() !== '') current.textContent = fText.value.trim();
-    // Colors / font
-    current.style.color = fTextColor.value;
-    current.style.backgroundColor = fBgColor.value;
-    var fs = parseInt(fFont.value, 10);
-    current.style.fontSize = (fs && fs > 0) ? fs + 'px' : '';
-    // Link
-    if (currentIsLink) {
-      current.setAttribute('href', fUrl.value.trim() || '#');
-      if (fNewTab.checked) { current.setAttribute('target', '_blank'); current.setAttribute('rel', 'noopener'); }
-      else { current.removeAttribute('target'); current.removeAttribute('rel'); }
-    }
-    // Media
-    if (currentIsMedia) setMedia(current, fUrl.value.trim());
-    closeModal();
-  }
-
-  function setMedia(el, url) {
-    var old = el.querySelector('.ed-media');
-    if (old) old.remove();
-    if (!url) return;
-    var isImg = /\.(jpe?g|png|gif|webp|avif|svg)(\?|#|$)/i.test(url);
-    var node;
-    if (isImg) { node = document.createElement('img'); node.src = url; node.alt = ''; }
-    else {
-      node = document.createElement('video');
-      node.controls = true; node.playsInline = true; node.preload = 'metadata';
-      var src = document.createElement('source'); src.src = url;
-      node.appendChild(src);
-    }
-    node.className = 'ed-media';
-    node.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#000;';
-    el.appendChild(node);
-  }
-
-  function resetStyle() {
-    if (!current) return;
-    current.style.color = '';
-    current.style.backgroundColor = '';
-    current.style.fontSize = '';
-    var cs = getComputedStyle(current);
-    fTextColor.value = hex(cs.color);
-    fBgColor.value = hex(cs.backgroundColor);
-    fFont.value = parseInt(cs.fontSize, 10) || '';
-  }
-
-  function removeCurrent() {
-    if (!current) return;
-    var ed = current.querySelector('.ed-media');
-    if (ed) ed.remove();
-    if (currentIsLink) current.setAttribute('href', '#');
-    closeModal();
-  }
-
-  function closeModal() {
-    modal.classList.remove('open');
-    current = null; currentIsLink = false; currentIsMedia = false;
-  }
-
-  function cleanForExport() {
-    document.querySelectorAll('[contenteditable]').forEach(function (el) { el.removeAttribute('contenteditable'); });
-    body.classList.remove('edit-mode');
-    if (toolbar) toolbar.style.display = 'none';
-    if (toggle) toggle.classList.remove('active');
-  }
-
-  function saveHTML() {
-    cleanForExport();
-    var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-    var blob = new Blob([html], { type: 'text/html' });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'index.html';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
-  }
-
-  function copyHTML() {
-    cleanForExport();
-    var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(html).then(function () { flash('HTML copied!'); }).catch(function () { flash('Copy not available'); });
-    } else { flash('Copy not available'); }
-  }
-
-  function flash(msg) {
-    var f = document.createElement('div');
-    f.textContent = msg;
-    f.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:1002;padding:.5rem 1.1rem;border-radius:999px;background:var(--color-tertiary);color:var(--bg);font-size:.8rem;font-weight:700;box-shadow:var(--shadow);';
-    document.body.appendChild(f);
-    setTimeout(function () { f.remove(); }, 1800);
-  }
-
-  buildToolbar();
-  buildModal();
-  toggle.addEventListener('click', function () { setEditing(!editing); });
-  if (autoEdit) setEditing(true);
-})();
-</script>
+<!--
+  The inline page editor was removed from this published copy: it carried the
+  authoring key in plain text and this artifact ships no secrets. It is inert here
+  anyway (its toggle element does not exist on the page). The source page keeps it.
+-->
 <script>
 /* Gobos effects — mouse glow + reveal */
 (function () {
@@ -7924,6 +7679,659 @@ html.dark .hero-copy-card:hover {
   } else {
     reveals.forEach(function (el) { el.classList.add('visible'); });
   }
+})();
+</script>
+
+
+<!-- ============================================================ -->
+<!-- OFF-SCREEN GATE — clips, CSS animations, carousels and the   -->
+<!-- optional cross-origin parent bridge. See the report for what  -->
+<!-- is verifiable and what is not.                                -->
+<!-- ============================================================ -->
+<script>
+/* ============================================================
+   AFMP — the off-screen gate, the media-rectangle source, the animated-GIF
+   poster and the optional cross-origin parent bridge.
+
+   ⛔⛔ WHY IntersectionObserver AND NOT getBoundingClientRect.
+   "is this on screen" looks like `r.top < innerHeight && r.bottom > 0`, and inside an
+   ordinary window that is right. Inside a STORE EMBED it is not: the host sizes the
+   iframe to the whole document (16000px here), so the frame's innerHeight is 16000 and
+   every element on the page reports as visible no matter where the buyer has scrolled
+   the parent page to. root:null with a zero rootMargin asks the browser the real
+   question instead — the intersection is computed against the TOP-LEVEL viewport and
+   clipped by every intervening frame, including cross-origin ones, which is exactly the
+   geometry this page cannot compute for itself.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var AFMP = window.AFMP = window.AFMP || {};
+  var hasIO = typeof window.IntersectionObserver === 'function';
+
+  /* ------------------------------------------------------------ 1. ONE observer */
+  var io = null;
+
+  function isOnScreen(el) { return !!el && el.__afmpOn === true; }
+
+  /* ⛔⛔ "ON SCREEN" MEANS A POSITIVE INTERSECTION AREA, NOT `isIntersecting`.
+     `isIntersecting` is true when the rectangles merely TOUCH: an element whose edge
+     is exactly on the viewport edge — or that has collapsed to zero area inside a
+     clipped ancestor — reports true with an empty intersectionRect. Treating that as
+     visible would start a clip the visitor cannot see and unpause a section that is
+     not on screen, which is the exact failure this gate exists to prevent.
+     ⛔ The area is read from `intersectionRect`, the one value the browser clips by
+     every intervening frame INCLUDING a cross-origin parent (it is reported in this
+     document's own client space, so it is directly comparable with the sentinels). */
+  function positiveArea(en) {
+    var r = en.intersectionRect;
+    if (r) return (r.width > 0 && r.height > 0);
+    return !!(en.isIntersecting && en.intersectionRatio > 0);
+  }
+
+  if (hasIO) {
+    io = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        var en = entries[i];
+        var el = en.target;
+        var on = positiveArea(en);
+        /* ⛔ the gate has now answered for this element at least once. Until it has,
+           `__afmpOn` is false only because nothing has been measured yet — the play
+           guard must not read that as "confirmed off screen" and kill a clip the
+           visitor is watching. */
+        el.__afmpSawIO = true;
+        el.__afmpOn = on;
+        if (el.__afmpAnim) el.classList.toggle('afx-off', !on);
+        var cbs = el.__afmpCbs;
+        if (cbs) for (var c = 0; c < cbs.length; c++) cbs[c](on, en);
+      }
+    }, { root: null, rootMargin: '0px', threshold: 0 });
+  }
+
+  function watch(el, cb, anim) {
+    if (!el) return;
+    if (cb) { (el.__afmpCbs = el.__afmpCbs || []).push(cb); }
+    /* ⛔ AN ELEMENT CAN BE WATCHED TWICE FOR TWO DIFFERENT REASONS — a `<video>` is
+       watched for playback by collectVideos() and again by gateAnimations() because
+       `.hero-media` and friends are animation roots. The first call used to return
+       early here and the `anim` flag was then never set, so that root's subtree kept
+       animating off screen forever. The flag is registered on BOTH paths now, and the
+       class is applied against the state the observer has already reported. */
+    if (anim && !el.__afmpAnim) {
+      el.__afmpAnim = true;
+      /* ⛔ GATED ROOTS START PAUSED. Before the first callback every `__afmpOn` is
+         false; without this the page would run every off-screen animation for the
+         frames between observe() and the first callback — which is precisely the
+         window in which a store page finishes laying out. The observer turns it back
+         on for the roots that are actually visible. */
+      if (io) el.classList.add('afx-off');
+    }
+    if (el.__afmpWatched) { if (!hasIO && cb) cb(true); return; }
+    el.__afmpWatched = true;
+    el.__afmpOn = false;
+    if (io) { io.observe(el); return; }
+    /* no IntersectionObserver in this engine: everything counts as visible, which is
+       the pre-existing behaviour, rather than nothing ever playing */
+    el.__afmpOn = true;
+    el.__afmpSawIO = true;
+    if (el.__afmpAnim) el.classList.remove('afx-off');
+    if (cb) cb(true);
+  }
+
+  AFMP.watch = watch;
+  AFMP.isOnScreen = isOnScreen;
+
+  /* ------------------------------------------------------------ 2. VIDEO */
+  var vids = [];
+
+  function tryPlay(v) {
+    if (!v || !v.__afmpAutoplay) return;         // not an autoplay clip
+    if (v.__afmpUserPaused) return;              // the visitor stopped it on purpose
+    if (document.hidden) return;                 // hidden tab
+    if (!isOnScreen(v)) return;                  // ⛔ never started while off screen
+    if (!v.paused) return;                       // already running — never restarted
+    var p;
+    try { p = v.play(); } catch (e) { return; }
+    /* ⛔ THE REJECTION IS HANDLED, not ignored: the autoplay policy, a decode failure
+       and a 404 all reject this promise, and an unhandled rejection would surface as a
+       console error on a page whose clips are decorative. Staying paused is correct. */
+    if (p && p.catch) p.catch(function () {});
+  }
+
+  function onVideoVisible(visible, v) {
+    if (visible) { tryPlay(v); return; }
+    if (!v.paused) { try { v.pause(); } catch (e) {} }   // off screen: stop decoding
+  }
+
+  /* ⛔⛔ THE PLAY-EVENT GUARD. tryPlay() checks `isOnScreen` BEFORE it plays, and that
+     is not enough on its own: `play()` is asynchronous, so a clip can be asked for
+     while visible and actually BEGIN after the visitor has scrolled it away, or after
+     the parent frame has scrolled this whole document out of view. Nothing else would
+     stop it — the element is playing, so no later visibility callback fires with a
+     "pause this" instruction it has not already had.
+     ⛔ IT IS DELIBERATELY NARROW. It only fires on a CONFIRMED off-screen answer
+     (`__afmpSawIO`) and it yields to manual intent, so it can never fight the visitor:
+       · a hidden tab pauses and is marked for resume,
+       · a clip the visitor stopped stays stopped even if a script starts it,
+       · a clip the visitor started by hand is left alone,
+       · and the frames between observe() and the first callback are not "off screen". */
+  function guardPlay(v) {
+    if (document.hidden) {
+      if (!v.paused) { v.__afmpTabPaused = true; try { v.pause(); } catch (e) {} }
+      return;
+    }
+    if (v.__afmpUserPaused) { try { v.pause(); } catch (e) {} return; }
+    if (v.__afmpUserWants) return;
+    if (!v.__afmpSawIO) return;
+    if (isOnScreen(v)) return;
+    try { v.pause(); } catch (e) {}
+  }
+
+  function collectVideos() {
+    var all = document.getElementsByTagName('video');
+    var changed = all.length !== vids.length;
+    /* ⛔ THE DEFERRED INTENT QUEUE. The page's own scripts run BEFORE this module
+       (they are earlier in the document), so any of them that wanted a clip to play
+       had nothing to ask: `window.AFMP` did not exist yet. Each such request lands
+       here instead of calling play() itself, and is turned into "this clip may
+       autoplay" once the gate exists — which is what keeps a script from starting an
+       off-screen clip while the document is still parsing. */
+    var pending = window.__afmpPending || [];
+    vids.length = 0;
+    for (var i = 0; i < all.length; i++) {
+      var v = all[i];
+      vids.push(v);
+      for (var k = 0; k < pending.length; k++) if (pending[k] === v) v.__afmpUserWants = true;
+      if (v.__afmpWatched) continue;
+      changed = true;
+      /* ⛔ THE ATTRIBUTE IS GONE FROM THE MARKUP and this is the replacement: nothing
+         can start while the document is still parsing, so an off-screen clip can never
+         be loading, decoding or playing before the page has decided it should. */
+      v.removeAttribute('autoplay');
+      v.__afmpAutoplay = true;
+      v.__afmpUserPaused = false;
+      if (v.preload === 'auto') { try { v.preload = 'metadata'; } catch (e) {} }
+      /* ⛔ the guard runs for EVERY start, whoever asked for it — see guardPlay() */
+      v.addEventListener('play', function () { guardPlay(this); }, false);
+      (function (vid) {
+        watch(vid, function (on) { onVideoVisible(on, vid); }, false);
+      })(v);
+    }
+    if (pending.length) window.__afmpPending = [];
+    return changed;
+  }
+
+  AFMP.playIfVisible = tryPlay;
+  AFMP.setUserPaused = function (v, paused) {
+    if (!v) return;
+    v.__afmpUserPaused = !!paused;
+    /* ⛔ "the visitor asked for this clip" is a DIFFERENT fact from "this clip may
+       autoplay", and the play guard needs the first one: it is what lets a slide the
+       visitor picked by hand start even in the frames before the gate has measured
+       anything. It is also what the hero switcher's pre-module requests set. */
+    if (!paused) { v.__afmpUserWants = true; tryPlay(v); }
+  };
+
+  /* a hidden tab must not keep decoding: browser throttling does not stop media */
+  document.addEventListener('visibilitychange', function () {
+    var i, v;
+    if (document.hidden) {
+      for (i = 0; i < vids.length; i++) {
+        v = vids[i];
+        if (!v.paused) { v.__afmpTabPaused = true; try { v.pause(); } catch (e) {} }
+      }
+    } else {
+      for (i = 0; i < vids.length; i++) {
+        v = vids[i];
+        if (v.__afmpTabPaused) { v.__afmpTabPaused = false; tryPlay(v); }
+      }
+    }
+  });
+
+  /* ------------------------------------------------------- 2b. IFRAME PLAYERS */
+  /* ⛔⛔ AN IFRAME IS NOT A <video> AND CANNOT BE PAUSED LIKE ONE. This page builds one
+     YouTube embed — the hero's click-to-play card, inert for as long as `data-yt` is
+     empty — and a player running inside a cross-origin frame keeps decoding however
+     far the visitor scrolls away from it. There is no `pause()` to call from here.
+     Two things ARE possible, and both are done: the embed is now created with
+     `enablejsapi=1` (see the hero video card), and the gate posts the player's own
+     documented commands to that frame — `pauseVideo` when the card leaves the screen,
+     `playVideo` when it comes back.
+     ⛔ A USER PAUSE IS STILL A USER PAUSE. The player answers with `onStateChange`, so
+     a pause this gate did NOT issue is recorded as the visitor's own and is never
+     undone; `playVideo` is only ever sent to a frame this gate paused by itself.
+     ⛔ NOTHING IS READ OUT OF THE FRAME AND NO PARENT IS TOUCHED: `postMessage` out,
+     state messages in, and an incoming message is matched against the window of the
+     frame this page created before a single byte of it is parsed. */
+  var ytFrames = [];
+  var ytScanRaf = 0;
+
+  function ytPost(rec, func) {
+    try {
+      var w = rec.ifr.contentWindow;
+      if (!w) return;
+      rec.commanding = func;
+      w.postMessage(JSON.stringify({ event: 'command', func: func, args: [] }), '*');
+    } catch (e) {}
+  }
+
+  function ytVisible(rec, on) {
+    if (on) {
+      if (rec.wePaused && !rec.userPaused) { rec.wePaused = false; ytPost(rec, 'playVideo'); }
+      return;
+    }
+    ytPost(rec, 'pauseVideo');
+    rec.wePaused = true;
+  }
+
+  function ytMessage(e) {
+    for (var i = 0; i < ytFrames.length; i++) {
+      var rec = ytFrames[i];
+      var w = null;
+      try { w = rec.ifr.contentWindow; } catch (er) { w = null; }
+      if (!w || e.source !== w) continue;
+      var d = e.data;
+      if (typeof d !== 'string' || d.charAt(0) !== '{') return;
+      var msg;
+      try { msg = JSON.parse(d); } catch (er) { return; }
+      if (!msg || msg.event !== 'onStateChange') return;
+      var st = Number(msg.info);
+      if (st === 1) { rec.wePaused = false; rec.userPaused = false; rec.commanding = null; }
+      else if (st === 2) {
+        if (rec.commanding === 'pauseVideo') rec.commanding = null;   // the pause this gate asked for
+        else rec.userPaused = true;                                   // the visitor's own
+      }
+      return;
+    }
+  }
+
+  function scanYt() {
+    var els;
+    try { els = document.querySelectorAll('.yt-frame'); } catch (e) { return; }
+    for (var i = 0; i < els.length; i++) {
+      var fr = els[i];
+      if (fr.__afmpYt) continue;
+      var ifr = fr.querySelector('iframe');
+      if (!ifr) continue;                       // still the inert placeholder
+      var src = '';
+      try { src = ifr.src || ''; } catch (e) { src = ''; }
+      if (!/youtube(-nocookie)?\.com\/embed\//.test(src)) continue;
+      fr.__afmpYt = true;
+      (function (frameEl, iframeEl) {
+        var rec = { el: frameEl, ifr: iframeEl, wePaused: false, userPaused: false, commanding: null };
+        ytFrames.push(rec);
+        watch(frameEl, function (on) { ytVisible(rec, on); }, false);
+      })(fr, ifr);
+    }
+  }
+  /* the player is created by the page's own click / Enter handler, so the scan has to
+     run again after one. One coalesced rAF however many events arrive, and the scan
+     itself is a single querySelectorAll on a page that can hold at most one such
+     frame — already-registered frames are skipped on the `__afmpYt` flag. */
+  function scheduleYtScan() {
+    if (ytScanRaf) return;
+    ytScanRaf = requestAnimationFrame(function () { ytScanRaf = 0; scanYt(); });
+  }
+  if (window.addEventListener) {
+    document.addEventListener('click', scheduleYtScan, false);
+    document.addEventListener('keydown', scheduleYtScan, false);
+    /* ⛔ ONE listener for the whole page, registered once. It matches the message
+       against the window of the frame THIS page created before it looks at anything
+       inside it, and it does nothing at all while `ytFrames` is empty — which is the
+       state of this page until `data-yt` is filled in. */
+    window.addEventListener('message', ytMessage, false);
+  }
+
+  /* ------------------------------------------------------------ 3. CSS ANIMATIONS */
+  /* ⛔ THE LIST IS OF ROOTS, NOT OF ANIMATED ELEMENTS. Every infinite animation on this
+     page runs on a descendant of one of these (the orbiting rings on .card-fx, the sheen
+     on .btn-primary::after, the seam sweep on a section, the spinner on a .clip-load,
+     the arc on the hero's side clips), so pausing the root pauses the subtree AND ITS
+     PSEUDO-ELEMENTS — which is the part a class on the element itself cannot reach,
+     because a pseudo-element is not selectable on its own.
+     ⛔ animation-play-state is NOT inherited, hence the `*` and the two pseudo selectors
+     in the stylesheet rule rather than a single declaration on the root. */
+  var ANIM_ROOTS = 'section,header.site-header,.site-footer,.sub-divider,.offer-band,' +
+    '.m3-wrap,.wf-wrap,.card-fx,.price-card,.workflow-card,.support-card,.catalog-card,' +
+    '.quickfog-outer,.feature-card,.compare-card,.accordion,.rating-card,.time-chip,' +
+    '.img-frame,.c-card,.g-frame,.hero-media,.hero-side,.hero-video-card,.hero-copy-card,' +
+    '.feature-media,.afmp-intro-card,.clip-load,.clip-bar,.seam-label,.media-reel,' +
+    '.btn-primary,.animated-media,.yt-frame,#gViewport,#catalogViewport,#gallery';
+
+  function gateAnimations() {
+    var els;
+    try { els = document.querySelectorAll(ANIM_ROOTS); } catch (e) { return; }
+    for (var i = 0; i < els.length; i++) {
+      if (!els[i].__afmpWatched) watch(els[i], null, true);
+    }
+  }
+
+  /* ------------------------------------------------------------ 4. ANIMATED GIFs */
+  /* ⛔ A GIF IS NOT A VIDEO AND CANNOT BE PAUSED. There is no `pause()` for an animated
+     <img>, and no API that reports which frame it is on. What this does instead is the
+     only thing that is actually available: while the image is off screen it is taken
+     out of PAINTING and a static canvas snapshot — taken once, in the image's exact box
+     — is shown in its place. See the report for what that does and does not guarantee. */
+  function ensurePoster(im, cv) {
+    if (cv.__ready) return true;
+    if (!im.complete || !im.naturalWidth || !im.naturalHeight) return false;
+    var cx = cv.getContext ? cv.getContext('2d') : null;
+    if (!cx) return false;
+    cv.width = im.naturalWidth;
+    cv.height = im.naturalHeight;
+    try { cx.drawImage(im, 0, 0); } catch (e) { return false; }
+    cv.__ready = true;
+    return true;
+  }
+
+  function placePoster(im, cv, host) {
+    var hr = host.getBoundingClientRect();
+    var ir = im.getBoundingClientRect();
+    var cs = window.getComputedStyle(host);
+    cv.style.left = (ir.left - hr.left - (parseFloat(cs.borderLeftWidth) || 0)) + 'px';
+    cv.style.top = (ir.top - hr.top - (parseFloat(cs.borderTopWidth) || 0)) + 'px';
+    cv.style.width = ir.width + 'px';
+    cv.style.height = ir.height + 'px';
+  }
+
+  function scanGifs() {
+    var imgs = document.querySelectorAll('img');
+    for (var i = 0; i < imgs.length; i++) {
+      var im = imgs[i];
+      if (im.__afmpGif) continue;
+      var s = im.getAttribute('src') || '';
+      if (!/\.gif(\?|#|$)/i.test(s)) continue;
+      im.__afmpGif = true;
+      im.classList.add('gif-clip');          // ⛔ also a clip rectangle for the field
+      var host = im.parentNode;
+      if (!host) continue;
+      if (window.getComputedStyle(host).position === 'static') host.style.position = 'relative';
+      var cv = document.createElement('canvas');
+      cv.className = 'gif-poster';
+      cv.setAttribute('aria-hidden', 'true');
+      host.appendChild(cv);
+      (function (img, canvas, box) {
+        img.addEventListener('load', function () { ensurePoster(img, canvas); });
+        if (img.complete) ensurePoster(img, canvas);
+        watch(img, function (on) {
+          if (on) { box.classList.remove('afx-gif-off'); return; }
+          /* going off screen: the snapshot has to exist before the live image can be
+             taken out of painting, or the slot would show the page behind it */
+          if (ensurePoster(img, canvas)) {
+            placePoster(img, canvas, box);
+            box.classList.add('afx-gif-off');
+          }
+        }, false);
+      })(im, cv, host);
+    }
+  }
+
+  /* ------------------------------------------------------------ 5. THE VISIBLE BAND */
+  /* ⛔⛔ WHAT THIS ANSWERS: which slice of THIS document the visitor can actually see —
+     inside a store embed that is the slice of the page the buyer's parent frame is
+     showing, which no arithmetic on `innerHeight` can produce (a 16000px iframe's
+     innerHeight is 16000 whatever the buyer is looking at).
+     ⛔ THE SENTINELS ARE THE DEFAULT AND NEED NOTHING FROM THE PARENT. A ladder of
+     thin, full-width, EMPTY elements runs down the document; the implicit-root
+     IntersectionObserver clips each one by every intervening frame, cross-origin ones
+     included, so the ones that report an intersection are the ones in the parent's
+     view, and their `intersectionRect`s give the band's edges directly.
+     ⛔ WHY THIS DOES NOT GO STALE, which is what defeated the single document-sized
+     probe: a probe the size of the document never changes its ratio as the parent
+     scrolls, so it is reported once and never again. These are 360px tall with a 240px
+     step — they OVERLAP, so any point of the document is covered by at least one — and
+     the observer carries a threshold LADDER, not just 0. A sentinel being clipped by
+     the parent's edge crosses a rung every ~9px of parent scroll, and each crossing
+     delivers a fresh `intersectionRect`. The sentinel the parent's top edge is cutting
+     through therefore reports that edge to within a rung, and the band is the min/max
+     over everything currently visible.
+     ⛔ ALL OF IT IS BATCHED. The ladder is one observer; the callbacks arrive on the
+     browser's own clock (once per frame, however many fired); `refreshBand()` is a
+     loop over ~70 numbers and no layout is read. */
+  var band = null;
+  var bandCbs = [];
+  var embedded = false;
+  try { embedded = window.self !== window.top; } catch (e) { embedded = true; }
+  AFMP.embedded = embedded;
+
+  function fireBand() {
+    for (var i = 0; i < bandCbs.length; i++) {
+      try { bandCbs[i](band); } catch (e) {}
+    }
+  }
+
+  var SENT_STEP = 240;           // document distance between sentinels
+  var SENT_H = 360;              // > the step, so their coverage overlaps and cannot
+                                 // leave a gap between two of them that no band falls in
+  var SENT_PAD = 24;             // the band is padded outwards: the canvas may safely
+                                 // overhang the visible area, never fall short of it
+  var SENT_MAX = 320;            // bound on the ladder: ~77,000px of document
+  var sentIo = null, sentBox = null, sents = [], sentCount = 0, sentRaf = 0;
+  /* ⛔⛔ "HAS THE OBSERVER ANSWERED AT ALL?" — NOT "has it ever seen something
+     visible?". The two are different questions and the difference was a live defect: a
+     frame that loads BELOW the parent's fold (or lazily, or in a background tab) gets
+     its FIRST callback with every sentinel reporting invisible. Read as "has it ever
+     seen anything visible?", that first answer counted as NO answer — the band stayed
+     `null` = unknown, the caller fell back to the viewport box, and the particle field
+     ran inside a frame nobody was looking at until the visitor happened to scroll past
+     it and back. What makes an all-invisible reading trustworthy is that the observer
+     DELIVERED it — in that callback every observed sentinel carries a real result — and
+     it is exactly as trustworthy the first time as the hundredth. */
+  var sentDelivered = false;     // has the observer delivered ANY result yet?
+  /* ⛔ the rungs. 1/40 = 2.5% of a 360px sentinel = ~9px of parent scroll. */
+  var SENT_THRESHOLDS = (function () {
+    var t = [0];
+    for (var k = 1; k < 40; k++) t.push(k / 40);
+    return t;
+  })();
+
+  if (hasIO) {
+    sentIo = new IntersectionObserver(function (entries) {
+      /* ⛔ THE DELIVERY IS THE ANSWER, and it is recorded before the entries are read:
+         an entry that says "not intersecting" (or carries no rect at all) is still a
+         result, and it is what turns the ladder's silence from UNKNOWN into MEASURED. */
+      if (entries.length) sentDelivered = true;
+      for (var i = 0; i < entries.length; i++) {
+        var en = entries[i];
+        var el = en.target;
+        var r = en.intersectionRect;
+        el.__afmpOn = positiveArea(en);
+        if (el.__afmpOn && r) {
+          el.__s0 = r.top; el.__s1 = r.bottom; el.__s2 = r.left; el.__s3 = r.right;
+        }
+      }
+      refreshBand();
+    }, { root: null, rootMargin: '0px', threshold: SENT_THRESHOLDS });
+  }
+
+  function refreshBand() {
+    /* the optional parent bridge, when one is configured, is the better instrument —
+       it knows the geometry exactly instead of inferring it from rungs */
+    if (band && band.source === 'bridge') return;
+    if (!sentCount) return;
+    var top = Infinity, bot = -Infinity, left = Infinity, right = -Infinity, any = false;
+    for (var i = 0; i < sentCount; i++) {
+      var el = sents[i];
+      if (!el.__afmpOn) continue;
+      any = true;
+      if (el.__s0 < top) top = el.__s0;
+      if (el.__s1 > bot) bot = el.__s1;
+      if (el.__s2 < left) left = el.__s2;
+      if (el.__s3 > right) right = el.__s3;
+    }
+    if (!any) {
+      /* ⛔ TWO DIFFERENT "NOTHING" ANSWERS, and they must not be confused.
+         · the observer has NOT delivered a result yet → nothing is known: report
+           `null` = UNKNOWN, and the caller keeps the fallback behaviour it had before
+           there were sentinels. Reporting 0 here would blank the field during the
+           frames between `observe()` and the first callback.
+         · the observer HAS delivered and every sentinel is invisible now → the frame
+           IS off the parent's screen: a real measurement, height 0, and the field
+           stops. ⛔ THIS DOES NOT REQUIRE THE LADDER EVER TO HAVE BEEN VISIBLE. A
+           store page that loads this frame below the fold gets exactly this as its
+           first answer, and it must stop the field there and then — the previous
+           "has it ever seen anything?" test read that first answer as "unknown" and
+           left the whole field running, off screen, until the visitor scrolled. The
+           resume is the ordinary path below: the next callback with a visible
+           sentinel produces a band again. */
+      if (!sentDelivered) { if (band !== null) { band = null; fireBand(); } return; }
+      var empty = { top: 0, height: 0, width: 0, source: 'sentinel' };
+      if (!band || band.height !== 0) { band = empty; fireBand(); }
+      return;
+    }
+    var h = bot - top;
+    if (!(h > 0)) h = 1;
+    var next = {
+      top: Math.max(0, top - SENT_PAD),
+      height: Math.min(h + SENT_PAD * 2, 1e5),
+      width: right > left ? (right - left) : (window.innerWidth || 0),
+      source: 'sentinel'
+    };
+    /* ⛔ NO CALLBACK FOR A BAND THAT DID NOT MOVE. The ladder reports several times per
+       parent scroll; each one used to be a re-measure of the canvas box. A sub-pixel
+       change is not worth one. */
+    if (band && band.source === 'sentinel' &&
+        Math.abs(band.top - next.top) < 2 && Math.abs(band.height - next.height) < 2) {
+      band = next;
+      return;
+    }
+    band = next;
+    fireBand();
+  }
+
+  function buildSentinels() {
+    if (!sentIo) return;
+    var body = document.body || document.documentElement;
+    if (!body) return;
+    /* ⛔ THE DOCUMENT'S OWN HEIGHT, NOT A FLOOR OF THE VIEWPORT'S. Taking
+       `max(…, innerHeight)` here would make the container taller than a SHORT page and
+       lengthen it — an absolutely positioned box does contribute to the scrollable
+       overflow of the document. With the height taken from the document itself, the
+       ladder can never make the page longer than it already was, and it still covers
+       every pixel that exists. */
+    var dh = Math.max(document.documentElement.scrollHeight || 0, body.scrollHeight || 0);
+    if (!(dh > 0)) dh = window.innerHeight || 1;
+    if (!(dh > 0)) return;
+    if (!sentBox) {
+      sentBox = document.createElement('div');
+      sentBox.className = 'afmp-sent';
+      sentBox.setAttribute('aria-hidden', 'true');
+      /* ⛔ AN EMPTY, TRANSPARENT, ZERO-CONTENT BOX, NOT A `visibility:hidden` ONE: it
+         paints nothing, so it cannot be seen, and it is unambiguously "rendered" for
+         anything that asks. `overflow:hidden` is what stops the ladder from adding its
+         own tail to the document's scroll height — its height IS the document's, so
+         the sentinels clamped inside it can never extend past the end of the page. */
+      sentBox.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:1px;' +
+        'margin:0;padding:0;border:0;overflow:hidden;pointer-events:none;z-index:-3;' +
+        'background:transparent;';
+      body.appendChild(sentBox);
+    }
+    sentBox.style.height = dh + 'px';
+    var need = Math.ceil(dh / SENT_STEP);
+    if (need < 1) need = 1;
+    if (need > SENT_MAX) need = SENT_MAX;
+    var i, el;
+    while (sentCount < need) {
+      el = document.createElement('i');
+      el.className = 'afmp-sent-i';
+      el.setAttribute('aria-hidden', 'true');
+      el.style.cssText = 'position:absolute;left:0;width:100%;height:' + SENT_H + 'px;' +
+        'margin:0;padding:0;border:0;background:transparent;pointer-events:none;';
+      sentBox.appendChild(el);
+      sents.push(el);
+      sentCount++;
+      sentIo.observe(el);
+    }
+    while (sentCount > need) {
+      sentCount--;
+      el = sents.pop();
+      try { sentIo.unobserve(el); } catch (e) {}
+      if (el.parentNode) el.parentNode.removeChild(el);
+    }
+    /* ⛔ nothing is placed past `dh - SENT_H`, so the ladder ends exactly where the
+       document does and cannot lengthen the page by its own tail. */
+    var maxTop = dh - SENT_H;
+    if (maxTop < 0) maxTop = 0;
+    for (i = 0; i < sentCount; i++) {
+      var top = i * SENT_STEP;
+      if (top > maxTop) top = maxTop;
+      sents[i].style.top = top + 'px';
+    }
+  }
+
+  /* ⛔ ONE rAF PER BURST, the same discipline the field's own re-measure uses: the
+     document grows and shrinks on the carousels' and the accordion's clock, and every
+     one of those lands here. */
+  function scheduleSentinels() {
+    if (sentRaf) return;
+    sentRaf = requestAnimationFrame(function () { sentRaf = 0; buildSentinels(); refreshBand(); });
+  }
+  AFMP.refreshSentinels = scheduleSentinels;
+
+  /* ------------------------------------------------------------ 5b. PARENT BRIDGE */
+  /* ⛔⛔ OPTIONAL, AND OFF UNTIL IT IS CONFIGURED — the sentinels above are what makes
+     the field work in a store embed with no cooperation from the host at all. A host
+     that can post its own geometry is still the more precise instrument (the sentinels
+     infer the band from ~9px rungs; a bridge states it), so one is accepted when, and
+     only when, the document names the origin it will accept one from.
+     ⛔ IT IS VALIDATED, NOT TRUSTED: the message must come from window.parent itself,
+     from an origin named in the allowlist below (an EMPTY allowlist disables the bridge
+     outright, so no page is listening by default), and it must carry finite, bounded
+     numbers. Anything else is dropped without a reply. */
+  var allowOrigins = [];
+  try {
+    var raw = document.documentElement.getAttribute('data-embed-parent-origin') || '';
+    raw.split(/[\s,]+/).forEach(function (o) {
+      if (/^https?:\/\/[^\/\s]+$/.test(o)) allowOrigins.push(o.replace(/\/$/, ''));
+    });
+  } catch (e) {}
+
+  if (embedded && allowOrigins.length && window.addEventListener) {
+    window.addEventListener('message', function (e) {
+      if (e.source !== window.parent) return;
+      if (allowOrigins.indexOf(e.origin) < 0) return;
+      var d = e.data;
+      if (!d || typeof d !== 'object' || d.type !== 'afmp:viewport') return;
+      var top = Number(d.top), height = Number(d.height), width = Number(d.width);
+      if (!isFinite(top) || !isFinite(height) || !isFinite(width)) return;
+      if (!(height >= 1 && height <= 4000)) return;
+      if (!(width >= 1 && width <= 8000)) return;
+      if (top < -64 || top > (document.documentElement.scrollHeight || 0) + 64) return;
+      band = { top: top, height: height, width: width, source: 'bridge' };
+      fireBand();
+    }, false);
+  }
+
+  AFMP.band = function () { return band; };
+  AFMP.onBand = function (cb) { bandCbs.push(cb); if (band) cb(band); };
+
+  /* ------------------------------------------------------------ 6. GO */
+  function start() {
+    collectVideos();
+    scanGifs();
+    scanYt();
+    gateAnimations();
+    /* ⛔ the ladder is built LAST, once the page has a layout to measure: its count and
+       spacing come from the document's own height. The first callback arrives a frame
+       or so later, and until it does the band is `null` = unknown, which every reader
+       treats as "keep doing what you did before there was a band". */
+    buildSentinels();
+    refreshBand();
+  }
+  function rescan() {
+    collectVideos();
+    scanGifs();
+    scanYt();
+    gateAnimations();
+    scheduleSentinels();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
+  }
+  window.addEventListener('load', rescan);
+  window.addEventListener('resize', scheduleSentinels, { passive: true });
 })();
 </script>
 
@@ -8033,20 +8441,6 @@ html.dark .hero-copy-card:hover {
      affect a smaller area, which is a different change. */
   var PUSH = 2.5;
   var SIZE_MIN = 1, SIZE_MAX = 3;
-  /* ⛔⛔ THERE IS NO MAXIMUM SIZE ANY MORE. Owner: *"just remove the max px you have set"*.
-     The three ceilings that were here (2560 wide, 2400 tall, a 200px link range) existed only
-     to stop a frame that is as tall as the document from asking for a 40-megapixel canvas.
-     The visible-band tracking does that job properly, so every dimension is now derived from
-     what the user can actually see and nothing is clamped.
-     ⛔ WHAT REPLACES THEM IS A REFUSAL TO BUILD, NOT A CEILING — see `rebuild()`. If the
-     frame is taller than the screen and the band is not known yet, the field is not sized,
-     not seeded and not drawn. That is the frame or two before the observer's first report. */
-  /* ⛔ the alpha buckets for the link pass. Every link used to get its own `stroke()` and its
-     own freshly built `rgba(...)` string — thousands of both per frame. They are now grouped
-     into this many paths and stroked once each. 12 keeps the maximum alpha error at about
-     4%, which is invisible on a 1px line, and costs at most 24 strokes per frame instead of
-     thousands. See `connect()`. */
-  var LINK_BUCKETS = 12;
 
   var W = 0, H = 0, DPR = 1, linkDist2 = 0;
   var docW = 0, docH = 0;        // the field's own extent — the whole DOCUMENT
@@ -8054,7 +8448,50 @@ html.dark .hero-copy-card:hover {
   var vis = [];                  // reused each frame: no allocation in the loop
   var mouse = { x: null, y: null };
   var raf = 0, started = false, visible = true;
+  /* ⛔ `bandEmpty`: the sentinel ladder MEASURED the frame as off the parent's screen.
+     `canvasOn`: this canvas is inside the visible area per the same observer. Both are
+     gates on the frame loop — one for a frame nobody is looking at, one for a box that
+     has been moved off the band the parent is showing. */
+  var bandEmpty = false, canvasOn = true;
   var MAX_NODES = 2600;          // guard: the update pass is O(n), the connect O(visible^2)
+  /* ⛔⛔ HALVED. The COUNT is halved, not the DENSITY: baseline is computed exactly as
+     before — min(round(area / DENSITY), MAX_NODES) — and the field is seeded with
+     round(baseline / 2). Halving DENSITY would have doubled the count on a page small
+     enough to sit under the cap and changed nothing on a page that hits it; halving
+     the baseline after the cap means a capped page also gets exactly half. */
+  var COUNT_DIVISOR = 2;
+
+  /* ------------------------------------------------------- clip rectangles
+     ⛔⛔ NO NODE AND NO LINE MAY PAINT INSIDE A CLIP RECTANGLE — including the
+     transparent parts of a video, and including clips whose box moves after load
+     (a carousel page swap, an accordion opening, a resize, a rotated phone).
+     Three mechanisms, because each one alone leaves a hole:
+       1. SEEDING — a node is never placed inside a media box (rejection sampling).
+       2. EVICTION — step() pushes any node a layout change traps back out through the
+          nearest edge and reverses its drift, so the field cannot be "behind" a clip.
+       3. REJECTION AT PAINT — draw() skips a node that is inside one, and connect()
+          drops any link whose SEGMENT crosses one (a straight line between two legal
+          nodes can still cut the corner of a clip). A canvas-level even-odd clip is
+          applied on top as the last line of defence.
+     ⛔ NOTHING HERE READS LAYOUT PER PARTICLE. The rectangles are measured once per
+     BATCH (a coalesced rAF), then every per-node and per-pair test is arithmetic. */
+  var CLIP_SEL = 'video, iframe, .yt-frame, .gif-clip';
+  /* the safe padding: a node sitting exactly on a clip's edge still reads as "behind
+     it" once the 1px link stroke and the 1–3px node radius are drawn */
+  var CLIP_PAD = 14;
+  var clipRects = [];            // DOCUMENT space, merged so the even-odd mask is exact
+  var clipRectsV = [];           // reused: the same rectangles in canvas space
+  var clipRectCount = 0;
+  var docClipPath = null;        // Path2D in document space, rebuilt only on a re-measure
+  var clipDirty = true;
+  var clipRaf = 0;
+  /* ⛔⛔ THE CANVAS IS BOUNDED. This element is position:fixed, so inside a store
+     iframe that is 16000px tall its box IS 16000px tall — 74M device pixels at DPR 2,
+     ~300MB of backing store, allocated before a single node is drawn. In a normal
+     window nothing changes (innerHeight is far below the cap). In a tall frame the box
+     is capped and MOVED over the band the parent can actually see. */
+  var MAX_CANVAS_H = 1800;
+  var originY = 0;               // the canvas box's top edge, in CLIENT px
 
   /* ------------------------------------------------------------- sizing
      ⛔⛔ THE CANVAS STAYS VIEWPORT-SIZED, BUT THE FIELD DOES NOT.
@@ -8073,246 +8510,234 @@ html.dark .hero-copy-card:hover {
      ⛔ The link range stays tied to the VIEWPORT `(W/7)*(H/7)`, exactly as the reference
      computes it against its canvas. Tying it to the document instead would make every
      pair within hundreds of pixels connect and the field would read as a web. */
-  /* ⛔⛔ WHERE THE USER IS ACTUALLY LOOKING, WHICH IS NOT THE SAME AS `window.scrollY`
-     INSIDE A STORE'S IFRAME. Owner: *"header does not stick"*, then *"instead of caping it
-     make it render only what's visble on the screen even if it's in a iframe whos heaer does
-     not stick"*.
-     ⛔⛔ THE PROBLEM, MEASURED. Superhive sizes the frame to the whole page, so inside it
-     `window.innerHeight` reads **20000** and `position: fixed` pins to the top of the
-     DOCUMENT, not to the screen — which is why the header scrolls away there. The parent
-     does the scrolling and a cross-origin frame cannot read the parent's scroll, so nothing
-     in the page can tell where the user is looking. The canvas was therefore welded to the
-     top of the page, and a height cap only made the wrong thing smaller.
-     ⛔⛔ `IntersectionObserver` IS THE ONE API THAT SEES THROUGH THE FRAME BOUNDARY. Its
-     implicit root is the TOP-LEVEL viewport, so inside a cross-origin iframe the browser
-     intersects against what is genuinely on the user's screen, not against the frame's own
-     20000px box. This is the same machinery ad networks use to tell whether an ad was seen.
-     ⛔ ONE FULL-HEIGHT PROBE IS ENOUGH. `intersectionRect` of a document-height target IS
-     the visible band, in this document's coordinates, so no sentinel grid is needed. The
-     threshold list is what makes it fire while the PARENT scrolls: with a single 0 threshold
-     it would only fire on entering and leaving. 201 steps means a callback roughly every
-     0.5% of the page, which for a 20000px document is about every 100px of scroll.
-     ⛔ WHEN IT CANNOT BE USED the page behaves exactly as before: no `IntersectionObserver`,
-     or a ratio of 1 (the frame is a normal viewport, i.e. every desktop visit), and
-     `window.scrollY` remains the source of truth. This is an addition for the embed case,
-     not a replacement for the normal one. */
-  var bandTop = 0, bandH = 0, frameIsTall = false, bandSegs = [];
-  var bandObs = null, bandReady = false, bandDirty = false;
-  /* ⛔⛔ 200px, NOT 600px. Owner: *"what about the pc's that have 720p or 1080p display it will
-     render below the screen too"* — correct, and measured: at 600px segments an 802px window
-     got a 1200px band, i.e. ~600px of the work was below the fold. On a 720p laptop (~660px
-     visible) that is roughly 80% waste.
-     ⛔ The waste has two sources and both are fixed here. This reduces the QUANTISATION, and
-     `refineBand()` removes what is left of it by reading the exact visible part of the two
-     EDGE sentinels out of `intersectionRect`, so the band hugs the screen to a few pixels
-     rather than to a whole tile. 200px also keeps the sentinel count sane: a 20000px
-     document gets ~101 of them. */
-  var BAND_SEG = 200;
-  /* ⛔ 26 threshold steps over a 200px sentinel is a callback every ~8px of scroll — fine
-     enough that the edge rects are effectively continuous, and cheap because only the two
-     EDGE sentinels ever cross a threshold. The interior ones sit at ratio 1 and are silent. */
-  var BAND_SLACK = 160;        // px of canvas beyond the band — see `fitCanvasToBand()`
-
-  /* ⛔⛔ THE FIELD STOPS AT THE FULL CATALOG SECTION. Owner: *"make the pages max size till the
-     full cataloq section no more then that"*.
-     ⛔ MEASURED, NOT GUESSED: the catalog section runs from 14272 to **14952** and the document
-     to 15400, so the part being excluded is the 448px of footer below it.
-     ⛔⛔ THIS BOUNDS THE FIELD, NOT THE PAGE. Truncating the document at the catalog was the
-     other reading, and it would DELETE THE FOOTER — so the page keeps every pixel it has and
-     only the particle field stops there. Everything below the catalog is simply outside the
-     field's extent: no particles are seeded past it, so none are ever drawn there.
-     ⛔ It also makes the field smaller to run, which is the same direction as the work above.
-     ⛔ Read at `measure()` time from the live element, so it follows the page if the section
-     ever moves; if `.catalog-section` is missing the whole document is used, which is the
-     behaviour before this existed. */
-  function fieldBottom() {
-    var cat = document.querySelector('.catalog-section');
-    var h = document.documentElement.scrollHeight || 0;
-    if (!cat) return h;
-    var b = Math.round(cat.getBoundingClientRect().bottom + (window.scrollY || 0));
-    return (b > 200 && b < h) ? b : h;
-  }
-
-  /* ⛔⛔ THE CANVAS KEEPS A SMALL MARGIN AND REALLOCATES RARELY. Resizing the canvas is a
-     backing-store reallocation, not a style change — a 1418 x 800 canvas is about 4.5MB — so
-     following the band pixel-for-pixel would reallocate on every ~8px of scroll and cost more
-     in jank than it saves in fill.
-     ⛔⛔ BUT THE SLACK IS THE THING THAT RENDERS OFF-SCREEN, so it is bounded and small: 160px,
-     giving at most 320px in the worst case and about 160px on average. That is the answer to
-     the owner's question — on a 720p screen (~660px visible) the old 600px tiles meant a
-     1200px canvas, ~80% of it below the fold; this keeps the overshoot to roughly a quarter of
-     one screen and reallocates only every ~160px scrolled. */
-  var cvTop = 0, cvH = 0;
-
-  function fitCanvasToBand() {
-    /* ⛔ the containment test uses the EXACT band, not the quantised one, so the slack can
-       never grow into a permanent overshoot — it is re-derived from the true edges each time
-       the canvas is rebuilt. Returns true only when the backing store actually changed. */
-    if (cvH && bandTop >= cvTop && bandTop + bandH <= cvTop + cvH) return false;
-    cvTop = Math.max(0, bandTop - BAND_SLACK);
-    cvH = bandH + BAND_SLACK * 2;
-    return true;
-  }
-
-  /* ⛔⛔ A ROW OF SENTINELS, NOT ONE FULL-HEIGHT PROBE, AND THE FIRST ATTEMPT IS WHY.
-     A single document-height probe was tried and MEASURED: it reported correctly once (the
-     canvas sized itself to the visible 802px) and then never fired again, so the canvas
-     stayed welded to the top of the page. That is not a bug — **for a target taller than the
-     root the intersection RATIO is constant while you scroll**, so with any threshold list
-     there is nothing to cross. It only fires on entering and leaving the frame.
-     ⛔ A sentinel that is SHORTER than the screen has a ratio that genuinely changes as it
-     leaves, which is what produces callbacks while the PARENT scrolls. So the document is
-     tiled with BAND_SEG-tall sentinels and the union of those currently intersecting IS the
-     visible band.
-     ⛔⛔ THE RESOLUTION IS DELIBERATELY COARSE AND THAT COSTS NOTHING VISIBLE. The band is
-     only known to ±BAND_SEG, but the field is anchored in DOCUMENT space — the canvas is
-     placed at `bandTop` and every particle is drawn at `p.y - bandTop`, so
-     `canvasTop + drawnY == p.y` and the field stays put on the page however coarse the band
-     is. A coarse band only means the canvas is a little taller than the screen, never that
-     the field jumps.
-     ⛔ `visibility: hidden` and 1px wide: they are hit-testable for intersection purposes and
-     invisible to everything else. `pointer-events: none` keeps them out of the way of clicks. */
-  /* ⛔⛔ THE BAND FROM THE EDGE SENTINELS' EXACT VISIBLE PARTS, NOT FROM WHOLE TILES.
-     Every entry carries `intersectionRect` — the part of THAT sentinel which is visible — and
-     `boundingClientRect`, the sentinel's own box. Their difference is a scroll-invariant
-     offset, so the band's edge in DOCUMENT coordinates is
-         i * SEG + (intersectionRect.top - boundingClientRect.top)
-     for the topmost visible sentinel, and the mirrored expression for the bottom. No
-     `window.scrollY` is involved, which matters because in a full-height frame it is always 0.
-     ⛔ A sentinel is either FULLY visible (its rect is its whole box, known from its index) or
-     PARTLY visible (its rect is exact and it is one of the two that actually fires). So only
-     the two edges need their cached rects, and they are refreshed on every one of their
-     ~8px crossings. */
-  function refineBand() {
-    var top = Infinity, bottom = -Infinity, i, s, t, b;
-    for (i = 0; i < bandSegs.length; i++) {
-      s = bandSegs[i];
-      if (!s.on) continue;
-      t = s.rectTop !== null ? s.rectTop : i * BAND_SEG;
-      b = s.rectBot !== null ? s.rectBot : (i + 1) * BAND_SEG;
-      if (t < top) top = t;
-      if (b > bottom) bottom = b;
-    }
-    if (top === Infinity || bottom <= top) return false;
-    bandTop = Math.max(0, Math.round(top));
-    bandH = Math.round(bottom - top);
-    return true;
-  }
-
-  function buildBandSentinels() {
-    for (var i = 0; i < bandSegs.length; i++) bandSegs[i].el.remove();
-    bandSegs = [];
-    var h = Math.max(2000, fieldBottom());
-    var n = Math.ceil(h / BAND_SEG) + 1;
-    var frag = document.createDocumentFragment();
-    for (var j = 0; j < n; j++) {
-      var d = document.createElement('div');
-      d.setAttribute('aria-hidden', 'true');
-      d.style.cssText = 'position:absolute;left:0;width:1px;height:' + BAND_SEG + 'px;' +
-                        'top:' + (j * BAND_SEG) + 'px;pointer-events:none;visibility:hidden;';
-      frag.appendChild(d);
-      bandSegs.push({ el: d, on: false, rectTop: null, rectBot: null });
-    }
-    document.body.appendChild(frag);
-  }
-
-  function recomputeBand() {
-    return refineBand();
-  }
-
-  /* ⛔⛔ IS THE FRAME TALLER THAN THE SCREEN? `window.screen` is the USER'S SCREEN even inside
-     an iframe, so comparing the frame's own viewport against it is a direct test, and it is
-     the test that decides `position: absolute` vs `fixed` — the two are genuinely different
-     here. `fixed` is correct in a normal window (the canvas must stay on screen) and wrong in
-     a full-height frame (it pins to the top of the document, which is the original bug).
-     ⛔ The `1400` floor is for headless runs, where `screen.height` reports a small default;
-     without it a 900px test window would be misjudged as a tall frame. */
-  function computeFrameIsTall() {
-    var sh = (window.screen && window.screen.height) || 0;
-    return window.innerHeight > Math.max(sh * 1.5, 1400);
-  }
-
-  function setupBandProbe() {
-    /* ⛔ FIRST, AND OUTSIDE THE try: this decides whether it is safe to build at all, so it
-       must not depend on the observer being available. */
-    frameIsTall = computeFrameIsTall();
-    if (!window.IntersectionObserver || !document.body) return false;
-    try {
-      buildBandSentinels();
-      bandObs = new IntersectionObserver(function (entries) {
-        for (var i = 0; i < entries.length; i++) {
-          var e = entries[i], idx = -1, k;
-          for (k = 0; k < bandSegs.length; k++) { if (bandSegs[k].el === e.target) { idx = k; break; } }
-          if (idx < 0) continue;
-          var s = bandSegs[idx];
-          s.on = e.isIntersecting && e.intersectionRatio > 0;
-          if (!s.on) { s.rectTop = null; s.rectBot = null; continue; }
-          /* ⛔ the exact visible part, converted to document coordinates. The offset between
-             the two rects is scroll-invariant, so this needs no scroll position — which is
-             the whole point, because in a full-height frame there is none. */
-          var br = e.boundingClientRect, ir = e.intersectionRect, base = idx * BAND_SEG;
-          var partialTop = Math.abs(ir.top - br.top) > 0.5;
-          var partialBot = Math.abs(ir.bottom - br.bottom) > 0.5;
-          s.rectTop = partialTop ? base + (ir.top - br.top) : null;
-          s.rectBot = partialBot ? base + BAND_SEG + (ir.bottom - br.bottom) : null;
-        }
-        if (!recomputeBand()) return;
-        var wasReady = bandReady;
-        bandReady = true;
-        if (!wasReady) rebuild();                 // first real answer: size and place the canvas
-        else { bandDirty = true; }                // let the next frame place it, no reseed
-      }, { root: null, threshold: (function () {
-        var t = [];
-        for (var i = 0; i <= 25; i++) t.push(i / 25);   // ~8px steps across a 200px sentinel
-        return t;
-      })() });
-      for (var i = 0; i < bandSegs.length; i++) bandObs.observe(bandSegs[i].el);
-      return true;
-    } catch (err) { return false; }
-  }
-
   function measure() {
     DPR = Math.min(2, window.devicePixelRatio || 1);
-    /* ⛔⛔ CAPPED. Owner: *"the background particles are using 50% of my cpu and 30% gpu"*,
-       and *"yet they are still very slow in the page"*, running **on Superhive's iframe**.
-       ⛔⛔ THE IFRAME IS THE DANGEROUS CASE, NOT THE DESKTOP ONE. If the frame is sized to the
-       page rather than to a window — the usual way a store embeds a long product page — then
-       `window.innerHeight` is the WHOLE DOCUMENT, and two things explode at once:
-         `canvas.height = H * DPR`  becomes tens of thousands of pixels of backing store, and
-         `linkDist2 = (W/7) * (H/7)` becomes a link range of ~2000px instead of ~160px, so
-         every pair links to every other pair and the O(n²) pass draws MILLIONS of lines.
-       Both are pure function of the viewport, so capping them is the whole defence. At the
-       caps' values every real window is BELOW the ceiling and nothing changes; only the
-       pathological case is bounded. ⚠ 2400px is deliberately generous — a 4K monitor's CSS
-       viewport is around 2160 — so this is insurance, not a design decision. */
-    W = window.innerWidth;
-    /* ⛔⛔ THE HEIGHT IS THE VISIBLE BAND WHEN THERE IS ONE, NOTHING ELSE.
-       Before `applyBand()` has an answer the canvas still starts at a generous guess, but the
-       owner's point was that a CAP was the wrong shape of fix: it made the wrong thing
-       smaller instead of rendering the right thing. Once the band is known the height is
-       exactly what the user can see, however tall the frame is. */
-    H = frameIsTall && bandReady ? cvH : window.innerHeight;
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+    /* ⛔⛔ THE BAND THE VISITOR CAN ACTUALLY SEE. In an ordinary window it is the whole
+       viewport and `originY` stays 0 — nothing about this page's own behaviour changes.
+       In a store embed the frame is as tall as the document, so `innerHeight` says
+       nothing; `AFMP.band()` is the sentinel ladder's answer (or a configured parent
+       bridge's, which is exact) in THIS document's client pixels, which is the space a
+       `position:fixed` box is placed in — so the box is moved onto the band and the
+       backing store stays viewport-sized instead of 16000px tall. */
+    var b = (window.AFMP && window.AFMP.band) ? window.AFMP.band() : null;
+    var embeddedFrame = !!(window.AFMP && window.AFMP.embedded);
+    var h;
+    /* ⛔ "MEASURED AS INVISIBLE" AND "NO ANSWER YET" ARE DIFFERENT STATES.
+       · band.height === 0 is a MEASUREMENT: the frame is off the parent's screen.
+         Nothing is drawn and the frame loop is stopped outright — there is no honest
+         band to move to.
+       · band === null is NO ANSWER (no IntersectionObserver, an engine that never
+         reports, or a plain window). The pre-existing behaviour stands, which is the
+         viewport — capped, so a tall frame can never allocate a 16000px canvas. */
+    if (embeddedFrame && b && !(b.height > 0)) { bandEmpty = true; return false; }
+    bandEmpty = false;
+    if (embeddedFrame && b) {
+      originY = Math.max(0, b.top || 0);
+      h = Math.min(b.height, MAX_CANVAS_H);
+    } else if (vh > MAX_CANVAS_H) {
+      originY = 0;
+      h = MAX_CANVAS_H;
+    } else {
+      originY = 0;
+      h = vh;
+    }
+    if (!(h >= 1)) h = 1;
+    W = vw;
+    H = h;
     canvas.width = Math.round(W * DPR);
     canvas.height = Math.round(H * DPR);
     canvas.style.width = W + 'px';
     canvas.style.height = H + 'px';
+    canvas.style.top = originY + 'px';
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    /* ⛔ the reference's own range, with no ceiling: `H` is the BAND, not the frame, so at
-       a 20000px frame this is still the ~160px the reference produces at 1418x900. */
     linkDist2 = (W / 7) * (H / 7);
     /* ⛔ the DOCUMENT's size, not the window's — this is what the field is seeded across */
+    var prevW = docW, prevH = docH;
     docW = Math.max(W, document.documentElement.scrollWidth || 0);
-    docH = Math.max(H, fieldBottom());
+    docH = Math.max(H, document.documentElement.scrollHeight || 0);
+    /* ⛔ the caller only has to RE-SEED when the document itself changed size. The band
+       moves several times per parent scroll and re-seeding 1300 nodes every time would
+       put a heap of garbage on the parent's scroll thread. */
+    return (Math.abs(docW - prevW) > 8 || Math.abs(docH - prevH) > 8);
+  }
+
+  /* ============================================================
+     CLIP RECTANGLES — measured once per batch, never per particle
+     ============================================================ */
+  function collectClipRects() {
+    clipRects.length = 0;
+    var els;
+    try { els = document.querySelectorAll(CLIP_SEL); } catch (e) { els = []; }
+    var sx = window.scrollX || 0, sy = window.scrollY || 0;
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      /* ⛔ getClientRects() first: a clip inside a hidden tab panel or a collapsed
+         accordion has no boxes at all, and getBoundingClientRect() would otherwise
+         hand back a 0x0 rect at the document origin and blank the field there. */
+      if (!el.getClientRects || el.getClientRects().length === 0) continue;
+      var r = el.getBoundingClientRect();
+      if (r.width < 8 || r.height < 8) continue;
+      clipRects.push({
+        x0: r.left + sx - CLIP_PAD,
+        y0: r.top + sy - CLIP_PAD,
+        x1: r.right + sx + CLIP_PAD,
+        y1: r.bottom + sy + CLIP_PAD
+      });
+    }
+    mergeClipRects();
+  }
+
+  /* ⛔ MERGED, because the canvas mask is an EVEN-ODD path: two overlapping holes
+     cancel each other out and the overlap would be painted again. Merging first makes
+     the mask exact no matter how the clips are laid out. n is small (one box per
+     clip), so the pairwise pass costs nothing. */
+  function mergeClipRects() {
+    var changed = true, i, j, a, b;
+    while (changed) {
+      changed = false;
+      for (i = 0; i < clipRects.length && !changed; i++) {
+        a = clipRects[i];
+        for (j = i + 1; j < clipRects.length; j++) {
+          b = clipRects[j];
+          if (a.x0 <= b.x1 && b.x0 <= a.x1 && a.y0 <= b.y1 && b.y0 <= a.y1) {
+            if (b.x0 < a.x0) a.x0 = b.x0;
+            if (b.y0 < a.y0) a.y0 = b.y0;
+            if (b.x1 > a.x1) a.x1 = b.x1;
+            if (b.y1 > a.y1) a.y1 = b.y1;
+            clipRects.splice(j, 1);
+            changed = true;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  function buildDocClipPath() {
+    if (!clipRects.length || typeof window.Path2D !== 'function') { docClipPath = null; return; }
+    var p = new window.Path2D();
+    p.rect(0, 0, docW, docH);
+    for (var i = 0; i < clipRects.length; i++) {
+      var r = clipRects[i];
+      p.rect(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0);
+    }
+    docClipPath = p;
+  }
+
+  /* document space, arithmetic only */
+  function insideClip(x, y) {
+    for (var i = 0; i < clipRects.length; i++) {
+      var r = clipRects[i];
+      if (x > r.x0 && x < r.x1 && y > r.y0 && y < r.y1) return true;
+    }
+    return false;
+  }
+
+  /* ⛔ the eviction: out through the NEAREST edge, with the drift reversed so the node
+     leaves rather than being dragged straight back in on the next frame. */
+  function pushOut(p) {
+    for (var i = 0; i < clipRects.length; i++) {
+      var r = clipRects[i];
+      if (p.x <= r.x0 || p.x >= r.x1 || p.y <= r.y0 || p.y >= r.y1) continue;
+      var dl = p.x - r.x0, dr = r.x1 - p.x, dt = p.y - r.y0, db = r.y1 - p.y;
+      var m = dl;
+      if (dr < m) m = dr;
+      if (dt < m) m = dt;
+      if (db < m) m = db;
+      if (m === dl) { p.x = r.x0; p.dx = -Math.abs(p.dx); }
+      else if (m === dr) { p.x = r.x1; p.dx = Math.abs(p.dx); }
+      else if (m === dt) { p.y = r.y0; p.dy = -Math.abs(p.dy); }
+      else { p.y = r.y1; p.dy = Math.abs(p.dy); }
+    }
+  }
+
+  /* ⛔ the segment test — a straight line between two legal nodes can still cross a
+     clip. Slab method against each rectangle, behind a bounding-box reject so the
+     common case (a link nowhere near a clip) costs four comparisons. It runs AFTER the
+     link-distance test, so it only sees the few hundred pairs that are actually drawn,
+     not the ~n²/2 that are rejected. */
+  function segBlocked(ax, ay, bx, by) {
+    var minX = ax < bx ? ax : bx, maxX = ax < bx ? bx : ax;
+    var minY = ay < by ? ay : by, maxY = ay < by ? by : ay;
+    for (var i = 0; i < clipRectCount; i++) {
+      var r = clipRectsV[i];
+      if (maxX < r.x0 || minX > r.x1 || maxY < r.y0 || minY > r.y1) continue;
+      var dx = bx - ax, dy = by - ay, t0 = 0, t1 = 1, s, u0, u1;
+      if (dx === 0) { if (ax < r.x0 || ax > r.x1) continue; }
+      else {
+        u0 = (r.x0 - ax) / dx; u1 = (r.x1 - ax) / dx;
+        if (u0 > u1) { s = u0; u0 = u1; u1 = s; }
+        if (u0 > t0) t0 = u0;
+        if (u1 < t1) t1 = u1;
+        if (t0 > t1) continue;
+      }
+      if (dy === 0) { if (ay < r.y0 || ay > r.y1) continue; }
+      else {
+        u0 = (r.y0 - ay) / dy; u1 = (r.y1 - ay) / dy;
+        if (u0 > u1) { s = u0; u0 = u1; u1 = s; }
+        if (u0 > t0) t0 = u0;
+        if (u1 < t1) t1 = u1;
+        if (t0 > t1) continue;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /* ---- the batched re-measure schedule ----
+     ⛔ ONE rAF PER BURST, however many triggers fire. Scroll fires dozens of times a
+     second, the ResizeObserver and the carousels fire on their own clocks, and the tab
+     can come back at any moment; all of them land on the same coalesced flush. */
+  function refreshClipRects() {
+    collectClipRects();
+    buildDocClipPath();
+  }
+  function flushClipRects() {
+    clipRaf = 0;
+    if (!clipDirty) return;
+    clipDirty = false;
+    refreshClipRects();
+    /* ⛔ the same layout change that moved a clip box may also have lengthened or
+       shortened the DOCUMENT (an accordion, a tab panel, a carousel page, the web font
+       landing) — and the sentinel ladder's length is derived from the document height.
+       One coalesced rAF either way; this is not a second schedule. */
+    if (window.AFMP && window.AFMP.refreshSentinels) window.AFMP.refreshSentinels();
+    /* a node the new layout trapped is evicted NOW rather than on the frame it is next
+       stepped — every simulated node is already inside the viewport margin, so this
+       touches a couple of hundred objects, not the whole field */
+    for (var i = 0; i < parts.length; i++) if (parts[i].on) pushOut(parts[i]);
+    if (reduce) paintOnce();
+  }
+  function scheduleRects() {
+    clipDirty = true;
+    if (!clipRaf) clipRaf = requestAnimationFrame(flushClipRects);
   }
 
   function seed() {
     parts = [];
-    var n = Math.round((docW * docH) / DENSITY);
-    if (n > MAX_NODES) n = MAX_NODES;
+    /* ⛔ THE BASELINE IS UNCHANGED — min(round(area / DENSITY), MAX_NODES) — and the
+       field is seeded with round(baseline / 2). The cap is applied to the BASELINE, so
+       a document big enough to be capped still ends up with exactly half of what the
+       cap used to yield (round(2600 / 2) = 1300), not a second cap of its own. */
+    var baseline = Math.round((docW * docH) / DENSITY);
+    if (baseline > MAX_NODES) baseline = MAX_NODES;
+    var n = Math.round(baseline / COUNT_DIVISOR);
     for (var i = 0; i < n; i++) {
+      var x = 0, y = 0, tries = 0;
+      /* ⛔ SEEDED OUTSIDE THE CLIPS. The attempt count is bounded and the node is placed
+         anyway if it runs out, so `parts.length` is ALWAYS exactly `n` — the count is
+         the one thing this pass is not allowed to vary. A node that lands inside a clip
+         on the last attempt is skipped at paint time and evicted by step(). */
+      do {
+        x = Math.random() * docW;
+        y = Math.random() * docH;
+        tries++;
+      } while (tries < 24 && insideClip(x, y));
       parts.push({
-        x: Math.random() * docW,
-        y: Math.random() * docH,
+        x: x,
+        y: y,
         dx: Math.random() * 0.4 - 0.2,
         dy: Math.random() * 0.4 - 0.2,
         size: Math.random() * (SIZE_MAX - SIZE_MIN) + SIZE_MIN,
@@ -8325,9 +8750,14 @@ html.dark .hero-copy-card:hover {
      ⛔ The drift and the cursor repulsion both happen in DOCUMENT space, so a particle
      keeps its position in the page while the window moves over it. Only the DRAW is
      offset by the scroll. */
-  function step(p, k) {
+  function step(p) {
     if (p.x > docW || p.x < 0) p.dx = -p.dx;
     if (p.y > docH || p.y < 0) p.dy = -p.dy;
+
+    /* ⛔ a clip rectangle is a PHYSICAL exclusion zone, not just a painting one: a node
+       that a resize, a carousel step or an accordion opening has left inside a media box
+       is pushed out through its nearest edge here, before it is drawn anywhere. */
+    if (clipRects.length) pushOut(p);
 
     if (mouse.x !== null && mouse.y !== null) {
       /* ⛔⛔ THE VECTOR POINTS FROM THE CURSOR **TO** THE PARTICLE, AND IS THEN ADDED.
@@ -8344,62 +8774,30 @@ html.dark .hero-copy-card:hover {
       var d = Math.sqrt(dx * dx + dy * dy);
       if (d < CURSOR_R + p.size && d > 0.001) {
         var f = (CURSOR_R - d) / CURSOR_R;
-        /* ⛔ scaled by `k` with the drift below. The push is a POSITIONAL nudge per frame,
-           so leaving it unscaled would make the cursor clear the field twice as hard at
-           30fps as at 60 — the same picture, twice the shove. */
-        p.x += (dx / d) * f * PUSH * k;
-        p.y += (dy / d) * f * PUSH * k;
+        p.x += (dx / d) * f * PUSH;
+        p.y += (dy / d) * f * PUSH;
       }
     }
 
-    /* ⛔ `k` — one 60fps frame's worth of motion per unit, so the drift speed is the same
-       whether this runs at 60fps or the capped 30. See `frame()`. */
-    p.x += p.dx * k;
-    p.y += p.dy * k;
+    p.x += p.dx;
+    p.y += p.dy;
   }
 
-  /* ⛔⛔ ONE PATH AND ONE fill() FOR THE WHOLE FIELD. This used to be `beginPath(); arc();
-     fill();` PER PARTICLE — up to ~200 individual fills a frame, each its own rasteriser
-     call. Every dot shares `NODE_FILL`, so they belong in a single path. Identical pixels,
-     a fraction of the cost.
-     ⛔ `moveTo` before each `arc` is what keeps the dots separate: without it `arc` draws a
-     line from the previous dot and the field becomes a scribble. */
-  function drawAll() {
-    var i, p;
+  function draw(p) {
+    /* ⛔ the belt to pushOut()'s braces: a node inside a clip is not painted even for
+       the single frame between the layout moving and the eviction running. */
+    if (clipRects.length && insideClip(p.x, p.y)) return;
     ctx.beginPath();
-    for (i = 0; i < vis.length; i++) {
-      p = vis[i];
-      ctx.moveTo(p.vx + p.size, p.vy);
-      ctx.arc(p.vx, p.vy, p.size, 0, 6.2832, false);
-    }
+    ctx.arc(p.vx, p.vy, p.size, 0, 6.2832, false);
     ctx.fillStyle = NODE_FILL;
     ctx.fill();
   }
 
-  /* ⛔⛔ THE LINK PASS, BATCHED BY ALPHA. The previous version set `ctx.strokeStyle` to a
-     freshly concatenated `rgba(...)` string AND ran `beginPath/moveTo/lineTo/stroke` once per
-     link — thousands of string allocations and thousands of separate stroke calls every
-     frame. It was the single most expensive thing on the page.
-     ⛔⛔ THE LOOK IS PRESERVED BY BUCKETING, NOT BY FLATTENING. The alpha varies with distance
-     (`1 - d2/FADE`), so one path per distinct alpha is impossible. Quantising it into
-     LINK_BUCKETS levels and stroking each level once keeps the gradient across the field —
-     the maximum error is half a bucket, about 4% of alpha, on a 1px line at partial opacity.
-     Flattening to a single alpha WOULD have been visible, which is why this is bucketed.
-     ⛔ The two colours stay separate (`LINE_FAR` / `LINE_NEAR`), so the near-cursor highlight
-     is untouched.
-     ⛔ `seg[b].length = 0` reuses each array's backing store instead of reallocating — this
-     runs 60 times a second and allocating per frame is how a smooth field causes GC stutter. */
-  var segFar = [], segNear = [];
   function connect() {
-    var n = vis.length, a, b, i, pa, pb, ax, ay, d2, alpha, bi;
-    if (segFar.length !== LINK_BUCKETS) {
-      segFar.length = 0; segNear.length = 0;
-      for (b = 0; b < LINK_BUCKETS; b++) { segFar.push([]); segNear.push([]); }
-    }
-    for (b = 0; b < LINK_BUCKETS; b++) { segFar[b].length = 0; segNear[b].length = 0; }
-
-    for (a = 0; a < n; a++) {
-      pa = vis[a];
+    var n = vis.length;
+    ctx.lineWidth = 1;
+    for (var a = 0; a < n; a++) {
+      var pa = vis[a];
       /* ⛔ the cursor test is hoisted out of the inner loop: it depends only on `a`,
          and the original recomputes it for every b. Same output, a fraction of the
          work in the O(n^2) pass. */
@@ -8408,45 +8806,25 @@ html.dark .hero-copy-card:hover {
         var mx = pa.vx - mouse.x, my = pa.vy - mouse.y;
         nearCursor = (mx * mx + my * my) < CURSOR_R * CURSOR_R;
       }
-      var bucket = nearCursor ? segNear : segFar;
+      var col = nearCursor ? LINE_NEAR : LINE_FAR;
 
-      for (b = a + 1; b < n; b++) {
-        pb = vis[b];
-        ax = pa.vx - pb.vx; ay = pa.vy - pb.vy;
-        d2 = ax * ax + ay * ay;
+      for (var b = a + 1; b < n; b++) {
+        var pb = vis[b];
+        var ax = pa.vx - pb.vx, ay = pa.vy - pb.vy;
+        var d2 = ax * ax + ay * ay;
         if (d2 >= linkDist2) continue;
         /* ⛔ clamped — see note 2 at the top of the file */
-        alpha = 1 - d2 / FADE;
+        var alpha = 1 - d2 / FADE;
         if (alpha <= 0) continue;
         if (alpha > 1) alpha = 1;
-        bi = (alpha * LINK_BUCKETS) | 0;
-        if (bi >= LINK_BUCKETS) bi = LINK_BUCKETS - 1;
-        bucket[bi].push(pa.vx, pa.vy, pb.vx, pb.vy);
-      }
-    }
-
-    ctx.lineWidth = 1;
-    for (b = 0; b < LINK_BUCKETS; b++) {
-      /* the bucket's own midpoint alpha, so the error is symmetric rather than biased */
-      var av = ((b + 0.5) / LINK_BUCKETS).toFixed(3);
-      var seg = segFar[b];
-      if (seg.length) {
-        ctx.strokeStyle = 'rgba(' + LINE_FAR[0] + ',' + LINE_FAR[1] + ',' + LINE_FAR[2] + ',' + av + ')';
+        /* ⛔ a link is dropped when its SEGMENT crosses any clip rectangle — testing
+           only the endpoints is not enough, because the line between two legal nodes
+           can cut straight across a clip. */
+        if (clipRectCount && segBlocked(pa.vx, pa.vy, pb.vx, pb.vy)) continue;
+        ctx.strokeStyle = 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',' + alpha.toFixed(3) + ')';
         ctx.beginPath();
-        for (i = 0; i < seg.length; i += 4) {
-          ctx.moveTo(seg[i], seg[i + 1]);
-          ctx.lineTo(seg[i + 2], seg[i + 3]);
-        }
-        ctx.stroke();
-      }
-      seg = segNear[b];
-      if (seg.length) {
-        ctx.strokeStyle = 'rgba(' + LINE_NEAR[0] + ',' + LINE_NEAR[1] + ',' + LINE_NEAR[2] + ',' + av + ')';
-        ctx.beginPath();
-        for (i = 0; i < seg.length; i += 4) {
-          ctx.moveTo(seg[i], seg[i + 1]);
-          ctx.lineTo(seg[i + 2], seg[i + 3]);
-        }
+        ctx.moveTo(pa.vx, pa.vy);
+        ctx.lineTo(pb.vx, pb.vy);
         ctx.stroke();
       }
     }
@@ -8456,16 +8834,11 @@ html.dark .hero-copy-card:hover {
      `connect()` reads `vis`, so any path that draws MUST run this first or it links
      against the previous frame's list. */
   function computeViewport() {
-    /* ⛔⛔ THE SINGLE LINE THAT MAKES THE WHOLE THING WORK IN A TALL FRAME. Everything drawn
-       is already in canvas-local coordinates — the canvas is anchored at the visible band, so
-       subtracting the BAND's top gives exactly the same numbers as subtracting the scroll
-       offset would in a normal window. In a normal window the two are the same value, which
-       is why one expression covers both cases.
-       ⛔ Before this, `window.scrollY` was 0 forever inside a 20000px frame (the parent does
-       the scrolling), so the field never moved with the user and only the top of the page was
-       ever populated. */
-    var sx = window.scrollX || 0;
-    var sy = frameIsTall && bandReady ? cvTop : (window.scrollY || 0);
+    /* ⛔ `originY` is the canvas box's own top in CLIENT px. It is 0 in every ordinary
+       window; it is non-zero only when the box has been moved over the band a parent
+       frame can see. The scroll is folded into the same offset so the document-space
+       field is projected onto the canvas box exactly once. */
+    var sx = window.scrollX || 0, sy = (window.scrollY || 0) + originY;
     /* ⛔ a margin of one link range past each edge, or the links would POP as their
        particles crossed the boundary — a pair is drawn while both ends are inside */
     var M = Math.sqrt(linkDist2);
@@ -8478,56 +8851,63 @@ html.dark .hero-copy-card:hover {
     }
     vis.length = 0;
     for (i = 0; i < parts.length; i++) if (parts[i].on) vis.push(parts[i]);
+
+    /* ⛔ the clip rectangles in CANVAS space, derived once per frame into a reused
+       array. segBlocked() and the even-odd mask read these, so no per-pair test ever
+       touches the DOM or allocates. */
+    var n = clipRects.length;
+    for (i = 0; i < n; i++) {
+      var r = clipRects[i];
+      var o = clipRectsV[i];
+      if (!o) { o = clipRectsV[i] = { x0: 0, y0: 0, x1: 0, y1: 0 }; }
+      o.x0 = r.x0 - sx; o.y0 = r.y0 - sy;
+      o.x1 = r.x1 - sx; o.y1 = r.y1 - sy;
+    }
+    clipRectCount = n;
   }
 
-  /* ⛔⛔ FRAME CAPPED AT 30fps, WITH THE STEP SCALED SO THE FIELD MOVES AT THE SAME SPEED.
-     Owner: *"optimize in a way that the quality stays the same"*. Halving the frame rate is
-     HALF the work of every pass below, and it is the last big lever after the batching — but
-     the drift is written as a fixed `p.x += p.dx` PER FRAME, so simply skipping frames would
-     halve the speed and the field would visibly crawl. `k` carries the elapsed time instead,
-     so one second of motion covers the same distance whether it is drawn 60 times or 30.
-     ⛔ `k` is clamped at 2.5 frames' worth: a background tab, a slow resize or a long GC can
-     hand back a huge `t - last`, and an unclamped `k` would teleport the field across the
-     page in one step. The clamp turns that into a brief slow-down instead of a jump.
-     ⛔ The reduced-motion path is a single still frame and never touches this. */
-  var FRAME_MS = 1000 / 30;
-  var lastT = 0;
-
-  function frame(t) {
+  function frame() {
     raf = requestAnimationFrame(frame);
-    if (t - lastT < FRAME_MS - 2) return;          // under one 30fps beat — skip this frame
-    /* ⛔ the field has not been built yet because the band is unknown — see `rebuild()`. */
-    if (frameIsTall && !bandReady) return;
-    var k = lastT ? (t - lastT) / (1000 / 60) : 1;
-    if (k > 2.5) k = 2.5;
-    lastT = t;
-
-    /* ⛔ the band moved since the last frame — reposition the canvas WITHOUT reseeding.
-       A reseed here would throw away every particle the moment the parent scrolled, and the
-       field is anchored in document space precisely so that moving the canvas does not move
-       the picture. */
-    if (bandDirty && frameIsTall && bandReady) {
-      bandDirty = false;
-      /* only when the band would LEAVE the canvas; otherwise it is already covered and the
-         slack absorbed the movement. `measure()` reallocates the backing store, so it runs
-         only when that is actually required. */
-      if (fitCanvasToBand()) { measure(); canvas.style.top = cvTop + 'px'; }
-    }
-
+    /* ⛔ NO CLIP IS ACTIVE YET — clearRect is itself clipped by the current clipping
+       region, so the canvas has to be cleared before the even-odd mask goes on. */
     ctx.clearRect(0, 0, W, H);
 
-    for (var i = 0; i < parts.length; i++) step(parts[i], k);
+    /* ⛔ ONLY THE NODES THAT CAN BE SEEN ARE SIMULATED. `p.on` is last frame's answer and
+       carries a one-link-range margin, so every node that is drawn — or that could be
+       linked to one that is — is stepped exactly as it was; the great majority of the
+       field, parked off screen, is skipped. The drift is time-independent (a fixed
+       per-frame delta), so a node that is skipped simply resumes where it left off and
+       nothing about the motion changes while it is visible. */
+    for (var i = 0; i < parts.length; i++) if (parts[i].on) step(parts[i]);
     computeViewport();
 
-    drawAll();
+    ctx.save();
+    if (docClipPath) {
+      /* ⛔ THE MASK, and it is built in DOCUMENT space on purpose: the path only has to
+         be rebuilt when a rectangle MOVES (the batched re-measure), not when the page
+         scrolls, because the translate below is what applies the scroll to it. clip()
+         bakes its region at call time, so translating back afterwards leaves the mask
+         where it belongs while the drawing that follows is in canvas space. */
+      ctx.translate(-sxNow(), -syNow());
+      ctx.clip(docClipPath, 'evenodd');
+      ctx.translate(sxNow(), syNow());
+    }
+    for (i = 0; i < vis.length; i++) draw(vis[i]);
     connect();
+    ctx.restore();
   }
+
+  function sxNow() { return window.scrollX || 0; }
+  function syNow() { return (window.scrollY || 0) + originY; }
 
   function stop() { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
 
   /* ---------------------------------------------------------- lifecycle */
   function start() {
-    if (raf || reduce) return;
+    /* ⛔ the single choke point every resume path goes through, so `bandEmpty` cannot be
+       forgotten by one of them: a frame the sentinel ladder has measured as off the
+       parent's screen never gets a loop. */
+    if (raf || reduce || bandEmpty) return;
     raf = requestAnimationFrame(frame);
   }
 
@@ -8535,48 +8915,99 @@ html.dark .hero-copy-card:hover {
     /* the reduced-motion state: a real frame, held still */
     ctx.clearRect(0, 0, W, H);
     computeViewport();                 // ⛔ before any draw — `connect()` reads `vis`
-    drawAll();                         // ⛔ not a per-particle loop any more — see `drawAll`
+    ctx.save();
+    if (docClipPath) {
+      ctx.translate(-sxNow(), -syNow());
+      ctx.clip(docClipPath, 'evenodd');
+      ctx.translate(sxNow(), syNow());
+    }
+    for (var i = 0; i < vis.length; i++) draw(vis[i]);
     connect();
+    ctx.restore();
   }
 
   function rebuild() {
-    /* ⛔⛔ NOTHING IS BUILT UNTIL THERE IS A VISIBLE BAND TO BUILD FROM.
-       In a frame taller than the screen, `window.innerHeight` is the whole document, so
-       sizing or seeding before the observer reports would produce the 20000px canvas and the
-       2000px link range all over again. Waiting costs the first frame or two and changes
-       nothing else: `frame()` refuses on the same condition, so nothing is drawn either.
-       ⛔ In a normal window `frameIsTall` is false and this never triggers. */
-    if (frameIsTall && !bandReady) return;
     measure();
-    /* ⛔ the canvas has to be PLACED as well as sized when the frame is the whole page —
-       `measure()` sets the backing store, this puts it at the visible band. In a normal window
-       the canvas stays `fixed` and needs neither the offset nor the repositioning. */
-    if (frameIsTall && bandReady) {
-      fitCanvasToBand();
-      measure();
-      canvas.style.position = 'absolute';
-      canvas.style.left = '0';
-      canvas.style.top = cvTop + 'px';
-    } else {
-      canvas.style.position = '';
-      canvas.style.top = '';
-    }
-    bandDirty = false;
+    if (bandEmpty) { stop(); return; }
+    refreshClipRects();      // ⛔ BEFORE seed() — a node must never be seeded in a clip
     seed();
     if (reduce) paintOnce();
+  }
+
+  /* ⛔⛔ THE CHEAP PATH THE BAND NEEDS, and the reason the band can follow a parent's
+     scroll at all. The band moves several times a second while the buyer scrolls;
+     a full rebuild (re-measure every clip box, re-seed ~1300 nodes) on each of those
+     would be a layout read and a heap of garbage per scroll frame of someone else's
+     page. This re-sizes and re-places the box, re-seeds only when the DOCUMENT itself
+     changed size, and repaints the reduced-motion still — the animated path is
+     repainted by its own loop, which reads the new `originY` on the very next frame. */
+  function reposition() {
+    if (measure()) { refreshClipRects(); seed(); }
+    if (bandEmpty) { stop(); return; }
+    if (reduce) paintOnce();
+    if (canvasOn && !document.hidden) start();
   }
 
   var rt = 0;
   window.addEventListener('resize', function () {
     if (rt) clearTimeout(rt);
     rt = setTimeout(rebuild, 160);
+    /* the rectangles follow the layout immediately; the re-seed waits for the resize
+       to settle, so a drag-resize does not rebuild the whole field every frame */
+    scheduleRects();
   });
+  window.addEventListener('orientationchange', scheduleRects);
+  window.addEventListener('scroll', scheduleRects, { passive: true });
+  var gViewportEl = document.getElementById('gViewport');
+  if (gViewportEl) gViewportEl.addEventListener('scroll', scheduleRects, { passive: true });
+  var catViewportEl = document.getElementById('catalogViewport');
+  if (catViewportEl) catViewportEl.addEventListener('scroll', scheduleRects, { passive: true });
+  /* ⛔ a ResizeObserver on the BODY, not a MutationObserver on the document: a body box
+     change is exactly "the layout got taller or shorter" (an accordion, a tab panel, a
+     carousel page, the web font landing), it is one observer for the whole page, and it
+     cannot re-trigger itself — the flush only reads layout and writes to a canvas. */
+  if (typeof window.ResizeObserver === 'function') {
+    try { new window.ResizeObserver(scheduleRects).observe(document.body); } catch (e) {}
+  }
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { rebuild(); });
+  }
 
   /* ⛔ a hidden tab must not keep animating — the original never pauses */
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) { visible = false; stop(); }
-    else { visible = true; start(); }
+    else {
+      visible = true;
+      /* ⛔ the page may have been laid out while the tab was hidden, and the band may
+         have gone anywhere at all: it is RE-READ here rather than trusted. Callbacks
+         are not delivered to a hidden tab, so the value in hand is as old as the last
+         time this document was rendered. */
+      scheduleRects();          // the page may have been laid out while the tab was hidden
+      reposition();
+    }
   });
+
+  /* the visible band — the sentinel ladder by default, a configured parent bridge where
+     one exists — is what the canvas box is moved to */
+  if (window.AFMP && window.AFMP.onBand) {
+    window.AFMP.onBand(function () { reposition(); });
+  }
+  /* ⛔ AND THE CANVAS'S OWN VISIBILITY, which is the other half of the question: the
+     band says WHERE the parent is looking, this says whether it can see this box at
+     all. A store page whose buyer has scrolled past the whole 16000px frame leaves
+     every sentinel empty — and this — with nothing, and the frame loop stops dead
+     instead of animating a field onto nobody's screen. */
+  if (window.AFMP && window.AFMP.watch) {
+    window.AFMP.watch(canvas, function (on) {
+      canvasOn = on;
+      if (!on) { stop(); return; }
+      if (!document.hidden && !bandEmpty) start();
+    }, false);
+  }
+
+  /* expose the batched re-measure so the page's own carousels can ask for one */
+  window.AFMP = window.AFMP || {};
+  window.AFMP.scheduleRects = scheduleRects;
 
   /* the cursor is tracked on the window: the canvas itself is `pointer-events:none` */
   window.addEventListener('mousemove', function (e) {
@@ -8587,125 +9018,9 @@ html.dark .hero-copy-card:hover {
     if (!e.relatedTarget) { mouse.x = null; mouse.y = null; }
   });
 
-  /* ⛔⛔ THE BAND PROBE IS STARTED BEFORE THE FIRST BUILD, and it is what decides whether
-     this page is a normal window or a full-height store frame. `rebuild()` runs twice in the
-     embed case — once on the initial guess and again the moment the observer reports the real
-     band — which is cheap (one reseed) and means the first painted frame is already close
-     rather than showing a 20000px canvas for a second.
-     ⛔ If `IntersectionObserver` is unavailable or throws, `setupBandProbe()` returns false,
-     `frameIsTall` stays false, and every code path below falls back to `window.scrollY` —
-     the behaviour this page had before any of this existed. */
-  setupBandProbe();
   rebuild();
-  if (!visible) return;
+  if (!visible || bandEmpty) return;
   start();
-})();
-</script>
-
-<!-- ⛔⛔ THE VISIBILITY GATE — deleted; its job moved to `#fxAnimGate` below.
-     Owner: *"why did you pause the animations"*, which found a real defect.
-     This toggled `animation-name` on `.fx-dots` and `.fx-ring` per card. Measured, it
-     recovered the full 32% those layers cost. ⛔⛔ BUT `animation-name: none` is not a
-     pause: it DESTROYS the animation, and restoring the name recreates it FROM ZERO — so
-     every card's wave and ring visibly restarted as it scrolled into view, and the 200px
-     `rootMargin` put that restart just before the card appeared, in plain sight.
-     `pause()`/`play()` preserves the phase and never touches the stagger delays, so there is
-     now ONE gate, for the whole page. The `.fx-live` hook remains but no rule reads it; if a
-     CSS gate is ever added back here it MUST use `animation-play-state`, never the name. -->
-
-<script>
-/* ⛔⛔ PAUSE EVERY INFINITE ANIMATION THAT IS OFF SCREEN — the whole page, not just the cards.
-   Owner: *"make it use as little as possible"*.
-
-   ⛔⛔ WHY THIS AND NOT A LIST OF SELECTORS. With the card layers already gated, disabling
-   EVERY remaining CSS animation still measured 0.172s of the 0.86s the page spends per three
-   seconds — 20%, and the largest identified cost left. Those animations are scattered: the
-   `btnShine` sheens on buttons and the offer band, the clip-bar fills, the offer band's and
-   price cards' dot waves, the arrow pulses. Enumerating them is a list that goes stale the
-   moment a card is added, which is the mistake that produced three separate hover fixes
-   earlier in this session. `document.getAnimations()` asks the browser instead.
-   ⛔⛔ ONLY `iterations: Infinity` ONES ARE TOUCHED, AND ONLY PAUSED, NEVER CANCELLED.
-   Pausing an infinite animation is seamless — it resumes exactly where it stopped and the
-   element is never in a different state than it was. A finite animation (an entrance, a
-   one-shot reveal) is left completely alone, because pausing one of those would delay it and
-   change when the element arrives. `pause()` rather than removing the name is also what keeps
-   this reversible: scrolling back resumes mid-cycle, with no jump.
-   ⛔ `rootMargin: 200px`, so anything about to appear is already running before it is seen.
-   ⛔ Safe with no IntersectionObserver or no `getAnimations`: the loop simply finds nothing and
-   every animation keeps running exactly as it does now. Nothing is left half-paused.
-   ⛔ The card layers are not in this set — the gate above removes their `animation-name`
-   entirely, so they do not appear in `getAnimations()` at all. The two do not overlap. */
-(function () {
-  'use strict';
-  if (!window.IntersectionObserver || !document.getAnimations) return;
-
-  function infinite(anim) {
-    if (!anim || !anim.effect || !anim.effect.getTiming) return false;
-    try { return anim.effect.getTiming().iterations === Infinity; } catch (e) { return false; }
-  }
-
-  var io = new IntersectionObserver(function (entries) {
-    for (var i = 0; i < entries.length; i++) {
-      var e = entries[i];
-      if (!e.target.getAnimations) continue;
-      var anims = e.target.getAnimations();
-      for (var j = 0; j < anims.length; j++) {
-        if (!infinite(anims[j])) continue;
-        try { e.isIntersecting ? anims[j].play() : anims[j].pause(); } catch (err) {}
-      }
-    }
-  }, { root: null, rootMargin: '200px 0px 200px 0px', threshold: 0 });
-
-  /* ⛔⛔ THE COLLECTION RUNS MORE THAN ONCE, AND THAT IS THE WHOLE FIX.
-     It used to run once, at parse time. MEASURED: that left only 30 of 122 infinite
-     animations paused, and the 92 still running included **23 off-screen `dotWave` and 19
-     off-screen `fxOrbit`** — the card layers this gate exists for.
-     ⛔⛔ WHY THEY WERE MISSED: `#cardFxLayers` builds the cards on `DOMContentLoaded`, which
-     has NOT fired while the body is still being parsed. So at parse time the `.card-fx` cards
-     — and therefore their `.fx-dots` and `.fx-ring` animations — did not exist yet, and
-     `document.getAnimations()` could not report them. Only the animations created by markup
-     that was already parsed (the clip bars, the pulses) were observed.
-     ⛔ `watched` makes re-running free: an element already observed is skipped, and
-     `io.observe()` on a new element fires its initial callback immediately, so anything found
-     late is paused in the same tick.
-     ⛔ Three passes because animated elements appear at three different times: on
-     `DOMContentLoaded` (the card layers), on `load` (anything waiting for a resource), and
-     once more on a timer for anything a script adds afterwards. */
-  var io, watched = [];
-
-  function collect() {
-    var all = document.getAnimations(), i, el;
-    for (i = 0; i < all.length; i++) {
-      if (!infinite(all[i])) continue;
-      el = all[i].effect.target;
-      if (!el || watched.indexOf(el) >= 0) continue;
-      watched.push(el);
-      io.observe(el);
-    }
-  }
-
-  io = new IntersectionObserver(function (entries) {
-    for (var i = 0; i < entries.length; i++) {
-      var e = entries[i];
-      if (!e.target.getAnimations) continue;
-      var anims = e.target.getAnimations();
-      for (var j = 0; j < anims.length; j++) {
-        if (!infinite(anims[j])) continue;
-        try { e.isIntersecting ? anims[j].play() : anims[j].pause(); } catch (err) {}
-      }
-    }
-  }, { root: null, rootMargin: '200px 0px 200px 0px', threshold: 0 });
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', collect);
-  else collect();
-  window.addEventListener('load', collect);
-  /* ⛔ MEASURED: after the two standard passes, 48 infinite animations were still running off
-     screen — the clip-bar layers most of all, 14 of them, because the clip-bar script builds
-     its elements AFTER the videos report their duration rather than during parsing. A later
-     pass catches them for one `getAnimations()` call. `watched` makes each re-run a no-op for
-     everything already observed. */
-  setTimeout(collect, 1500);
-  setTimeout(collect, 4000);
 })();
 </script>
 
