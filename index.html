@@ -416,20 +416,13 @@ header.site-header {
   background: color-mix(in srgb, var(--bg) 62%, transparent);
 }
 .clip-bar-fill {
-  /* ⛔ FULL-WIDTH BOX, SCALED — never `width: 0` tweened by JS. The fill keeps the
-     bar's exact geometry (rounded ends, animated gradient, glow) and only
-     `transform: scaleX(<ratio>)` moves, written by the shared 12Hz scheduler, so
-     playback and scrubbing never trigger layout. `transform-origin: left` grows
-     the fill from the bar's start. */
-  width: 100%;
-  transform: scaleX(0);
-  transform-origin: left center;
+  width: 0;
   background: linear-gradient(45deg, #0096ff, #22d3ee, #0096ff, #3b82f6, #0096ff);
   background-size: 400%;
   animation: glowing 20s linear infinite;
   box-shadow: 0 0 12px color-mix(in srgb, #0096ff 70%, transparent);
-  /* short: the bar is redrawn by the shared scheduler, and a long transition would lag it */
-  transition: transform .06s linear;
+  /* short: the bar is redrawn every frame now, and a long transition would lag it */
+  transition: width .06s linear;
 }
 /* the hero's own bar keeps the wider inset and higher lift asked for earlier */
 .hero-media { --clip-bar-inset: 22px; --clip-bar-lift: 16px; --clip-bar-h: 5px; }
@@ -1959,6 +1952,21 @@ html:not(.dark) .support-badge { color: #0096ff; }
   align-items: center;
   column-gap: clamp(1rem, 3vw, 2.6rem);
 }
+/* ⛔⛔ WHITE, ON THE BAND, DARK THEME ONLY. Owner: *"make this white 'Special Offer'"*.
+   `.so-kicker` is the "SPECIAL OFFER" line, and it appears in exactly two places — both
+   `.offer-band`, the one in the page flow and the second further down — so scoping to the
+   band covers every occurrence with no second edit to forget.
+   ⛔⛔ IT CANNOT JUST BE `color: #fff`, BECAUSE THE BAND HAS NO FILL. Its background is two
+   azure `radial-gradient` glows sitting on the PAGE (~:1891, ~:1922) — the opaque fill was
+   removed on the owner's own word earlier. Over the light theme's pale page, white text
+   there would be invisible. The rule below carries a LITERAL `#0096ff`, not a theme-aware
+   token, so it does not adapt on its own; the light theme is therefore left untouched and
+   white is added only under `html.dark`, where the band sits on a dark page and white is the
+   contrast the owner is after.
+   ⛔ `opacity: .85` on the base `.so-kicker` is left alone: over a dark band 85% white still
+   reads as white, and raising it would brighten the light theme too, which was not asked. */
+html.dark .offer-band .so-kicker { color: #fff; }
+
 .offer-band .so-kicker {
   position: absolute; top: 0; left: 0; right: 0;
   /* 2x the base .78rem (owner, 2026-09-29). ⛔ `line-height` is pinned deliberately:
@@ -2061,6 +2069,17 @@ html:not(.dark) .support-badge { color: #0096ff; }
    the 1px its box gains is invisible. */
 .offer-band .coupon-hint { position: static; transform: none; margin-top: .35rem; padding-top: .08em; white-space: nowrap; }
 .offer-band .so-valid { white-space: nowrap;
+  /* ⛔⛔ NO BORDER — owner: *"remove the ouline from this 'Valid until December 31st, 2026'"*.
+     ⛔ MEASURED BEFORE CHANGING: of the two things that can draw an edge here, only ONE is
+     visible. `border` computes to `1px solid rgba(255,255,255,.18)` — a real line — while
+     `outline` computes to `1px solid rgba(0,0,0,0)`, already fully transparent and painting
+     nothing. So "the outline" the owner is pointing at is the BORDER; removing `outline`
+     would have been a no-op on an invisible property.
+     ⛔ The pill keeps its `background` (12% white) and its 999px radius, so it is still a
+     pill — it just has no drawn edge.
+     ⛔ The page-wide hover ring is switched off separately, below, because `.so-valid` is in
+     the `ringOut` lists (~:3004) and would otherwise still grow an outline on hover. */
+  border: 0 !important;
   padding-top: calc(.35rem + .04em); padding-bottom: calc(.35rem - .04em);
   /* ⛔ was inheriting `text-align: start` from .ob-mid, so this pill's text hugged
      its left edge while the hint above it was centred — the pill and the hint are the
@@ -2897,7 +2916,68 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
   background:linear-gradient(105deg,transparent 45%,rgba(255,255,255,.18) 45%,rgba(255,255,255,.18) 60%,transparent 60%);
   transform:translateX(-170%) skewX(-20deg);animation:btnShine 3s linear infinite;
 }
+.offer-band .so-valid:hover,
+.so-valid:hover {
+  /* ⛔ the other half of "remove the outline": `.so-valid` is in the page-wide `ringOut`
+     lists, so without this it still grows an animated outline whenever it is hovered. */
+  animation: none !important;
+  outline: 0 !important;
+  outline-color: transparent !important;
+  outline-offset: 0 !important;
+  transform: none !important;
+}
+
 @media (prefers-reduced-motion:reduce){.hero-copy-card::before{animation:none}}
+
+/* ⛔⛔ THE HERO COPY CARD, TRANSPARENT. Owner: *"add the patren system to this card too with
+   card transparancy"* — the heading is "Facial Motion Capture Made Super Easy!".
+   ⛔⛔ WHAT MAKES IT READ AS A CARD IS THE GLASS, NOT THE BACKGROUND — the same finding as
+   the features text cards and the Shapekeys cards. Measured: `background-color` here is
+   `var(--card-bg)`, seven percent white, while the page-wide `.quickfog-outer` rule (~:2395)
+   adds a 30px backdrop blur with 1.8x saturation and four inset white highlights on top of
+   it. Stripping the background alone leaves the card completely intact, so all four
+   declarations go together.
+   ⛔ `overflow: hidden` STAYS (line above): the card's sheen is a skewed bar that paints
+   outside the rounded corners without it. The `.card-fx` layers are `inset: 0` inside the
+   card, so clipping does not touch them, and nothing in this card overhangs.
+   ⛔ The sheen on `::before` is left alone — it is a separate effect the owner asked for
+   earlier, and `#cardFxLayers` injects `.fx-dots`/`.fx-pool`/`.fx-ring` as real spans
+   precisely because both pseudos here are already spoken for.
+   ⛔⛔ THE BLUR GOES ON THE ELEMENT ITSELF, NOT ON A PSEUDO — AND THAT IS FORCED, NOT CHOSEN.
+   On the features text cards the same blur lives on `::before` because that layer also has to
+   carry an `opacity`. Here BOTH pseudos are spoken for: `::before` is the sheen, and `::after`
+   is deliberately `content: none !important` because re-enabling it "would bring the gloss
+   back with it" (see the note above). There is nothing left to put a layer on, and the
+   element works anyway because there is no `opacity` in play — the reason the features card
+   could not use the element is that `opacity` is a compositing group and would have dimmed
+   the blur with the fill. No opacity here, so no problem.
+   ⛔⛔ A `backdrop-filter` PAINTS A VISIBLE BOX EVEN WITH A FULLY TRANSPARENT BACKGROUND —
+   that is the same fact that once made a "transparent" accordion bubble show a rectangle.
+   Here it is the effect being asked for: the fill stays transparent, the frost is the only
+   thing the layer contributes, and it follows `border-radius` so it is a rounded panel.
+   ⛔⛔ 1.5px — THE EXACT VALUE ALREADY ON THE FEATURES TEXT CARDS. Owner, after seeing 6px:
+   *"it's too much add exact amount used before"*. "Before" is `#workflow .feature-text >
+   .quickfog-outer::before` (~:3870), which is where this blur first appeared and which was
+   walked down to 1.5px over two separate requests. Copying that number rather than picking a
+   new one is the ask; my 6px was justified on area ("six times the size, so 1.5px would be
+   invisible") and that reasoning was wrong — the owner is comparing the two cards directly,
+   and a different frost on each is the thing they noticed.
+   ⛔ `saturate(1.8)` is still NOT restored — the request was blur, and the features card has
+   blur alone. Matching means matching both ways.
+   ⛔ It blurs what is BEHIND the card only. The dot field, the pool and the ring are real
+   children painted on top, so the pattern stays sharp — which is the point of having them as
+   spans rather than as the card's own background.
+   ⚠ A `backdrop-filter` also creates a stacking context and a containing block. Nothing in
+   this card is `position: fixed`, so neither matters here.
+   ⚠ Re-measure contrast with `_hero_card_check.js`: the frost softens the dome behind the
+   heading, and the heading's glow is what carries the contrast at the dome's fade. */
+.hero-copy-card {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(1.5px) !important;
+          backdrop-filter: blur(1.5px) !important;
+}
 .hero-center h1{font-size:clamp(1.6rem,3.2vw,2.7rem)!important;padding:0 0 .5rem!important}
 .hero-center .hero-sub{font-size:clamp(.8rem,1.3vw,.95rem)!important;margin:0 auto!important;max-width:52ch!important}
 .hero-center .hero-note{font-size:.75rem!important}
@@ -3334,7 +3414,7 @@ html.dark .price-card::after {
   pointer-events: none; z-index: 0;
   /* ⛔ raised with `.card-fx > .fx-dots` (*"make the patern brighter"*) — see the note there.
      The two must stay the same value, and this pool must ALSO match `::before` below. */
-  background-image: radial-gradient(circle, rgba(255, 255, 255, .58) 1.1px, transparent 1.5px);
+  background-image: radial-gradient(circle, rgba(0, 150, 255, .95) 1.1px, transparent 1.5px);
   background-size: 10px 10px;
   background-repeat: repeat;
   background-position: 0 0;
@@ -3367,7 +3447,7 @@ html.dark .price-card::after {
   content: '';
   position: absolute; inset: 0; border-radius: inherit;
   pointer-events: none; z-index: 0;
-  background-image: radial-gradient(circle, rgba(255, 255, 255, .68) 1.1px, transparent 1.5px);
+  background-image: radial-gradient(circle, rgba(255, 255, 255, .82) 1.1px, transparent 1.5px);
   background-size: 10px 10px;
   /* same wave as the cards — see `@keyframes dotWave`. The only difference is the
      corner: this band's wash is anchored TOP-LEFT, so the fade is `0% 0%`. */
@@ -3385,7 +3465,7 @@ html.dark .price-card::after {
   content: '';
   position: absolute; inset: 0; border-radius: inherit;
   pointer-events: none; z-index: 0;
-  background-image: radial-gradient(circle, rgba(255, 255, 255, .68) 1.1px, transparent 1.5px);
+  background-image: radial-gradient(circle, rgba(255, 255, 255, .82) 1.1px, transparent 1.5px);
   background-size: 10px 10px;
   background-repeat: repeat;
   background-position: 0 0;
@@ -3400,7 +3480,7 @@ html.dark .price-card::after {
    invert instead of the mask moving */
 html:not(.dark) .offer-band::before,
 html:not(.dark) .offer-band::after {
-  background-image: radial-gradient(circle, color-mix(in srgb, #062a44 64%, transparent) 1.1px, transparent 1.5px);
+  background-image: radial-gradient(circle, color-mix(in srgb, #062a44 78%, transparent) 1.1px, transparent 1.5px);
 }
 
 /* ============ 6. INTERACTIVE BACKGROUND — replaces the SVG topology tile ============
@@ -3448,16 +3528,20 @@ html:not(.dark) .offer-band::after {
   text-align: center;
   max-width: 1180px;
   margin: 0 auto;
-  /* ⛔ PADDING ON BOTH SIDES NOW, on the owner's word (*"add a bit of padding top and
-     bottom"*). It was top-only before, and that was deliberate: the line box already
-     carries ~13px of ascent above the cap height and ~13px of descender room below the
-     baseline, and `.hero-cards` adds its own 16px `margin-top`, so the bottom was
-     already getting ~30px of visual air for free while the top got 13px. The bottom
-     value is therefore deliberately SMALLER than the top — equal numbers would not
-     look equal.
-     ⚠ These are tuned against the type size below. If the font-size changes again,
-     re-measure with `_hero_layout.js`; the two move together. */
-  padding: 6rem 4% 2.25rem;
+  /* ⛔⛔ `5.375rem / 0.625rem` IS 96px / 10px, AND THE TWO ARE 106px TOGETHER — THE SAME AS
+     `6rem / 0` WAS. Owner, one step on from *"move the text close to the bottom cards"*:
+     *"a tiny bit up"*.
+     ⛔⛔ THAT PAIRING IS THE WHOLE POINT. Moving the wordmark up by taking 10px off the TOP
+     padding alone would also shorten the box, so `.hero-cards` would rise 10px with it and
+     the gap the owner is looking at would not change at all — the text and the cards would
+     both slide up and the composition would silently lose 10px of height. Adding the same
+     10px to the BOTTOM keeps the box height at 202px, so the cards stay exactly where they
+     are (measured: 1676 before and after) and only the glyphs move.
+     ⛔ This is the "one control moves one thing" rule: the thing asked for is the TEXT's
+     position, so the cards are compensated rather than dragged along.
+     ⛔ Net effect on the number that was tuned last: the glyph-to-card gap goes 16px -> 26px.
+     ⚠ If this is tuned again, keep `top + bottom = 106px` or the cards move. */
+  padding: 5.375rem 4% 0.625rem;
 }
 /* ⛔⛔ THE WORDMARK ASSEMBLY IS REMOVED (owner: *"remove the text animation"*).
    The <canvas class="brand-title-fx">, the <script src=brand-assemble.js> and this
@@ -3551,7 +3635,7 @@ html.dark .price-card::before {
   content: '';
   position: absolute; inset: 0; border-radius: inherit;
   pointer-events: none; z-index: 0;
-  background-image: radial-gradient(circle, rgba(255, 255, 255, .58) 1.1px, transparent 1.5px);
+  background-image: radial-gradient(circle, rgba(0, 150, 255, .95) 1.1px, transparent 1.5px);
   background-size: 10px 10px;
   /* ⛔⛔ A WAVE, NOT A BLINK — owner, 2026-10-07: *"make it aniamte in wave"*,
      then *"instead of blinking"*. The blink is gone.
@@ -3762,7 +3846,17 @@ html:not(.dark) .hero-copy-card .hero-sub { text-shadow: none; }
    prompt"*); doing so again needs the `.fx-abs` snapshot described at the end of this
    block, because at that scope it pulls `.pop-badge` and the hero badges out of
    position. Do not widen `TARGETS` without reading that note. */
-.card-fx > *:not(.fx-dots):not(.fx-ring):not(.fx-particles) { position: relative; z-index: 1; }
+/* ⛔⛔ `.fx-abs` IS EXCLUDED, AND `z-index: 2` IS DELIBERATELY *NOT* SET ON IT.
+   The note at the end of this block suggests `el.classList.add('fx-abs')` PLUS a
+   `.card-fx > .fx-abs { z-index: 2 }` rule. For the hero clip that rule would be a
+   REGRESSION, and measurement is why: those twelve children already carry their own
+   z-indexes — `.hm-nav` at 7, `.hm-tips` at 6, `.hm-dots` at 5, the badges at 4,
+   `.clip-load` at 4, `.clip-bar` at 3, `.play-btn` at 2, the video at 1 — and flattening
+   every one of them to 2 would put the navigation arrows BEHIND the video. Exempting them
+   from `position: relative; z-index: 1` and leaving their own stacking alone is what keeps
+   the clip working; they all already sit above the dot field's `z-index: 0`, so the layers
+   still order correctly with no further rule. */
+.card-fx > *:not(.fx-dots):not(.fx-ring):not(.fx-pool):not(.fx-abs) { position: relative; z-index: 1; }
 
 /* ---------------------------------------------------------- the dot pattern
    ⛔ SAME FIELD AND SAME WAVE as `html.dark .price-card::before` — the two must stay
@@ -3795,7 +3889,7 @@ html:not(.dark) .hero-copy-card .hero-sub { text-shadow: none; }
      `.fx-dots`, so all of them brighten together. That is the "linking" the owner asked for
      (*"use linking bcz if i ask you to update later it will update on the entire page"*). If
      only the features section should change, scope this rule to `#workflow`. */
-  background-image: radial-gradient(circle, rgba(255, 255, 255, .58) 1.1px, transparent 1.5px);
+  background-image: radial-gradient(circle, rgba(0, 150, 255, .95) 1.1px, transparent 1.5px);
   background-size: 10px 10px;
   -webkit-mask-image:
     radial-gradient(130% var(--fx-vh, 95%) at var(--fx-ax, 10%) var(--fx-ay, 0%), #000, transparent 70%),
@@ -3808,64 +3902,81 @@ html:not(.dark) .hero-copy-card .hero-sub { text-shadow: none; }
   animation: dotWave 3.6s linear infinite;
 }
 html:not(.dark) .card-fx > .fx-dots {
-  /* ⛔ raised with the dark theme — see the note on `.card-fx > .fx-dots` above */
-  background-image: radial-gradient(circle, rgba(0, 60, 130, .48) 1.1px, transparent 1.5px);
+  /* ⛔ the light theme's brand azure — see the note on `.card-fx > .fx-dots` above */
+  background-image: radial-gradient(circle, rgba(11, 79, 143, .85) 1.1px, transparent 1.5px);
 }
 
-/* ------------------------------------------------- the hover particle field
-   Owner: *"also add hover over particle effect"*.
+/* ------------------------------------------------------------ the cursor pool
+   Owner: *"implement the exact same as in pricing cards"*.
 
-   ⛔⛔ IT IS THE SAME DOT FIELD, ALIVE. The canvas is seeded on the SAME 10px grid, at the
-   same 1.1px radius, in the same two theme colours, and carries the SAME mask — including
-   the `dotWave` band — so at the instant the pointer arrives the two are pixel-identical
-   and the cross-fade below is invisible. What changes is that the dots then DRIFT, and are
-   PUSHED AWAY from the cursor using the page particle field's own constants (2.5 push,
-   the same number `assets/js/particle-field.js` uses after the owner halved it).
-   ⛔ NOT a burst, not a spawner: nothing appears that was not already there. The pattern
-   the owner asked for two requests ago is the resting state of this effect.
-   ⛔⛔ NO LINKS BETWEEN PARTICLES, AND THAT IS A PERFORMANCE DECISION, NOT AN OMISSION. A
-   346x454 card on a 10px grid holds ~1,570 dots; the connect pass is O(n²), so linking
-   neighbours would be ~2.5 MILLION distance checks per frame, per hovered card. The page's
-   own field draws links because it runs ~150-200 VISIBLE nodes, not 1,570.
-   ⛔ `z-index: 0`, the same as `.fx-dots` — so the particles sit BEHIND the heading and
-   copy, never over them. That only holds because the `#cardFx` content rule now excludes
-   `.fx-particles` explicitly; without that `:not()`, `.card-fx > *` would pull the canvas
-   to `position: relative; z-index: 1` and paint it across the text.
-   ⛔ The canvas is created LAZILY on first hover (in the script at the end of the body),
-   not up front by `#cardFxLayers` — a canvas per card is real memory, and only ever one is
-   alive at a time. */
-.card-fx > .fx-particles {
+   ⛔⛔ THIS IS `html.dark .price-card::after` VERBATIM, and it replaces a drifting canvas.
+   The whole effect is now a PLAIN SPAN, exactly as the pricing card does it: the same dot
+   grid, the same `200px circle ... transparent 74%` mask on `--mx`/`--my`, the same
+   `opacity: .75`, the same `animation: none`. No canvas, no `requestAnimationFrame`, no
+   script at all — the `#fxParticles` block that built and animated one is DELETED.
+   ⛔⛔ WHAT WAS DIFFERENT, and why "close" was not close enough:
+        pricing `::after`            this layer, before
+        static CSS dot grid          a canvas, redrawn every frame
+        opacity: .75                 opacity: 1
+        no animation                 every dot drifting ~10px/s
+   Three visible differences in one layer, and the drift is the one that reads: the pricing
+   card's pool is a still field that appears under the pointer, so dots that wander make it a
+   different effect however well the colours match.
+   ⛔ THE ONLY VALUE THAT IS NOT COPIED IS THE FALLBACK ANCHOR — `10% 0%` here against the
+   price card's `88% 0%`. That is not a deviation: the anchor matches the card's own corner
+   field, exactly as the pricing card's pool fallback (`88% 0%`) matches its own `::before`
+   (`130% 95% at 88% 0%`). Top-right there, top-left here, same relationship. Copying `88% 0%`
+   literally would park the pool in the corner this card's fade does not use.
+   ⛔ `--mx`/`--my` need no listener: `#pricingGlow` (~:4560) already sets both on every
+   `.card-fx`, which is what these cards are.
+   ⛔ DARK ONLY, as `html.dark .price-card::after` is. The pricing block has no light-theme
+   pool, so adding one would be the one place this card differs from it.
+   ⛔ `z-index: 0`, the same as `.fx-dots`, so the pool sits BEHIND the heading and copy —
+   the pricing card has the same layer order. That holds because the `#cardFx` content rule
+   excludes `.fx-pool` by name. */
+html.dark .card-fx > .fx-pool {
   position: absolute; inset: 0; border-radius: inherit;
   pointer-events: none; display: block;
   z-index: 0;
-  opacity: 0;
-  transition: opacity .3s ease;
-  -webkit-mask-image:
-    radial-gradient(130% var(--fx-vh, 95%) at var(--fx-ax, 10%) var(--fx-ay, 0%), #000, transparent 70%),
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, .15) 0px, #000 80px, rgba(0, 0, 0, .15) 160px);
-          mask-image:
-    radial-gradient(130% var(--fx-vh, 95%) at var(--fx-ax, 10%) var(--fx-ay, 0%), #000, transparent 70%),
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, .15) 0px, #000 80px, rgba(0, 0, 0, .15) 160px);
-  -webkit-mask-composite: source-in;
-          mask-composite: intersect;
-  animation: dotWave 3.6s linear infinite;
+  background-image: radial-gradient(circle, rgba(0, 150, 255, .95) 1.1px, transparent 1.5px);
+  background-size: 10px 10px;
+  background-repeat: repeat;
+  background-position: 0 0;
+  -webkit-mask-image: radial-gradient(200px circle at var(--mx, 10%) var(--my, 0%), #000, transparent 74%);
+          mask-image: radial-gradient(200px circle at var(--mx, 10%) var(--my, 0%), #000, transparent 74%);
+  opacity: .75;
+  animation: none;
 }
-.card-fx.fx-live > .fx-particles { opacity: 1; }
-/* ⛔⛔ THE FADE IS KEYED ON `.fx-live`, NOT ON `:hover`, AND THAT IS A FAILSAFE.
-   The canvas is created by a `pointerover` handler, but `:hover` can be true without one —
-   a forced state, a sticky touch hover, or simply the canvas failing to build (`getContext`
-   returning null). Keyed on `:hover`, any of those fades the static dots out and has nothing
-   to put in their place: the pattern silently disappears under the cursor.
-   `.fx-live` is added by the script ONLY after the canvas is built and seeded, so the swap
-   can never half-happen — no canvas means no fade, and the pattern simply stays put.
-   ⛔ the static grid hands over to the live one — two identical fields on top of each other
-   would double the dot opacity and read as a denser grid that then thins out. */
+/* ⛔⛔ THE STATIC GRID STAYS. It used to fade to 0 as the old canvas faded in, which is right
+   for a HANDOVER and wrong for a REVEAL: the pool adds more of the same pattern under the
+   pointer, exactly as the price card's `::before` corner field and `::after` pool sit on top
+   of each other. Fading the grid out would leave the card looking emptier on hover than
+   off it. */
 .card-fx > .fx-dots { transition: opacity .3s ease; }
-.card-fx.fx-live > .fx-dots { opacity: 0; }
 
-@media (prefers-reduced-motion: reduce) {
-  /* no motion, so no particle field: `.fx-live` is never added and the static dots stay */
-  .card-fx > .fx-particles { display: none; }
+/* ⛔⛔ THE INTRO CARD'S SURFACE — the same treatment as the hero copy card and the feature
+   text cards. Owner: *"the background blur too"*, one step after adding the pattern to it.
+   ⛔⛔ IT ALREADY HAD A BLUR, AND THAT IS WHY THIS IS NOT JUST A `backdrop-filter` LINE.
+   `.afmp-intro-card` is a `.quickfog-outer`, so the LIQUID GLASS rule (~:2395) was giving it
+   `blur(30px) saturate(1.8)` plus four inset highlights plus a 7%-white fill. Left in place,
+   a 1.5px blur behind that fill and those highlights is invisible — the owner would have
+   looked at a card that had "had the blur added" and seen no change at all. Matching the
+   other two cards means matching all of it: fill, image, highlights and blur radius.
+   ⛔ `saturate(1.8)` goes too — the hero copy card and the feature text cards carry blur
+   alone, and "too" means the same as them.
+   ⛔ The pattern is unaffected: `.fx-dots`, `.fx-pool` and `.fx-ring` are real children
+   painted above this element's backdrop, so the dots stay sharp while the page behind them
+   frosts.
+   ⛔ `backdrop-filter` creates a stacking context and a containing block. Nothing inside this
+   card is `position: fixed`, so neither matters.
+   ⚠ Re-measure the copy's contrast if the page behind it ever lightens — this card is long
+   and its three paragraphs run the full width. */
+#workflow .afmp-intro-card {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(1.5px) !important;
+          backdrop-filter: blur(1.5px) !important;
 }
 
 /* ------------------------------------------------------- the travelling outline
@@ -4034,9 +4145,53 @@ html:not(.dark) .card-fx > .fx-dots {
 #workflow .feature-text > .quickfog-outer {
   background-color: transparent !important;
   background-image: none !important;
+  /* ⛔ this stays for the LIGHT theme, which has no ring of its own — see the dark rule
+     below, which is more specific and replaces it there. Without it the page-wide glass
+     rule (~:2395) would put its four inset highlights back and the card would read as a
+     solid panel again in light mode. */
   box-shadow: none !important;
   -webkit-backdrop-filter: none !important;
           backdrop-filter: none !important;
+}
+
+/* ⛔⛔ THE PRICING CARD'S RING AND GLOW. Owner: *"hover over effect is not same as in the
+   pricing cards"*.
+   ⛔ FOUND BY PUTTING THE TWO HOVER STATES SIDE BY SIDE at the same `--mx`/`--my`
+   (`_hover_compare.js`), not by reading rules and guessing which one was missing. The
+   pricing card changes THREE things on hover and only one of them was here:
+       1. the dot pool reveals around the pointer      <- had it
+       2. the border goes azure                         <- missing
+       3. an azure glow blooms around the card          <- missing
+   ⛔⛔ THE VALUES ARE `html.dark .price-card` / `:hover` VERBATIM, including BOTH box-shadow
+   states. Rest matters as much as hover here: the ring is already faintly there before the
+   pointer arrives, so the hover reads as it BRIGHTENING rather than appearing from nothing —
+   which is the whole difference the owner is pointing at.
+   ⛔ `box-shadow` IS ONE PROPERTY, so every layer has to be listed together. The glass
+   rule's four inset highlights are deliberately NOT restored; the pricing card replaces its
+   glass the same way, keeping only `inset 0 1px 0` as the top highlight.
+   ⛔ `!important` because rule 2 above sets `box-shadow: none !important` for the light
+   theme. Both are important, so SPECIFICITY decides — `html.dark #workflow .feature-text >
+   .quickfog-outer` is (1,3,1) against that rule's (1,2,0), so this wins in dark and the
+   light theme is untouched.
+   ⛔ DARK ONLY, matching the pricing block exactly. `.quickfog-outer` computes
+   `border-width: 0`, so the 1px border is added here; the page sets `box-sizing: border-box`,
+   so the card's outer size does not move — verified, not assumed.
+   ⚠ The transition is what makes it read as a hover rather than a jump; the card's own
+   `transition` list already covers `box-shadow`, so no new timing is introduced. */
+html.dark #workflow .feature-text > .quickfog-outer {
+  border: 1px solid rgba(255, 255, 255, .10);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .20),
+    0 0 0 1px color-mix(in srgb, #0096ff 10%, transparent),
+    0 0 44px -14px color-mix(in srgb, #0096ff 38%, transparent) !important;
+  transition: border-color .3s ease, box-shadow .3s ease;
+}
+html.dark #workflow .feature-text > .quickfog-outer:hover {
+  border-color: color-mix(in srgb, #0096ff 40%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .26),
+    0 0 0 1px color-mix(in srgb, #0096ff 24%, transparent),
+    0 0 62px -12px color-mix(in srgb, #0096ff 62%, transparent) !important;
 }
 #workflow .feature-text > .quickfog-outer::before {
   content: '';
@@ -4073,6 +4228,32 @@ html:not(.dark) .card-fx > .fx-dots {
   background: none;
   -webkit-backdrop-filter: blur(1.5px);
           backdrop-filter: blur(1.5px);
+}
+
+/* ⛔⛔ THE PRICING CARD'S BLUE. Owner: *"also add the blue color just like in the pricing
+   cards"*.
+   It is not a fill — it is layer 1 of `html.dark .price-card`'s `background-image`, a 300px
+   azure pool that FOLLOWS THE CURSOR, and this is the same declaration verbatim (same 300px,
+   same 22%, same 68% stop, same fallback anchor at 50% / 0%). Copying it rather than
+   approximating it is the whole point of "just like".
+   ⛔⛔ `--mx`/`--my` ARE ALREADY BEING SET ON THESE CARDS. The page's `#pricingGlow` listener
+   (~:4530) is `e.target.closest('.price-card, .offer-band, .card-fx')` and every features
+   text card carries `.card-fx` — so the variables were arriving all along and simply had
+   nothing reading them. No new listener.
+   ⛔ `var(--mx, 50%) var(--my, 0%)`, NOT `88% 0%`: the price card's `::before` anchors its
+   own dots top-RIGHT to match its reference, but this pool's fallback is top-CENTRE, and the
+   fallback is what paints before the first pointer event. Matching the wrong one would put
+   the resting blue in a different corner from the pricing cards'.
+   ⛔ DARK ONLY, exactly as `html.dark .price-card` is. The pricing block has no light-theme
+   pool, so adding one here would make the two disagree in light mode — which is the opposite
+   of "just like". ⚠ If a light variant is wanted, it needs its own colour: `#0096ff` at 22%
+   on a near-white card is about 3:1 and would read as a smudge.
+   ⛔ It lives on `::before` (z-index 0), so the pool sits BEHIND the heading and copy — the
+   same layer order as the pricing card, where `::after` is the pool and `.card-fx > *` lifts
+   the text above it. */
+html.dark #workflow .feature-text > .quickfog-outer::before {
+  background-image: radial-gradient(300px circle at var(--mx, 50%) var(--my, 0%),
+    color-mix(in srgb, #0096ff 22%, transparent), transparent 68%);
 }
 
 /* ------------------------------------- 3. the OLD hover, off every card in the section
@@ -4119,6 +4300,171 @@ html:not(.dark) .card-fx > .fx-dots {
 }
 #workflow .feature-media:hover {
   background-position: 120% 0, 0 0, 0 0 !important;
+}
+
+/* ------------------------------------- 4. the REST of the ring-carriers in the section
+   Owner: *"remove the left over hover effects first"*, on the Workflow & Features cards.
+   ⛔⛔ THE SET WAS ENUMERATED, NOT REMEMBERED — the same discipline as rule 3, because rule 3
+   was written from memory and missed `.feature-media` entirely. A DOM sweep of the section
+   (`_wf_cards.js`) lists 65 card-ish elements; these are the classes among them that are in
+   the page-wide ring lists and were NOT already covered by rules 1-3:
+       .step-num   x9      .seam-label x2      .media-tag x12      .quickfog-outer (the rest)
+   ⛔ `#workflow .quickfog-outer:hover` is deliberately broad: it catches the row wrappers,
+   the text cards AND `.afmp-intro-card`, all of which already have narrower rules — re-stating
+   them is harmless, and it stops a future `.quickfog-outer` added to this section from being
+   the one that still lights up.
+   ⛔ `background-position` is frozen at `120% 0` — the LIQUID GLASS rest value (~:2403), not
+   at `0 0`. The page's hover rule sweeps it to `-20% 0`; freezing at the wrong end would snap
+   the sheen somewhere new on hover instead of holding it still, which is the trap rule 3
+   already documented for the clip cell.
+   ⛔ `.feature-media` is NOT in this rule's new selectors — it is rule 3's, and it still owns
+   its own `120% 0` line.
+   ⚠ This rule was accidentally deleted for one edit while rules 5 and 6 were appended; it is
+   restored here verbatim. `_hover_audit.js` is what would have caught it, and it is the
+   reason that probe exists. */
+#workflow .step-num:hover,
+#workflow .seam-label:hover,
+#workflow .media-tag:hover,
+#workflow .quickfog-outer:hover {
+  animation: none !important;
+  outline: 0 !important;
+  outline-color: transparent !important;
+  outline-offset: 0 !important;
+  transform: none !important;
+  background-position: 120% 0, 0 0, 0 0 !important;
+}
+
+/* ------------------------------------- 5. the COMPARE pair (The old way / With AFMP)
+   Owner: *"for do for this [the OLD WAY / WITH AUTO FACE MOCAP PRO copy]"*.
+   ⛔ The pair is already surface-less on the owner's earlier word — `background: transparent
+   !important; background-image: none !important; box-shadow: none !important` at ~:3253 on
+   `.compare-card`, `.compare-card.old` and `.compare-card.new`, plus the WRAPPER via
+   `:has(.compare-grid)` at ~:3274. So this adds the blur and the hover colour and nothing
+   else; there is no fill to remove.
+   ⛔ `backdrop-filter: none !important` is already set there, so the blur needs BOTH higher
+   specificity AND `!important` to land — `#workflow .compare-card` (1,1,0) against (0,1,0).
+   ⛔ 0 positioned children (measured): `.vs-badge` static, `h3` static, `ul` static,
+   `.time-chip` relative — so no `.fx-abs` snapshot, unlike the hero clip. */
+#workflow .compare-card {
+  -webkit-backdrop-filter: blur(1.5px) !important;
+          backdrop-filter: blur(1.5px) !important;
+}
+/* the pair's own old hover, off — same shape as rules 3 and 4 */
+#workflow .compare-card:hover,
+#workflow .compare-card .vs-badge:hover,
+#workflow .compare-card .step-num:hover,
+#workflow .compare-card .time-chip:hover {
+  animation: none !important;
+  outline: 0 !important;
+  outline-color: transparent !important;
+  outline-offset: 0 !important;
+  transform: none !important;
+  background-position: 120% 0, 0 0, 0 0 !important;
+}
+
+/* ------------------------------------- 7. the two TIME CHIPS, onto the page theme
+   Owner: *"also update these two to match the page theme"*, and on being asked which two:
+   **the two time chips** — "~ 6 hours" and "~ 2 minutes".
+   ⛔⛔ THE COLOURS ARE NOT INVENTED. `.time-chip` (~:985) is a NEUTRAL pill —
+   `background: var(--card-bg-strong)` with `border: 1px solid var(--border-strong)` and an
+   inherited colour — which is why both read grey. The azure values below are
+   `.compare-card.old .vs-badge`'s (~:3322) VERBATIM: the same 12% azure wash, the same 45%
+   azure border, the same `#8fd0ff` text. Copying the rule that already sits inside this very
+   block is what "match the page theme" means here; picking a new blue would have made these
+   two pills a third shade next to the badges.
+   ⛔ SCOPED TO `#workflow .compare-card`, so the pair the owner pointed at changes and the
+   `.time-chip` in the workflow cards elsewhere does not — "these two", not the class.
+   ⛔ Both get the SAME treatment. The first pass considered giving each chip its own
+   column's badge colour (subtle for OLD WAY, the solid `linear-gradient(135deg,#0096ff,
+   #0065e2)` for WITH AFMP, matching the badges directly above them), and that was rejected:
+   the owner asked for one change to two elements, and splitting them is a design decision
+   they did not ask for. The before/after contrast the block exists to make is already
+   carried by the badges. ⚠ If the columns SHOULD each match their own badge, that is one
+   extra rule — the solid gradient is the `.new` badge's value.
+   ⛔ The chip's hover ring is already off (rule 5), so this is the resting colour only. */
+#workflow .compare-card .time-chip {
+  background: color-mix(in srgb, #0096ff 12%, transparent);
+  border-color: color-mix(in srgb, #0096ff 45%, transparent);
+  color: #8fd0ff;
+}
+
+/* ------------------------------------- 8. THE VISIBILITY GATE
+   Owner: *"it's still using 30% cpu and 20% gpu i want you to optimze it"*, then *"make it use
+   as little as possible"*.
+
+   ⛔⛔ MEASURED FIRST, AND IT EXONERATES EVERYTHING I HAD ALREADY OPTIMISED. With one suspect
+   disabled at a time, over three seconds each:
+       baseline (all on)                 1.356s of task time
+       particle field OFF                1.420s   ->  saved NOTHING
+       every backdrop-filter OFF         1.400s   ->  saved NOTHING
+       .fx-ring + .fx-dots + .fx-pool OFF 0.927s  ->  saved 0.429s, 32% of the page
+   ⛔ So the background field is NOT the cost any more — the batching took its script time to
+   26ms per 3 seconds and this proves it. The cost is the PER-CARD pattern layers, and the
+   reason is simply how many of them there are: **20 `.card-fx` cards, each with a ring and a
+   dot field, so 40 layers animating every frame — while exactly ONE card is on screen.**
+   Nineteen twentieths of that work is spent drawing something nobody can see.
+   ⛔⛔ WHY THE ANIMATIONS ARE EXPENSIVE RATHER THAN MERELY PRESENT. `dotWave` animates
+   `mask-position` and `fxOrbit` animates a `@property` angle feeding a conic-gradient. Neither
+   can be composited — a transform can, but these are not transforms — so both force the card
+   to be REPAINTED every frame, for the whole time they run.
+   ⛔⛔ ONLY `animation-name` IS TOGGLED, deliberately. Setting the `animation` shorthand here
+   would reset `animation-duration` and `animation-delay`, and the delay is what staggers the
+   wave across the section (`.card-fx:nth-of-type(2n) > .fx-dots { animation-delay: -.9s }`).
+   Same specificity plus later source order would have silently un-staggered every card and
+   made the whole section pulse in lockstep.
+   ⛔ The class is added by `#fxVisibility` at the end of the body, which watches every
+   `.card-fx` with an IntersectionObserver and a 200px `rootMargin`, so a card is live slightly
+   BEFORE it enters the viewport and nothing pops. This is the technique the `#cardFx` block
+   records as holding a full rollout to 2-12 live at any scroll position. */
+/* ⛔⛔ THE CARD LAYERS ARE GATED BY THE GENERIC PAUSE INSTEAD, AND THIS RULE IS DELETED.
+   Owner: *"why did you pause the animations"* — which found a real defect.
+   ⛔⛔ `animation-name: none` DOES NOT PAUSE AN ANIMATION, IT DESTROYS AND RECREATES IT.
+   Removing the name and putting it back restarts the animation from zero, so every card's
+   dot wave and orbiting ring visibly JUMPED BACK TO THE START as it scrolled into view. The
+   `rootMargin` made it worse rather than better: the restart happened 200px BEFORE the card
+   appeared, exactly where the eye could watch it happen.
+   ⛔ The reason this rule existed was to avoid resetting `animation-duration` and
+   `animation-delay` (the stagger across the section). Pausing never touches either, so the
+   generic gate in `#fxAnimGate` gets the same saving AND keeps the phase. The 32% it was
+   built to recover is still recovered — the measurement is in that block.
+   ⛔ `.fx-live` is left in the CSS and in `#fxVisibility`'s class toggle only as a hook; no
+   rule reads it now. If a rule is ever added back here, it MUST use `animation-play-state`
+   rather than `animation-name`, for the reason above. */
+
+/* ------------------------------------- 6. the hover COLOUR, on the rest of the cards
+   Owner: *"the hover over color does not show also add that"*.
+   ⛔⛔ THE FEATURES TEXT CARDS GOT THIS AND THE OTHERS DID NOT. When the pricing-card match
+   was requested it was applied to `#workflow .feature-text > .quickfog-outer` alone; the hero
+   copy card, the workflow intro card and this compare pair were all added later and each
+   inherited the pattern WITHOUT the ring. Hovering them shows dots and no colour — which is
+   exactly what the owner is reporting.
+   ⛔ THE VALUES ARE `html.dark .price-card` / `:hover` VERBATIM and identical to the block on
+   the features text cards, so all four now brighten the same way. Both states are listed:
+   the ring is faintly present at REST and BRIGHTENS on hover, which is what makes it read as
+   a hover rather than something appearing from nothing.
+   ⛔ `box-shadow` is one property, so every layer is listed together. The glass's four inset
+   highlights are deliberately NOT restored — only `inset 0 1px 0` — matching the pricing card.
+   ⛔ `!important` because each of these cards carries `box-shadow: none !important` from its
+   own transparency rule. All important, so specificity decides, and every selector here
+   outranks those. */
+html.dark #workflow .compare-card,
+html.dark #workflow .afmp-intro-card,
+html.dark .hero-copy-card {
+  border: 1px solid rgba(255, 255, 255, .10);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .20),
+    0 0 0 1px color-mix(in srgb, #0096ff 10%, transparent),
+    0 0 44px -14px color-mix(in srgb, #0096ff 38%, transparent) !important;
+  transition: border-color .3s ease, box-shadow .3s ease;
+}
+html.dark #workflow .compare-card:hover,
+html.dark #workflow .afmp-intro-card:hover,
+html.dark .hero-copy-card:hover {
+  border-color: color-mix(in srgb, #0096ff 40%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .26),
+    0 0 0 1px color-mix(in srgb, #0096ff 24%, transparent),
+    0 0 62px -12px color-mix(in srgb, #0096ff 62%, transparent) !important;
 }
 
 /* ⛔ There is deliberately NO `prefers-reduced-motion` rule for the surface any more. It
@@ -4477,16 +4823,22 @@ html:not(.dark) .card-fx > .fx-dots {
    bubble is now 42rem, so it had nothing left to do. It is written up in the memory
    note rather than left in as a rule that silently no longer matches anything. */
 
-/* ⛔⛔ COMPACT — owner: *"make the [spec table] compact"*. The table was inheriting the
-   page's roomy `td` padding (`.55rem` a row, set for a wide two-column table on a full
-   page), and inside a bubble that reads as a tall list of separate statements rather than
-   as one spec block. Both the row padding and the leading come down together; the
-   divider lines are what keep the rows legible at this density, so they stay.
-   ⛔ Scoped to the TABLE, not to `.acc-inner` — the FAQ bubbles' prose is unchanged, and
-   the changelog's bullet list is too. */
-#specs .acc-inner .spec-table { margin-top: .3rem; font-size: .85rem; line-height: 1.25; }
-#specs .acc-inner .spec-table td { padding: .15rem .45rem; }
-#specs .acc-inner:has(.spec-table) { padding: .4rem .8rem; }
+/* ⛔⛔ THE COMPACTION IS REMOVED — UNCOMPACTED. Owner: *"uncompact this [spec table]"*.
+   What was here (kept in the backup `index.html.bak-20261007-220529-PREPATTERN`) was:
+       #specs .acc-inner .spec-table { margin-top: .3rem; font-size: .85rem; line-height: 1.25; }
+       #specs .acc-inner .spec-table td { padding: .15rem .45rem; }
+       #specs .acc-inner:has(.spec-table) { padding: .4rem .8rem; }
+   ⛔⛔ IT IS DELETED RATHER THAN SET BACK TO SOME NEW NUMBER, SO THE TABLE RETURNS TO THE
+   PAGE'S OWN `.spec-table` (~:1030) — `font-size: .92rem`, `td { padding: .55rem .4rem }`,
+   and the bubble's normal padding. "Uncompact" means undo the compaction, and the base rule
+   is the only definition of what this table is supposed to look like; inventing a
+   half-way value here would be a second opinion nobody asked for and one more number to
+   keep in step. It also means a future change to `.spec-table` reaches this table again,
+   which the override had quietly cut it off from.
+   ⛔ Scoped to `#specs` throughout, so the FAQ prose and the changelog bullets were never
+   touched by the compaction and are not touched by its removal.
+   ⛔ The two COLOUR overrides further down (~:4552) stay: they repaint the dividers and the
+   label column for the bubble's light fill, and have nothing to do with density. */
 
 /* ⛔ the question type, lifted with the pill's padding above */
 #specs .acc-head, #changelog .acc-head { font-size: 1.2rem; }
@@ -4636,6 +4988,56 @@ html:not(.dark) .card-fx > .fx-dots {
        children (`h3.feature-title`, `p.feature-copy`) and **neither is positioned**, so
        `position: relative` on them is a no-op. Re-measure before assuming that still holds. */
     '#workflow .feature-text > .quickfog-outer',
+    /* ⛔ THE HERO COPY CARD. Owner: *"add the patren system to this card too with card
+       transparancy"* — heading "Facial Motion Capture Made Super Easy!".
+       ⛔ CHECKED FOR POSITIONED CHILDREN BEFORE ADDING IT, because `.card-fx > *` pulls them
+       into the flow. Measured: this card has exactly TWO children, `h1` and `p.hero-sub`,
+       and **neither is positioned** — so no `.fx-abs` snapshot is needed and the guard
+       described at the end of this block stays unnecessary. Re-measure before assuming that
+       still holds; the hero badges elsewhere on the page ARE absolutely positioned and would
+       need it.
+       ⛔ Not nested in another `card-fx`, so no ring-inside-a-ring. */
+    '.hero-copy-card',
+    /* ⛔ THE HERO CLIP. Owner: *"add the new outline animation on the hero clip too"*.
+       ⛔ THIS IS THE ONE THAT NEEDS THE `.fx-abs` SNAPSHOT, and it is why the snapshot now
+       exists: 12 direct children, all absolutely positioned. See the loop in `#cardFxLayers`.
+       ⛔ `overflow: visible` here, unlike the other targets — so the `.hm-tips` bubble that
+       hangs 62px ABOVE the card is not clipped by anything and the ring, which is `inset: 0`
+       on the border band, never comes near it.
+       ⚠ The two `.hero-side` rail clips and `.hero-video-card` are safe to add the same way
+       (1 and 2 direct children, none positioned) but are NOT added: the owner said "the hero
+       clip", singular, and this is the one with the video and the play button. */
+    '.hero-media',
+    /* ⛔ THE WORKFLOW INTRO CARD — "What is Auto Face MoCap Pro". Owner: *"add the parten
+       system on the 'Workflow & Features' cards"*.
+       ⛔ IT IS THE ONLY REAL CARD IN THAT SECTION WITHOUT THE PATTERN, and that was
+       established by INVENTORY rather than by reading the markup: a DOM sweep lists 65
+       card-ish elements in the section, and the candidates sort out as —
+         11  `.quickfog-outer.card-fx`   the feature TEXT cards — already done
+         12  `.quickfog-outer`           the main row cards — owner had these EMPTIED, so no
+         13  `.feature-media`            the clip cells — 4 positioned children each, and the
+                                         owner said leave them alone
+         9   `.step-num`                 a 17x17 badge, not a card
+         2   `.seam-label`               the section divider
+         1   `.afmp-intro-card`          <- this one, 1180x238, ZERO positioned children
+       ⛔ 0 positioned children, so no `.fx-abs` snapshot is needed. The card is an `h3` and
+       three `p`, all static.
+       ⚠ "cards" plural, and only one card qualified. The other candidates are all either
+       already patterned, deliberately emptied, or explicitly excluded — say the word if a
+       different set was meant and this is one line. */
+    '.afmp-intro-card',
+    /* ⛔ THE COMPARE PAIR — "The old way" / "With Auto Face MoCap Pro". Owner: *"for do for
+       this"*, quoting that block.
+       ⛔ Adds BOTH columns (`.compare-card.old` and `.new` — the base class matches both).
+       ⛔ 0 positioned children, measured: `.vs-badge` static, `h3` static, `ul.compare-steps`
+       static, `.time-chip` relative. No `.fx-abs` snapshot needed.
+       ⛔ `::after` is free on these (`.compare-card::after { content: none }`, ~:3287, because
+       the sheen was switched off when the surfaces went) — but `#cardFxLayers` uses real spans
+       anyway, so nothing depends on that being true.
+       ⛔ The WRAPPER around them (`#workflow .quickfog-outer:has(.compare-grid)`) is NOT a
+       target: it is the empty main card, the same role the row wrappers play in the features
+       section, and those were deliberately left unpatterned. */
+    '.compare-card',
   ];
 
   function build() {
@@ -4645,16 +5047,40 @@ html:not(.dark) .card-fx > .fx-dots {
       for (var j = 0; j < nodes.length; j++) {
         var el = nodes[j];
         if (el.classList.contains('card-fx')) continue;    // already done
-        /* ⛔ the ring is FIRST and the dots SECOND only for readability — the stacking
-           is set in CSS by z-index, not by DOM order, so a card that reorders its own
-           children cannot break it. */
+        /* ⛔⛔ THE `.fx-abs` SNAPSHOT — AND IT MUST RUN BEFORE THE CLASS GOES ON.
+           Owner: *"add the new outline animation on the hero clip too"*. The hero clip
+           (`.hero-media`) has **12 direct children and ALL 12 ARE ABSOLUTELY POSITIONED** —
+           the video, `.grid-lines`, three `.hm-badge` pills, both `.hm-nav` arrows,
+           `.hm-tips`, `.hm-dots`, `.play-btn`, `.clip-bar` and `.clip-load`. This is exactly
+           the case the note at the end of this block describes: `.card-fx > *` sets
+           `position: relative`, which would rip every one of them into the flow.
+           ⛔ It is read BEFORE `card-fx` is added, because afterwards every child computes as
+           `relative` and the information is gone — the one-shot nature is why this is the
+           first thing in the loop body rather than near the CSS it feeds. */
+        for (var c = 0; c < el.children.length; c++) {
+          var kid = el.children[c];
+          var kp = window.getComputedStyle(kid).position;
+          if (kp === 'absolute' || kp === 'fixed') kid.classList.add('fx-abs');
+        }
+        /* ⛔ three layers now, and they stack by `z-index` in CSS, never by DOM order, so a
+           card that reorders its own children cannot break it: `.fx-dots` and `.fx-pool` at
+           0 (the pool after the field, so it rides on top), `.fx-ring` at 3, content at 1. */
         var ring = document.createElement('span');
         ring.className = 'fx-ring';
         ring.setAttribute('aria-hidden', 'true');
         var dots = document.createElement('span');
         dots.className = 'fx-dots';
         dots.setAttribute('aria-hidden', 'true');
+        /* ⛔ the cursor pool is a PLAIN SPAN, exactly as `html.dark .price-card::after` is a
+           pseudo-element — it is a static dot layer behind a mask, so it needs no canvas and
+           no animation. The `.fx-particles` canvas and the whole `#fxParticles` script that
+           drove it are DELETED; the owner asked for the pricing card's effect exactly, and
+           that effect is entirely CSS. */
+        var pool = document.createElement('span');
+        pool.className = 'fx-pool';
+        pool.setAttribute('aria-hidden', 'true');
         el.appendChild(dots);
+        el.appendChild(pool);
         el.appendChild(ring);
         el.classList.add('card-fx');
         aimPattern(el);
@@ -4724,133 +5150,6 @@ html:not(.dark) .card-fx > .fx-dots {
     var els = document.querySelectorAll('.card-fx');
     for (var i = 0; i < els.length; i++) aimPattern(els[i]);
   });
-})();
-</script>
-
-<!-- ============================================================ -->
-<!-- EMBED EARLY GATE + SOURCE DEFERRAL — v2 (no-cache pass).      -->
-<!-- Runs during HEAD parsing, before any media element exists.    -->
-<!-- ⛔ EMBED ONLY (`?embed=superhive`). Standalone never enters    -->
-<!-- this block: its sources are never deferred and the page keeps -->
-<!-- its exact previous behaviour. No downloads, no cache, no blob -->
-<!-- — the ORIGINAL URL is parked in data-sh-src and restored.     -->
-<!-- ============================================================ -->
-<script>
-(function () {
-  'use strict';
-  var q = window.location.search || '';
-  if (!/[?&]embed=superhive(?:&|$)/.test(q)) return;
-  var full = /[?&]effects=full(?:&|$)/.test(q);
-  window.__superhiveEmbedMode = true;
-  window.__superhiveEffects = full ? 'full' : 'efficient';
-  window.__shEfficient = !full;
-
-  var rootEl = document.documentElement;
-  rootEl.classList.add('superhive-embed');
-
-  /* ---- reveal ownership hand-off, at FIRST PAINT ----------------------------
-     In embed mode the deferred runtime owns reveal state (root:null on the HOST
-     viewport). If it never runs, the page must still be fully visible — so the
-     natural state is VISIBLE here, the offscreen state is a class (`sh-held`,
-     opacity + visibility only, NO transform, so the observer target's geometry
-     never changes and intersection cannot oscillate), and entry is one finite
-     220ms keyframe pop. Reduced-motion: appearance is immediate. */
-  var css =
-    'html.superhive-embed .reveal{opacity:1;visibility:visible;transform:none;}' +
-    'html.superhive-embed .reveal.sh-held{opacity:0;visibility:hidden;}' +
-    'html.superhive-embed .reveal.sh-pop{animation:shEntryPop .22s cubic-bezier(.22,.61,.36,1) both;}' +
-    '@keyframes shEntryPop{from{opacity:0;transform:scale(1.015);}to{opacity:1;transform:none;}}' +
-    '@media (prefers-reduced-motion:reduce){html.superhive-embed .reveal.sh-pop{animation:none;}}';
-  /* efficient mode: the mouse-follow glow is disabled here AND at its script
-     gate, so no orphaned static glow sits in the top-left corner. */
-  if (!full) css += 'html.superhive-embed .mouse-glow{display:none!important;}';
-  var styleEl = document.createElement('style');
-  styleEl.setAttribute('data-superhive-early', '');
-  styleEl.textContent = css;
-  (document.head || rootEl).appendChild(styleEl);
-
-  /* ---- media source deferral ------------------------------------------------
-     ⛔ Every parsed <video src> / <source src> is parked in `data-sh-src` and the
-     src attribute is removed BEFORE the media element can pick a resource. An
-     offscreen clip therefore starts with NO decoder and no fetch; the runtime
-     re-attaches the ORIGINAL URL when (and only when) the clip becomes visible.
-     The parked value IS the original URL — it is never rewritten, copied or
-     cached, and nothing here fetches anything. */
-  var DATA = 'data-sh-src';
-  function stash(v) {
-    var s = v.getAttribute('src');
-    if (s) {
-      if (!v.hasAttribute(DATA)) v.setAttribute(DATA, s);
-      v.removeAttribute('src');
-    }
-    var kids = v.getElementsByTagName('source');
-    for (var i = 0; i < kids.length; i++) {
-      var sv = kids[i].getAttribute('src');
-      if (sv) {
-        if (!kids[i].hasAttribute(DATA)) kids[i].setAttribute(DATA, sv);
-        kids[i].removeAttribute('src');
-      }
-    }
-  }
-  function scan(node) {
-    if (!node || node.nodeType !== 1) return;
-    if (node.tagName === 'VIDEO') { stash(node); return; }
-    function stashImage(img) {
-      if (img.closest('nav,header')) return;
-      var src = img.getAttribute('src');
-      if (src) { img.setAttribute(DATA, src); img.removeAttribute('src'); }
-    }
-    if (node.tagName === 'IMG') { stashImage(node); return; }
-    if (node.getElementsByTagName) {
-      var vs = node.getElementsByTagName('video');
-      for (var i = 0; i < vs.length; i++) stash(vs[i]);
-      var imgs = node.getElementsByTagName('img');
-      for (var j = 0; j < imgs.length; j++) stashImage(imgs[j]);
-    }
-  }
-  if ('MutationObserver' in window) {
-    var mo = new MutationObserver(function (list) {
-      for (var i = 0; i < list.length; i++) {
-        var added = list[i].addedNodes;
-        for (var j = 0; j < added.length; j++) scan(added[j]);
-      }
-    });
-    try { mo.observe(rootEl, { childList: true, subtree: true }); } catch (e) {}
-  }
-  window.__superhiveStashVideo = stash;
-
-  /* ---- editor export helper -------------------------------------------------
-     The built-in editor serializes document.documentElement.outerHTML. A saved
-     page must be standalone-valid, so parked sources are restored for that ONE
-     synchronous serialization and re-parked immediately after — still the same
-     original URLs, still no cache, and an already-attached (visible) clip is
-     never touched. */
-  window.__superhiveExportHTML = function () {
-    if (window.__superhiveExporting) return '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-    window.__superhiveExporting = true;
-    var all = document.querySelectorAll('video[' + DATA + '], source[' + DATA + '], img[' + DATA + ']');
-    var list = [], i, el;
-    for (i = 0; i < all.length; i++) {
-      if (all[i].getAttribute('src') == null) list.push(all[i]);
-    }
-    var saved = [];
-    for (i = 0; i < list.length; i++) {
-      el = list[i];
-      saved.push(el.getAttribute(DATA));
-      el.setAttribute('src', el.getAttribute(DATA));
-    }
-    var autoplayNodes = document.querySelectorAll('video[data-sh-autoplay]');
-    for (i = 0; i < autoplayNodes.length; i++) autoplayNodes[i].setAttribute('autoplay', '');
-    var out = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-    for (i = 0; i < autoplayNodes.length; i++) autoplayNodes[i].removeAttribute('autoplay');
-    for (i = 0; i < list.length; i++) {
-      el = list[i];
-      el.removeAttribute('src');
-      el.setAttribute(DATA, saved[i]);
-    }
-    window.__superhiveExporting = false;
-    return out;
-  };
 })();
 </script>
 </head>
@@ -5308,7 +5607,7 @@ html:not(.dark) .card-fx > .fx-dots {
          reaches 20px below the seam, so a first child with NO margin would start 24px down and
          sit almost on the label. -->
     <div class="quickfog-outer afmp-intro-card">
-      <h3>What is Auto Face MoCap Pro</h3>
+      <h3>What is Auto Face MoCap Pro?</h3>
       <!-- ⛔ House rules for this copy, from the owner: no dashes or hyphens at all (his "AR-Kit"
            spelling is the one exception), no "bakes it to your rig in two clicks", never the
            number 52, and the summary runs to about 500 characters. The gate enforces all four. -->
@@ -5323,7 +5622,19 @@ html:not(.dark) .card-fx > .fx-dots {
     <style>
       /* the intro card, in the same compact scale as the pair below it */
       .afmp-intro-card { margin-top: 1rem; padding: 1rem .9rem; border-radius: 14px; }
-      .afmp-intro-card h3 { font-size: 1.05rem; margin-bottom: .5rem; }
+      /* ⛔⛔ 1.5rem, UP FROM 1.05rem. Owner: *"make this heading text bigger and add ? at the
+         end"*. The compact value was deliberate — this rule's own comment says the intro card
+         is kept "in the same compact scale as the pair below it" — and the owner is overriding
+         that on purpose, so the heading now reads as the section's own title rather than as a
+         third card in the row. It is also deliberately LARGER than the compare pair's 1.19rem,
+         which is what makes it read as a heading over them instead of a sibling.
+         ⚠ `margin-bottom: .5rem` is unchanged: the owner asked for the text to be bigger, not
+         for the space under it to move, and growing one without the other is exactly the
+         "one control moves one thing" trap. If the bigger line box crowds the first paragraph,
+         that is a separate request.
+         ⛔ The heading is GRADIENT TEXT (`background-clip: text`, ~:3295) — changing its size
+         does not touch the gradient, which is painted across the glyph box. */
+      .afmp-intro-card h3 { font-size: 1.5rem; margin-bottom: .5rem; }
       /* paragraph gap: the copy is three paragraphs now, and this margin is the "line space"
          between them (the last one must not add a trailing gap inside the card) */
       .afmp-intro-card p { font-size: .85rem; line-height: 1.6; color: var(--muted); margin: 0 0 .6rem; }
@@ -5356,11 +5667,26 @@ html:not(.dark) .card-fx > .fx-dots {
                (1.23rem) — otherwise the heading would sit .35rem off the list and the card
                would visibly tighten. -->
           <h3>Manual Hand Keyframe Animation.</h3>
+          <!-- ⛔ Copy rewritten on the owner's word: *"make this text better it sounds odd"*.
+               This SUPERSEDES the earlier "their spelling and capitals verbatim" note — that
+               instruction is why the original read oddly, and the owner has now asked for the
+               opposite. What was wrong with it: Title Case applied to random nouns mid
+               sentence ("Manually Moving Rig", "For any Small change everything Needs
+               Readjustment", "With Multi Character & Multi Mocap Support"), no punctuation to
+               close the thoughts, and a numbered list whose last items were BENEFITS sitting
+               among steps ("With Multi Character & Support", "Beginner Friendly Even a 1 day
+               User can use it Easily") so the list had no consistent shape.
+               ⛔ Page house rules, enforced elsewhere in this file, still apply and are met:
+               NO DASHES OR HYPHENS OF ANY KIND except the owner's own "AR-Kit"; the number 52
+               never appears; sentence case throughout.
+               ⛔ "Apply Mocap" is capitalised because it is the ACTUAL BUTTON LABEL in the
+               addon; "mocap" and "mocaps" stay lowercase as common nouns, and the product
+               name keeps its own "MoCap" in the heading above. -->
           <ul class="compare-steps">
-            <li><span class="step-num">1</span><span>Manually Moving Rig and Key framing</span></li>
-            <li><span class="step-num">2</span><span>Manual Graph EDITOR Adjustments Takes Hours</span></li>
-            <li><span class="step-num">3</span><span>For any Small change everything Needs Readjustment</span></li>
-            <li><span class="step-num">4</span><span>And for Beginners it's Very Hard</span></li>
+            <li><span class="step-num">1</span><span>Move the rig and set every keyframe by hand</span></li>
+            <li><span class="step-num">2</span><span>Spend hours cleaning up curves in the Graph Editor</span></li>
+            <li><span class="step-num">3</span><span>Every small change means readjusting the whole animation</span></li>
+            <li><span class="step-num">4</span><span>Hard to learn when you are just starting out</span></li>
           </ul>
           <span class="time-chip">~ 6 hours</span>
         </div>
@@ -5374,12 +5700,16 @@ html:not(.dark) .card-fx > .fx-dots {
           <h3>Record, Generate &amp; Adjust</h3>
           <!-- steps replaced on the owner's word (2026-09-30): step 1 kept, 2 and 3 rewritten
                and a 4th added — their spelling and capitals verbatim ("AR-Kit", "Mocap"). -->
+          <!-- ⛔ Copy rewritten with the pair's, same reason and same rules — see the note on
+               the OLD WAY list above. Steps 1-3 are actions and 4-5 were benefits; they are
+               now phrased to sit in the same list without breaking it, and "Apply Mocap"
+               keeps its capitals because it is a button label. -->
           <ul class="compare-steps">
             <li><span class="step-num">1</span><span>Record the clip (webcam, phone or video file)</span></li>
-            <li><span class="step-num">2</span><span>Select AR-Kit Shapekey Character &amp; Click Apply Mocap</span></li>
-            <li><span class="step-num">3</span><span>Want to change something in the mocap Use Real-Time Sliders</span></li>
-            <li><span class="step-num">4</span><span>With Multi Character &amp; Multi Mocap Support</span></li>
-            <li><span class="step-num">5</span><span>Beginner Friendly Even a 1 day User can use it Easily</span></li>
+            <li><span class="step-num">2</span><span>Select an AR-Kit shapekey character and click Apply Mocap</span></li>
+            <li><span class="step-num">3</span><span>Change anything you want with the real time sliders</span></li>
+            <li><span class="step-num">4</span><span>Multiple characters and multiple mocaps in one file</span></li>
+            <li><span class="step-num">5</span><span>Beginner friendly, so even a first day user can get a clean result</span></li>
           </ul>
           <span class="time-chip">~ 2 minutes</span>
         </div>
@@ -6259,10 +6589,8 @@ html:not(.dark) .card-fx > .fx-dots {
   'use strict';
 
   /* ---------- 0. Mouse-follow background glow ---------- */
-  /* ⛔ Efficient embed mode: loop disabled (the early head gate also hides the layer,
-     so no orphaned glow sits at translate(0,0)). effects=full / standalone untouched. */
   var glow = document.querySelector('.mouse-glow');
-  if (glow && !window.__shEfficient) {
+  if (glow) {
     var gX = 0, gY = 0, tX = 0, tY = 0, gRaf = null;
     function glowTick() {
       gX += (tX - gX) * 0.95;
@@ -6410,13 +6738,7 @@ html:not(.dark) .card-fx > .fx-dots {
 
   /* ---------- 6. Scroll-reveal animations ---------- */
   var revealEls = document.querySelectorAll('.reveal');
-  if (window.__superhiveEmbedMode) {
-    /* EMBED: the runtime owns reveal state — offscreen hide + finite 220ms entry pop,
-       observed root:null against the HOST viewport. This one-shot "add .visible and
-       unobserve" observer is deliberately NOT started here, because it would permanently
-       reveal everything behind the new owner. If the runtime never runs, the early head
-       style has already made every .reveal natural/visible, so nothing can be stranded. */
-  } else if ('IntersectionObserver' in window) {
+  if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting) {
@@ -6602,43 +6924,17 @@ html:not(.dark) .card-fx > .fx-dots {
      and the `v=` does nothing.
      ⛔ <img> as well as <video>: an image needs no .load() — assigning src is enough
      (and load() is not a function on an <img>). */
-  /* ---------- Shared video-source handoff ----------
-     ⛔ THE ONLY PLACE the page's own handlers write a clip's source (fresh tokens, the
-     hero switcher). In embed mode the runtime owns the decoder lifecycle, so a switch
-     must go through its API: the runtime decides whether the clip is visible enough to
-     attach now, or parks the URL until it becomes visible. Offscreen switches therefore
-     never start a load. Before the deferred runtime is up (only possible during the
-     parse-time hero apply(0)), the parked `data-sh-src` from the head-side deferral is
-     updated instead — never a real load. Standalone: the plain src + play() path. */
-  function setVideoSrcCompat(v, url, playNow) {
-    var api = window.__superhiveMedia;
-    if (api && api.setSource) { api.setSource(v, url); return; }   // plays per visibility + intent
-    var parked = v.getAttribute('data-sh-src');
-    if (v.getAttribute('src') == null && parked != null) {
-      if (parked !== url) v.setAttribute('data-sh-src', url);
-      return;   // embed deferral: the runtime attaches it when the clip is visible
-    }
-    v.setAttribute('src', url);
-    if (playNow) {
-      var p = v.play();
-      if (p && p.catch) p.catch(function () {});
-    } else if (v.tagName === 'VIDEO') {
-      try { v.load(); } catch (e) {}   // the legacy fresh-token path did exactly this
-    }
-  }
-
   (function freshClipSrcs() {
     var t = Date.now();
     var els = document.querySelectorAll('video[data-fresh], img[data-fresh]');
     for (var i = 0; i < els.length; i++) {
       var el = els[i];
-      var s = el.getAttribute('src') || el.getAttribute('data-sh-src');
+      var s = el.getAttribute('src');
       if (!s) continue;
       // keep a real query string (carrd's own ?v=...), replace a token from a previous run
       var base = s.replace(/([?&])t=\d+&?/, '$1').replace(/[?&]$/, '');
-      var url = base + (base.indexOf('?') < 0 ? '?' : '&') + 't=' + t;
-      if (el.tagName === 'VIDEO') { setVideoSrcCompat(el, url); }
-      else { el.setAttribute('src', url); }
+      el.setAttribute('src', base + (base.indexOf('?') < 0 ? '?' : '&') + 't=' + t);
+      if (el.tagName === 'VIDEO') { try { el.load(); } catch (e) {} }
     }
   })();
 
@@ -6646,77 +6942,19 @@ html:not(.dark) .card-fx > .fx-dots {
      Injects a bar into each video's parent and drives it from that video's own
      playback, so every clip on the page gets the same bar without anyone having
      to remember to add markup. Runs BEFORE the hero player below, which reuses
-     drawClipBar().
-
-     ⛔⛔ ONE SHARED 10–15Hz SCHEDULER — NOT ONE RAF PER VIDEO. The old per-video loop
-     pumped at display rate for every playing clip, including clips the host viewport
-     cannot see. Here a single timer ticks ~12Hz and is only scheduled while at least one
-     bar is active: its clip is playing AND visible (host visibility via the runtime's
-     `__superhiveMedia.isVisible` in embed; the page's own viewport via the standalone
-     IntersectionObserver below), or the user is actively dragging it. Idle, offscreen
-     and hidden-document states all stop the loop. The media events stay as the fallback
-     for paused / seeking / pre-play states, where a loop should not run. */
+     drawClipBar(). */
   var CLIP_BARS = [];
-  var CLIP_TICK_MS = 83;              /* ~12Hz — inside the brief's 10–15Hz window */
-  var clipTick = { timer: 0 };
-
-  function clipBarRec(v) {
-    for (var i = 0; i < CLIP_BARS.length; i++) if (CLIP_BARS[i].v === v) return CLIP_BARS[i];
+  function clipBarFill(v) {
+    for (var i = 0; i < CLIP_BARS.length; i++) if (CLIP_BARS[i].v === v) return CLIP_BARS[i].fill;
     return null;
   }
-  function clipBarFill(v) {
-    var r = clipBarRec(v);
-    return r ? r.fill : null;
-  }
-  /* ⛔ `transform: scaleX(ratio)` on a width:100% fill — never `style.width`. The fill
-     keeps the bar's exact box (rounded ends, gradient, glow); only the transform moves,
-     so no layout work is triggered by playback or scrubbing. */
   function drawClipBar(v) {
     var fill = clipBarFill(v);
     if (!fill) return;
     var d = v.duration;
-    var ratio = (d && isFinite(d) && d > 0) ? (v.currentTime / d) : 0;
-    if (!(ratio >= 0)) ratio = 0;
-    if (ratio > 1) ratio = 1;
-    fill.style.transform = 'scaleX(' + ratio + ')';
+    fill.style.width = (d && isFinite(d) && d > 0)
+      ? Math.min(100, v.currentTime / d * 100).toFixed(2) + '%' : '0%';
   }
-  function clipBarVisible(rec) {
-    var api = window.__superhiveMedia;
-    if (api && api.isVisible) return api.isVisible(rec.v);
-    return rec.vis !== false && !document.hidden;
-  }
-  function clipBarActive(rec) {
-    if (rec.scrub) return true;              /* dragging keeps it alive while paused */
-    var v = rec.v;
-    return !v.paused && !v.ended && clipBarVisible(rec);
-  }
-  function anyClipActive() {
-    for (var i = 0; i < CLIP_BARS.length; i++) if (clipBarActive(CLIP_BARS[i])) return true;
-    return false;
-  }
-  function clipTickFn() {
-    clipTick.timer = 0;
-    if (document.hidden) return;
-    for (var i = 0; i < CLIP_BARS.length; i++) {
-      if (clipBarActive(CLIP_BARS[i])) drawClipBar(CLIP_BARS[i].v);
-    }
-    clipSchedulerWake();
-  }
-  function clipSchedulerWake() {
-    if (clipTick.timer || document.hidden || !anyClipActive()) return;
-    clipTick.timer = setTimeout(clipTickFn, CLIP_TICK_MS);
-  }
-  /* read by the embed diagnostics as `schedulerActive` */
-  window.__clipScheduler = {
-    rateHz: 1000 / CLIP_TICK_MS,
-    isActive: function () { return !!clipTick.timer; }
-  };
-  /* handshake with the embed lifecycle: no decoder release mid-scrub */
-  function clipSeekHold(v, on) {
-    var api = window.__superhiveMedia;
-    if (api && api.seekHold) api.seekHold(v, on);
-  }
-
   (function buildClipBars() {
     var vids = document.querySelectorAll('video');
     for (var i = 0; i < vids.length; i++) {
@@ -6734,23 +6972,32 @@ html:not(.dark) .card-fx > .fx-dots {
         fill.className = 'clip-bar-fill';
         bar.appendChild(fill);
         host.appendChild(bar);
-        var barRec = { v: v, fill: fill, vis: true, scrub: false };
-        CLIP_BARS.push(barRec);
+        CLIP_BARS.push({ v: v, fill: fill });
         ['timeupdate', 'loadedmetadata', 'seeked', 'ended', 'durationchange'].forEach(function (ev) {
           v.addEventListener(ev, function () { drawClipBar(v); });
         });
         drawClipBar(v);
 
-        /* ⛔ NO per-video requestAnimationFrame here any more. These listeners only
-           wake the ONE shared scheduler; the events above remain the fallback for
-           states where no loop runs. */
-        ['play', 'playing', 'seeking'].forEach(function (ev) {
-          v.addEventListener(ev, function () { clipSchedulerWake(); drawClipBar(v); });
-        });
-        ['pause', 'ended'].forEach(function (ev) {
-          v.addEventListener(ev, function () { drawClipBar(v); });
-        });
-        if (!v.paused && !v.ended) clipSchedulerWake();
+        /* timeupdate is throttled by the spec to roughly 4x/SECOND, so a bar driven
+           only by it steps in ~250ms jumps: on a very short clip that is a handful of
+           visible stutters, and it cannot get smoother however short the clip is.
+           requestAnimationFrame drives it once per frame instead, so the bar is as
+           smooth on a 1s clip as on a 60s one. The listeners above stay as the
+           fallback for paused, seeking and pre-play states, where no loop runs. */
+        var barRaf = 0;
+        var barTick = function () {
+          barRaf = (v.paused || v.ended) ? 0 : requestAnimationFrame(barTick);
+          drawClipBar(v);
+        };
+        var barStart = function () {
+          if (!barRaf && !v.paused && !v.ended && window.requestAnimationFrame) {
+            barRaf = requestAnimationFrame(barTick);
+          }
+        };
+        var barStop = function () { if (barRaf) { cancelAnimationFrame(barRaf); barRaf = 0; } };
+        ['play', 'playing', 'seeking'].forEach(function (ev) { v.addEventListener(ev, barStart); });
+        ['pause', 'ended'].forEach(function (ev) { v.addEventListener(ev, barStop); });
+        if (!v.paused && !v.ended) barStart();
 
         // loading spinner — same idea, one per clip
         var spin = document.createElement('div');
@@ -6786,9 +7033,6 @@ html:not(.dark) .card-fx > .fx-dots {
         bar.addEventListener('pointerdown', function (e) {
           e.preventDefault(); e.stopPropagation();
           dragging = true;
-          barRec.scrub = true;              /* scheduler stays on even while paused */
-          clipSeekHold(v, true);            /* lifecycle must not detach mid-scrub */
-          clipSchedulerWake();
           try { bar.setPointerCapture(e.pointerId); } catch (err) {}
           seekTo(e.clientX);
         });
@@ -6800,8 +7044,6 @@ html:not(.dark) .card-fx > .fx-dots {
         var endSeek = function (e) {
           if (!dragging) return;
           dragging = false;
-          barRec.scrub = false;
-          clipSeekHold(v, false);
           e.stopPropagation();
           try { bar.releasePointerCapture(e.pointerId); } catch (err) {}
         };
@@ -6810,22 +7052,6 @@ html:not(.dark) .card-fx > .fx-dots {
         bar.addEventListener('click', function (e) { e.stopPropagation(); });
       })(vids[i]);
     }
-  })();
-
-  /* Standalone only: without the embed runtime there is no host-visibility source for
-     the scheduler, so one IntersectionObserver keeps a visible-set for the bar videos.
-     In embed mode (`__superhiveEmbedMode`) the runtime's root:null answer is used
-     instead — a page-viewport observer would be wrong inside the 16000px iframe. */
-  (function barVisibilitySet() {
-    if (window.__superhiveEmbedMode || !('IntersectionObserver' in window)) return;
-    var viz = new IntersectionObserver(function (entries) {
-      for (var i = 0; i < entries.length; i++) {
-        var rec = clipBarRec(entries[i].target);
-        if (rec) rec.vis = entries[i].isIntersecting;
-      }
-      clipSchedulerWake();
-    }, { threshold: 0 });
-    for (var i = 0; i < CLIP_BARS.length; i++) viz.observe(CLIP_BARS[i].v);
   })();
 
   /* ---------- 8. Hero clip player — progress bar + play/pause ----------
@@ -7011,11 +7237,9 @@ html:not(.dark) .card-fx > .fx-dots {
       idx = Math.max(0, Math.min(n - 1, i));
       var s = HERO_SLIDES[idx] || {};
       if (s.src && heroVideo.getAttribute('src') !== s.src) {
-        /* ⛔ The ONE shared handoff (see setVideoSrcCompat above). In embed mode the
-           runtime attaches the clip only when it is visible, so switching characters
-           while the hero is offscreen parks the URL instead of starting a load. A
-           fresh source also resets the runtime's saved time for this clip. */
-        setVideoSrcCompat(heroVideo, s.src, true);   // hero switches autoplay the new clip
+        heroVideo.setAttribute('src', s.src);  // setting src reloads the element
+        var pr = heroVideo.play();             // muted, so autoplay is allowed
+        if (pr && pr.catch) pr.catch(function () {});
       }
       if (leftBadge && s.tag) leftBadge.textContent = s.tag;
       if (rightName && s.name) rightName.textContent = s.name;
@@ -7558,15 +7782,7 @@ html:not(.dark) .card-fx > .fx-dots {
       } else {
         modal.querySelector('#urlLabel').textContent = 'Clip URL (image or video)';
         var ed = el.querySelector('.ed-media');
-        /* ⛔ A clip parked by the embed source deferral keeps its ORIGINAL URL in
-           data-sh-src (that metadata is what "preserve editor URL metadata" means
-           here) — read it as a fallback so the inspector never shows an empty field
-           for a clip that is currently offscreen. */
-        fUrl.value = ed ? (ed.tagName === 'VIDEO'
-          ? (ed.querySelector('source')
-              ? (ed.querySelector('source').src || ed.querySelector('source').getAttribute('data-sh-src') || '')
-              : (ed.getAttribute('src') || ed.getAttribute('data-sh-src') || ''))
-          : ed.src) : '';
+        fUrl.value = ed ? (ed.tagName === 'VIDEO' ? (ed.querySelector('source') ? ed.querySelector('source').src : '') : ed.src) : '';
         fNewTab.checked = false;
         fRemove.style.display = ed ? 'inline-block' : 'none';
       }
@@ -7649,19 +7865,9 @@ html:not(.dark) .card-fx > .fx-dots {
     if (toggle) toggle.classList.remove('active');
   }
 
-  /* ⛔ In embed mode the sources of offscreen clips are parked in data-sh-src (the
-     runtime re-attaches them from there, using the same original URLs). A saved or
-     copied document must be standalone-valid, so the early embed gate's export helper
-     restores the parked srcs for the ONE synchronous serialization and re-parks them
-     immediately after. Everything else falls through to plain outerHTML. */
-  function exportHTML() {
-    if (window.__superhiveExportHTML) { try { return window.__superhiveExportHTML(); } catch (e) {} }
-    return '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-  }
-
   function saveHTML() {
     cleanForExport();
-    var html = exportHTML();
+    var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
     var blob = new Blob([html], { type: 'text/html' });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -7672,7 +7878,7 @@ html:not(.dark) .card-fx > .fx-dots {
 
   function copyHTML() {
     cleanForExport();
-    var html = exportHTML();
+    var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(html).then(function () { flash('HTML copied!'); }).catch(function () { flash('Copy not available'); });
     } else { flash('Copy not available'); }
@@ -7698,9 +7904,7 @@ html:not(.dark) .card-fx > .fx-dots {
   'use strict';
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var glow = document.querySelector('.mouse-glow');
-  /* ⛔ Efficient embed mode: this second glow loop is off too — otherwise it would
-     survive as a hidden duplicate of the block gated above. */
-  if (glow && !reduceMotion && !window.__shEfficient) {
+  if (glow && !reduceMotion) {
     var gX = 0, gY = 0, tX = 0, tY = 0, raf = null;
     function tick() {
       gX += (tX - gX) * 0.95;
@@ -7712,11 +7916,7 @@ html:not(.dark) .card-fx > .fx-dots {
     window.addEventListener('mousemove', function (e) { tX = e.clientX; tY = e.clientY; if (!raf) raf = requestAnimationFrame(tick); }, { passive: true });
   }
   var reveals = document.querySelectorAll('.reveal');
-  if (window.__superhiveEmbedMode) {
-    /* EMBED: the runtime owns reveal state (offscreen hide + finite entry pop against
-       the HOST viewport). Starting this second one-shot observer would permanently
-       reveal everything behind it. */
-  } else if ('IntersectionObserver' in window) {
+  if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('visible'); io.unobserve(en.target); } });
     }, { threshold: 0.12 });
@@ -7738,248 +7938,790 @@ html:not(.dark) .card-fx > .fx-dots {
      `brand-assemble.js` and `brand-title.js`. **Do not assume it is running.**
      ⛔ The canvas element and its `#interactiveBg` id are unchanged — the CSS
      (`position:fixed; z-index:-2`) is what places it, and it is the same element. -->
-<script src="assets/js/particle-field.js" defer></script>
+<!-- ⛔⛔ INLINED, NOT LINKED. Owner: *"when i update the html on the page the background
+     elements don't show"*. This module was `<script src="assets/js/particle-field.js" defer>`
+     and it was the ONLY file the page needed from disk — reproduced by loading index.html
+     alone in an empty directory: the `#interactiveBg` canvas stayed at its default 300x150,
+     drew nothing, and the console showed one net::ERR_FILE_NOT_FOUND. Any update that carries
+     the HTML without the assets/ folder therefore lost the background network and nothing
+     else, which is exactly the symptom reported.
+     ⛔ Inlined in place, at the end of <body>: every element above it is already parsed, so
+     the module finds `#interactiveBg` without needing `defer` (which an inline script cannot
+     use anyway). Moving this block into <head> WOULD break it — the module returns early when
+     the canvas is missing, and silently.
+     ⛔ The file on disk (assets/js/particle-field.js) is now UNREFERENCED, like
+     brand-assemble.js and brand-title.js. Do not edit it expecting a change to appear.
+     ⛔ If it is ever linked again, delete this block — two copies of the module would start
+     two animation loops on the same canvas. -->
+<script>
+/* ============================================================================
+   ParticleField — a drifting node network with lines between neighbours.
 
-<!-- ============================================================ -->
-<!-- `#fxParticles` — the hover particle field on the pattern cards. -->
-<!-- Owner: "also add hover over particle effect".                   -->
-<!-- ⛔ ONE LIST, `SEL`, IS THE WHOLE SCOPE. The canvas, the mask and  -->
-<!-- the two theme colours all come from the `.card-fx` layers that  -->
-<!-- already exist; widen `SEL` to put this on more cards.           -->
-<!-- ⛔ The CSS half is in the `#cardFx` block. Both halves are       -->
-<!-- needed — the CSS alone leaves an empty canvas, this alone has   -->
-<!-- nothing to fade against `.fx-dots`.                              -->
-<!-- ============================================================ -->
-<script id="fxParticles">
+   Owner: *"replace the animated live mouse reactive particles with this"*, pasting
+   an AetherFlow hero whose canvas draws violet nodes joined by lines on black, with
+   the lines turning WHITE near the cursor.
+
+   ⛔⛔ THIS IS A FAITHFUL PORT OF THAT PARTICLE SYSTEM, NOT A REDESIGN. Node count,
+     sizes, velocities, edge bounce, the link threshold, the opacity falloff, the
+     cursor repulsion and the two line colours are all read off the supplied code:
+       nodes    (w * h) / 9000, size 1–3px, velocity ±0.2, bounce off the edges
+       colour   rgba(191,128,255,.8) dots
+       links    any pair whose SQUARED distance < (w/7)*(h/7)
+       opacity  1 - dist2/20000
+       lines    rgba(200,150,255,a) — rgba(255,255,255,a) when inside the cursor's
+                200px radius
+       cursor   particles within 200px are PUSHED AWAY, force = (R-d)/R * 5
+
+   ⛔⛔ FIVE THINGS THE ORIGINAL DOES WRONG AND THIS DELIBERATELY DOES NOT. The LOOK is
+     copied exactly; the defects are not, because each one is visible or costs something:
+       1. `dist < (w/7)*(h/7)` compares a SQUARED distance against a product of
+          lengths. It happens to give a sane link range at 16:9 and drifts badly at
+          other aspects. Kept as a squared comparison against the same number, so the
+          on-screen result is identical where the original looked right.
+       2. `rgba(…, ${opacityValue})` goes NEGATIVE once dist2 > 20000. A negative alpha
+          is an invalid colour, the assignment is IGNORED, and the stroke silently
+          keeps the PREVIOUS pair's colour. Clamped to 0 — same pixels, no stale lines.
+       3. `if (mouse.x && …)` is falsy at x === 0, so the leftmost 1px column never
+          lights up. Now an explicit null check.
+       4. The canvas is filled OPAQUE BLACK every frame. `#interactiveBg` sits at
+          `z-index:-2`, so that would erase the page's navy gradient — the ramp built
+          from the owner's thumbnail — and flatten the whole page. `clearRect` instead,
+          leaving the field transparent over the gradient. ⚠ To match the reference's
+          black exactly, swap `clearRect` for a black `fillRect`; that is the one line.
+       5. No `devicePixelRatio`, so the nodes are soft on any retina display. Sized at
+          DPR here.
+     ⛔ Also kept from this page's own conventions rather than the original: a
+       `prefers-reduced-motion` path that paints one static frame and stops, and a
+       `visibilitychange` pause so a hidden tab is not burning a frame budget.
+   ========================================================================== */
 (function () {
   'use strict';
 
-  /* ⛔ a still page should stay still: the static dot field IS the reduced-motion state,
-     and the `#cardFx` block already pins it back on for anyone who asks for no motion. */
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var canvas = document.getElementById('interactiveBg');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  if (!ctx) return;
 
-  /* ⛔ EFFICIENT EMBED MODE (the default): the hover field is off — the static `.fx-dots`
-     pattern is the resting state, no canvas is ever created and no particle RAF can
-     survive as a hidden duplicate. `?effects=full` restores it; standalone untouched. */
-  if (window.__shEfficient) return;
+  var reduce = false;
+  try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
 
-  /* ⛔ ONE LIST — the features text cards, which is the context the owner asked in. Add
-     `'#shapekeys .quickfog-outer'` to put the same hover on the Shapekeys cards.
-     ⛔ `.site-header` is deliberately absent even though it carries the pattern: particles
-     drifting through a 65px navigation strip is not the effect anyone asked for. */
-  var SEL = '#workflow .feature-text > .quickfog-outer';
+  /* the supplied constants */
+  var DENSITY = 9000;            // node count = (w * h) / DENSITY
+  /* ⛔⛔ THE PAGE'S PALETTE, NOT THE REFERENCE'S VIOLET — owner: *"use the pages theme
+     colors"*. The AetherFlow original runs `rgba(191,128,255)` nodes and
+     `rgba(200,150,255)` links; violet appears NOWHERE else on this page, which is azure
+     throughout. Only the three colours change — every one of the reference's
+     BEHAVIOURS (count, sizes, velocities, link threshold, falloff, repulsion) is
+     untouched, so the field moves exactly as it did.
+     ⛔ The three take the page's own tokens rather than one flat colour: the nodes carry
+     the BRAND azure (`#0096ff`, the same value as `.btn-primary`, the coupon border and
+     the wordmark's middle span), while the LINKS stay in the muted blue-grey wireframe
+     family the page already used — a 1px line at full brand saturation reads as a
+     cable, not a wireframe. The cursor's highlight is the light cyan `#8fd8ff` that the
+     offer band and the ring glow already use, in place of the reference's pure white. */
+  var NODE_FILL = 'rgba(0, 150, 255, 0.9)';
+  var LINE_FAR = [110, 130, 190];
+  var LINE_NEAR = [143, 216, 255];
+  var FADE = 20000;              // opacity = 1 - dist2 / FADE
+  var CURSOR_R = 200;            // px
+  /* ⛔ HALVED, on the owner's word: *"reduce the repaltion instansity to 50%"*. The
+     supplied original uses 5, which it applies as `force * 5` per frame — a hard shove
+     that empties the whole 200px radius almost instantly.
+     ⛔ This scales the STRENGTH of the push, not its REACH: `CURSOR_R` is untouched, so
+     the cursor still clears the same circle, it just does it more gently and the field
+     takes longer to settle. Halving the radius instead would have made the cursor
+     affect a smaller area, which is a different change. */
+  var PUSH = 2.5;
+  var SIZE_MIN = 1, SIZE_MAX = 3;
+  /* ⛔⛔ THERE IS NO MAXIMUM SIZE ANY MORE. Owner: *"just remove the max px you have set"*.
+     The three ceilings that were here (2560 wide, 2400 tall, a 200px link range) existed only
+     to stop a frame that is as tall as the document from asking for a 40-megapixel canvas.
+     The visible-band tracking does that job properly, so every dimension is now derived from
+     what the user can actually see and nothing is clamped.
+     ⛔ WHAT REPLACES THEM IS A REFUSAL TO BUILD, NOT A CEILING — see `rebuild()`. If the
+     frame is taller than the screen and the band is not known yet, the field is not sized,
+     not seeded and not drawn. That is the frame or two before the observer's first report. */
+  /* ⛔ the alpha buckets for the link pass. Every link used to get its own `stroke()` and its
+     own freshly built `rgba(...)` string — thousands of both per frame. They are now grouped
+     into this many paths and stroked once each. 12 keeps the maximum alpha error at about
+     4%, which is invisible on a 1px line, and costs at most 24 strokes per frame instead of
+     thousands. See `connect()`. */
+  var LINK_BUCKETS = 12;
 
-  var GRID = 10;        // ⛔ must equal `.fx-dots { background-size: 10px 10px }`
-  var DOT_R = 1.1;      // ⛔ must equal the `1.1px` stop in that gradient
-  var DRIFT = 0.16;     // px per frame — a slow ambient drift, ~10px/s
-  var CURSOR_R = 70;    // the push radius, inside a card
-  var PUSH = 2.5;       // ⛔ the page field's OWN constant, `particle-field.js`, after the
-                        //   owner halved the reference's 5
-  var MAX = 2600;       // guard: the update pass is O(n) and this is a small box
+  var W = 0, H = 0, DPR = 1, linkDist2 = 0;
+  var docW = 0, docH = 0;        // the field's own extent — the whole DOCUMENT
+  var parts = [];
+  var vis = [];                  // reused each frame: no allocation in the loop
+  var mouse = { x: null, y: null };
+  var raf = 0, started = false, visible = true;
+  var MAX_NODES = 2600;          // guard: the update pass is O(n), the connect O(visible^2)
 
-  var cur = null;       // the ONE live card — never more than one canvas animating
+  /* ------------------------------------------------------------- sizing
+     ⛔⛔ THE CANVAS STAYS VIEWPORT-SIZED, BUT THE FIELD DOES NOT.
+     Owner: *"why the background is locked to view i want new particles to appear when i
+     scroll"*. The canvas is still `position: fixed` and still one screenful — but the
+     PARTICLES are seeded across the whole DOCUMENT and drawn at their scroll offset, so
+     scrolling walks through a field far larger than the window and new ones come into
+     view. Two reasons it is done this way rather than by making the element
+     document-sized:
+       1. a document-sized canvas is ~18.5M px here (74M at DPR 2 — roughly 300MB of
+          backing store), against 1.1M for the viewport-sized one;
+       2. the reference's density formula, applied to a 13,000px-tall page, asks for
+          ~2,060 nodes, and its connect pass is O(n²) — about 4 MILLION distance checks
+          per frame. Here the same field costs one O(n) pass to update and an O(visible²)
+          pass to link, which is ~150–200 nodes and ~20k checks.
+     ⛔ The link range stays tied to the VIEWPORT `(W/7)*(H/7)`, exactly as the reference
+     computes it against its canvas. Tying it to the document instead would make every
+     pair within hundreds of pixels connect and the field would read as a web. */
+  /* ⛔⛔ WHERE THE USER IS ACTUALLY LOOKING, WHICH IS NOT THE SAME AS `window.scrollY`
+     INSIDE A STORE'S IFRAME. Owner: *"header does not stick"*, then *"instead of caping it
+     make it render only what's visble on the screen even if it's in a iframe whos heaer does
+     not stick"*.
+     ⛔⛔ THE PROBLEM, MEASURED. Superhive sizes the frame to the whole page, so inside it
+     `window.innerHeight` reads **20000** and `position: fixed` pins to the top of the
+     DOCUMENT, not to the screen — which is why the header scrolls away there. The parent
+     does the scrolling and a cross-origin frame cannot read the parent's scroll, so nothing
+     in the page can tell where the user is looking. The canvas was therefore welded to the
+     top of the page, and a height cap only made the wrong thing smaller.
+     ⛔⛔ `IntersectionObserver` IS THE ONE API THAT SEES THROUGH THE FRAME BOUNDARY. Its
+     implicit root is the TOP-LEVEL viewport, so inside a cross-origin iframe the browser
+     intersects against what is genuinely on the user's screen, not against the frame's own
+     20000px box. This is the same machinery ad networks use to tell whether an ad was seen.
+     ⛔ ONE FULL-HEIGHT PROBE IS ENOUGH. `intersectionRect` of a document-height target IS
+     the visible band, in this document's coordinates, so no sentinel grid is needed. The
+     threshold list is what makes it fire while the PARENT scrolls: with a single 0 threshold
+     it would only fire on entering and leaving. 201 steps means a callback roughly every
+     0.5% of the page, which for a 20000px document is about every 100px of scroll.
+     ⛔ WHEN IT CANNOT BE USED the page behaves exactly as before: no `IntersectionObserver`,
+     or a ratio of 1 (the frame is a normal viewport, i.e. every desktop visit), and
+     `window.scrollY` remains the source of truth. This is an addition for the embed case,
+     not a replacement for the normal one. */
+  var bandTop = 0, bandH = 0, frameIsTall = false, bandSegs = [];
+  var bandObs = null, bandReady = false, bandDirty = false;
+  /* ⛔⛔ 200px, NOT 600px. Owner: *"what about the pc's that have 720p or 1080p display it will
+     render below the screen too"* — correct, and measured: at 600px segments an 802px window
+     got a 1200px band, i.e. ~600px of the work was below the fold. On a 720p laptop (~660px
+     visible) that is roughly 80% waste.
+     ⛔ The waste has two sources and both are fixed here. This reduces the QUANTISATION, and
+     `refineBand()` removes what is left of it by reading the exact visible part of the two
+     EDGE sentinels out of `intersectionRect`, so the band hugs the screen to a few pixels
+     rather than to a whole tile. 200px also keeps the sentinel count sane: a 20000px
+     document gets ~101 of them. */
+  var BAND_SEG = 200;
+  /* ⛔ 26 threshold steps over a 200px sentinel is a callback every ~8px of scroll — fine
+     enough that the edge rects are effectively continuous, and cheap because only the two
+     EDGE sentinels ever cross a threshold. The interior ones sit at ratio 1 and are silent. */
+  var BAND_SLACK = 160;        // px of canvas beyond the band — see `fitCanvasToBand()`
 
-  /* ⛔ read at HOVER time, not at load. The page has a theme toggle, and a field coloured
-     for the wrong theme is invisible — white dots on a white card.
-     ⛔⛔ THESE TWO STRINGS MUST EQUAL THE TWO `.fx-dots` GRADIENTS IN THE `#cardFx` BLOCK,
-     alpha included. They were raised to .58 / .48 with them (*"make the patern brighter"*);
-     change one pair without the other and the pattern shifts brightness the instant the
-     pointer arrives, which is exactly what the cross-fade is designed to hide. */
-  function colourFor() {
-    return document.documentElement.classList.contains('dark')
-      ? 'rgba(255,255,255,.58)'
-      : 'rgba(0,60,130,.48)';
+  /* ⛔⛔ THE FIELD STOPS AT THE FULL CATALOG SECTION. Owner: *"make the pages max size till the
+     full cataloq section no more then that"*.
+     ⛔ MEASURED, NOT GUESSED: the catalog section runs from 14272 to **14952** and the document
+     to 15400, so the part being excluded is the 448px of footer below it.
+     ⛔⛔ THIS BOUNDS THE FIELD, NOT THE PAGE. Truncating the document at the catalog was the
+     other reading, and it would DELETE THE FOOTER — so the page keeps every pixel it has and
+     only the particle field stops there. Everything below the catalog is simply outside the
+     field's extent: no particles are seeded past it, so none are ever drawn there.
+     ⛔ It also makes the field smaller to run, which is the same direction as the work above.
+     ⛔ Read at `measure()` time from the live element, so it follows the page if the section
+     ever moves; if `.catalog-section` is missing the whole document is used, which is the
+     behaviour before this existed. */
+  function fieldBottom() {
+    var cat = document.querySelector('.catalog-section');
+    var h = document.documentElement.scrollHeight || 0;
+    if (!cat) return h;
+    var b = Math.round(cat.getBoundingClientRect().bottom + (window.scrollY || 0));
+    return (b > 200 && b < h) ? b : h;
   }
 
-  function seed(s) {
-    var r = s.el.getBoundingClientRect();
-    if (!r.width || !r.height) return false;
-    s.dpr = Math.min(2, window.devicePixelRatio || 1);
-    s.w = r.width; s.h = r.height;
-    s.cv.width = Math.round(s.w * s.dpr);
-    s.cv.height = Math.round(s.h * s.dpr);
-    s.cv.style.width = s.w + 'px';
-    s.cv.style.height = s.h + 'px';
-    s.ctx.setTransform(s.dpr, 0, 0, s.dpr, 0, 0);
-    s.col = colourFor();
-    s.parts = [];
-    /* ⛔⛔ THE GRID STARTS AT 5,5 — NOT AT 0,0. `radial-gradient(circle, …)` places its
-       centre at 50% 50% of the tile by default, so the first dot of a `10px 10px` tile sits
-       at (5,5). Seeding at 0,0 would put every dot 5px up and left of its CSS twin, and the
-       cross-fade would visibly JUMP instead of being invisible. This offset is the single
-       thing that makes the two layers register. */
-    for (var y = GRID / 2; y < s.h; y += GRID) {
-      for (var x = GRID / 2; x < s.w; x += GRID) {
-        s.parts.push({ x: x, y: y,
-                       dx: (Math.random() - .5) * 2 * DRIFT,
-                       dy: (Math.random() - .5) * 2 * DRIFT });
-        if (s.parts.length >= MAX) return true;
-      }
-    }
+  /* ⛔⛔ THE CANVAS KEEPS A SMALL MARGIN AND REALLOCATES RARELY. Resizing the canvas is a
+     backing-store reallocation, not a style change — a 1418 x 800 canvas is about 4.5MB — so
+     following the band pixel-for-pixel would reallocate on every ~8px of scroll and cost more
+     in jank than it saves in fill.
+     ⛔⛔ BUT THE SLACK IS THE THING THAT RENDERS OFF-SCREEN, so it is bounded and small: 160px,
+     giving at most 320px in the worst case and about 160px on average. That is the answer to
+     the owner's question — on a 720p screen (~660px visible) the old 600px tiles meant a
+     1200px canvas, ~80% of it below the fold; this keeps the overshoot to roughly a quarter of
+     one screen and reallocates only every ~160px scrolled. */
+  var cvTop = 0, cvH = 0;
+
+  function fitCanvasToBand() {
+    /* ⛔ the containment test uses the EXACT band, not the quantised one, so the slack can
+       never grow into a permanent overshoot — it is re-derived from the true edges each time
+       the canvas is rebuilt. Returns true only when the backing store actually changed. */
+    if (cvH && bandTop >= cvTop && bandTop + bandH <= cvTop + cvH) return false;
+    cvTop = Math.max(0, bandTop - BAND_SLACK);
+    cvH = bandH + BAND_SLACK * 2;
     return true;
   }
 
-  function frame() {
-    var s = cur;
-    if (!s) return;
-    s.raf = requestAnimationFrame(frame);
+  /* ⛔⛔ A ROW OF SENTINELS, NOT ONE FULL-HEIGHT PROBE, AND THE FIRST ATTEMPT IS WHY.
+     A single document-height probe was tried and MEASURED: it reported correctly once (the
+     canvas sized itself to the visible 802px) and then never fired again, so the canvas
+     stayed welded to the top of the page. That is not a bug — **for a target taller than the
+     root the intersection RATIO is constant while you scroll**, so with any threshold list
+     there is nothing to cross. It only fires on entering and leaving the frame.
+     ⛔ A sentinel that is SHORTER than the screen has a ratio that genuinely changes as it
+     leaves, which is what produces callbacks while the PARENT scrolls. So the document is
+     tiled with BAND_SEG-tall sentinels and the union of those currently intersecting IS the
+     visible band.
+     ⛔⛔ THE RESOLUTION IS DELIBERATELY COARSE AND THAT COSTS NOTHING VISIBLE. The band is
+     only known to ±BAND_SEG, but the field is anchored in DOCUMENT space — the canvas is
+     placed at `bandTop` and every particle is drawn at `p.y - bandTop`, so
+     `canvasTop + drawnY == p.y` and the field stays put on the page however coarse the band
+     is. A coarse band only means the canvas is a little taller than the screen, never that
+     the field jumps.
+     ⛔ `visibility: hidden` and 1px wide: they are hit-testable for intersection purposes and
+     invisible to everything else. `pointer-events: none` keeps them out of the way of clicks. */
+  /* ⛔⛔ THE BAND FROM THE EDGE SENTINELS' EXACT VISIBLE PARTS, NOT FROM WHOLE TILES.
+     Every entry carries `intersectionRect` — the part of THAT sentinel which is visible — and
+     `boundingClientRect`, the sentinel's own box. Their difference is a scroll-invariant
+     offset, so the band's edge in DOCUMENT coordinates is
+         i * SEG + (intersectionRect.top - boundingClientRect.top)
+     for the topmost visible sentinel, and the mirrored expression for the bottom. No
+     `window.scrollY` is involved, which matters because in a full-height frame it is always 0.
+     ⛔ A sentinel is either FULLY visible (its rect is its whole box, known from its index) or
+     PARTLY visible (its rect is exact and it is one of the two that actually fires). So only
+     the two edges need their cached rects, and they are refreshed on every one of their
+     ~8px crossings. */
+  function refineBand() {
+    var top = Infinity, bottom = -Infinity, i, s, t, b;
+    for (i = 0; i < bandSegs.length; i++) {
+      s = bandSegs[i];
+      if (!s.on) continue;
+      t = s.rectTop !== null ? s.rectTop : i * BAND_SEG;
+      b = s.rectBot !== null ? s.rectBot : (i + 1) * BAND_SEG;
+      if (t < top) top = t;
+      if (b > bottom) bottom = b;
+    }
+    if (top === Infinity || bottom <= top) return false;
+    bandTop = Math.max(0, Math.round(top));
+    bandH = Math.round(bottom - top);
+    return true;
+  }
 
-    var g = s.ctx, parts = s.parts, n = parts.length, i, p;
-    g.clearRect(0, 0, s.w, s.h);
+  function buildBandSentinels() {
+    for (var i = 0; i < bandSegs.length; i++) bandSegs[i].el.remove();
+    bandSegs = [];
+    var h = Math.max(2000, fieldBottom());
+    var n = Math.ceil(h / BAND_SEG) + 1;
+    var frag = document.createDocumentFragment();
+    for (var j = 0; j < n; j++) {
+      var d = document.createElement('div');
+      d.setAttribute('aria-hidden', 'true');
+      d.style.cssText = 'position:absolute;left:0;width:1px;height:' + BAND_SEG + 'px;' +
+                        'top:' + (j * BAND_SEG) + 'px;pointer-events:none;visibility:hidden;';
+      frag.appendChild(d);
+      bandSegs.push({ el: d, on: false, rectTop: null, rectBot: null });
+    }
+    document.body.appendChild(frag);
+  }
 
-    /* ⛔⛔ ONE PATH AND ONE `fill()` FOR THE WHOLE FIELD, NOT ONE PER DOT. A 346x454 card
-       holds ~1,570 dots; a `beginPath`/`fill` pair each would be ~94,000 fills a second and
-       this is meant to cost less than the pattern it replaces. Sub-paths are separated with
-       `moveTo` before each `arc` — without it `arc` draws a connecting line from the
-       previous dot and the field turns into a scribble. */
-    g.beginPath();
-    for (i = 0; i < n; i++) {
-      p = parts[i];
+  function recomputeBand() {
+    return refineBand();
+  }
 
-      if (s.mx !== null) {
-        /* ⛔⛔ THE VECTOR POINTS FROM THE CURSOR **TO** THE PARTICLE, AND IS THEN ADDED.
-           `assets/js/particle-field.js` carries the scar from getting this wrong: the
-           operands were swapped while the operator was kept, and the field was pulled INTO
-           the cursor. The owner caught it there; the same trap is waiting here. */
-        var dx = p.x - s.mx, dy = p.y - s.my;
-        var d = Math.sqrt(dx * dx + dy * dy);
-        if (d < CURSOR_R && d > 0.001) {
-          var f = (CURSOR_R - d) / CURSOR_R;
-          p.x += (dx / d) * f * PUSH;
-          p.y += (dy / d) * f * PUSH;
+  /* ⛔⛔ IS THE FRAME TALLER THAN THE SCREEN? `window.screen` is the USER'S SCREEN even inside
+     an iframe, so comparing the frame's own viewport against it is a direct test, and it is
+     the test that decides `position: absolute` vs `fixed` — the two are genuinely different
+     here. `fixed` is correct in a normal window (the canvas must stay on screen) and wrong in
+     a full-height frame (it pins to the top of the document, which is the original bug).
+     ⛔ The `1400` floor is for headless runs, where `screen.height` reports a small default;
+     without it a 900px test window would be misjudged as a tall frame. */
+  function computeFrameIsTall() {
+    var sh = (window.screen && window.screen.height) || 0;
+    return window.innerHeight > Math.max(sh * 1.5, 1400);
+  }
+
+  function setupBandProbe() {
+    /* ⛔ FIRST, AND OUTSIDE THE try: this decides whether it is safe to build at all, so it
+       must not depend on the observer being available. */
+    frameIsTall = computeFrameIsTall();
+    if (!window.IntersectionObserver || !document.body) return false;
+    try {
+      buildBandSentinels();
+      bandObs = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          var e = entries[i], idx = -1, k;
+          for (k = 0; k < bandSegs.length; k++) { if (bandSegs[k].el === e.target) { idx = k; break; } }
+          if (idx < 0) continue;
+          var s = bandSegs[idx];
+          s.on = e.isIntersecting && e.intersectionRatio > 0;
+          if (!s.on) { s.rectTop = null; s.rectBot = null; continue; }
+          /* ⛔ the exact visible part, converted to document coordinates. The offset between
+             the two rects is scroll-invariant, so this needs no scroll position — which is
+             the whole point, because in a full-height frame there is none. */
+          var br = e.boundingClientRect, ir = e.intersectionRect, base = idx * BAND_SEG;
+          var partialTop = Math.abs(ir.top - br.top) > 0.5;
+          var partialBot = Math.abs(ir.bottom - br.bottom) > 0.5;
+          s.rectTop = partialTop ? base + (ir.top - br.top) : null;
+          s.rectBot = partialBot ? base + BAND_SEG + (ir.bottom - br.bottom) : null;
         }
+        if (!recomputeBand()) return;
+        var wasReady = bandReady;
+        bandReady = true;
+        if (!wasReady) rebuild();                 // first real answer: size and place the canvas
+        else { bandDirty = true; }                // let the next frame place it, no reseed
+      }, { root: null, threshold: (function () {
+        var t = [];
+        for (var i = 0; i <= 25; i++) t.push(i / 25);   // ~8px steps across a 200px sentinel
+        return t;
+      })() });
+      for (var i = 0; i < bandSegs.length; i++) bandObs.observe(bandSegs[i].el);
+      return true;
+    } catch (err) { return false; }
+  }
+
+  function measure() {
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    /* ⛔⛔ CAPPED. Owner: *"the background particles are using 50% of my cpu and 30% gpu"*,
+       and *"yet they are still very slow in the page"*, running **on Superhive's iframe**.
+       ⛔⛔ THE IFRAME IS THE DANGEROUS CASE, NOT THE DESKTOP ONE. If the frame is sized to the
+       page rather than to a window — the usual way a store embeds a long product page — then
+       `window.innerHeight` is the WHOLE DOCUMENT, and two things explode at once:
+         `canvas.height = H * DPR`  becomes tens of thousands of pixels of backing store, and
+         `linkDist2 = (W/7) * (H/7)` becomes a link range of ~2000px instead of ~160px, so
+         every pair links to every other pair and the O(n²) pass draws MILLIONS of lines.
+       Both are pure function of the viewport, so capping them is the whole defence. At the
+       caps' values every real window is BELOW the ceiling and nothing changes; only the
+       pathological case is bounded. ⚠ 2400px is deliberately generous — a 4K monitor's CSS
+       viewport is around 2160 — so this is insurance, not a design decision. */
+    W = window.innerWidth;
+    /* ⛔⛔ THE HEIGHT IS THE VISIBLE BAND WHEN THERE IS ONE, NOTHING ELSE.
+       Before `applyBand()` has an answer the canvas still starts at a generous guess, but the
+       owner's point was that a CAP was the wrong shape of fix: it made the wrong thing
+       smaller instead of rendering the right thing. Once the band is known the height is
+       exactly what the user can see, however tall the frame is. */
+    H = frameIsTall && bandReady ? cvH : window.innerHeight;
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    /* ⛔ the reference's own range, with no ceiling: `H` is the BAND, not the frame, so at
+       a 20000px frame this is still the ~160px the reference produces at 1418x900. */
+    linkDist2 = (W / 7) * (H / 7);
+    /* ⛔ the DOCUMENT's size, not the window's — this is what the field is seeded across */
+    docW = Math.max(W, document.documentElement.scrollWidth || 0);
+    docH = Math.max(H, fieldBottom());
+  }
+
+  function seed() {
+    parts = [];
+    var n = Math.round((docW * docH) / DENSITY);
+    if (n > MAX_NODES) n = MAX_NODES;
+    for (var i = 0; i < n; i++) {
+      parts.push({
+        x: Math.random() * docW,
+        y: Math.random() * docH,
+        dx: Math.random() * 0.4 - 0.2,
+        dy: Math.random() * 0.4 - 0.2,
+        size: Math.random() * (SIZE_MAX - SIZE_MIN) + SIZE_MIN,
+        vx: 0, vy: 0, on: false      // viewport coords + visibility, recomputed per frame
+      });
+    }
+  }
+
+  /* -------------------------------------------------------------- frame
+     ⛔ The drift and the cursor repulsion both happen in DOCUMENT space, so a particle
+     keeps its position in the page while the window moves over it. Only the DRAW is
+     offset by the scroll. */
+  function step(p, k) {
+    if (p.x > docW || p.x < 0) p.dx = -p.dx;
+    if (p.y > docH || p.y < 0) p.dy = -p.dy;
+
+    if (mouse.x !== null && mouse.y !== null) {
+      /* ⛔⛔ THE VECTOR POINTS FROM THE CURSOR **TO** THE PARTICLE, AND IS THEN ADDED.
+         The supplied original writes `dx = mouse.x - this.x` (particle→cursor) and then
+         SUBTRACTS. When this was rewritten for document space the subtraction was kept
+         but the operands were swapped — `p.vx - mouse.x` — which silently turned the
+         repulsion into ATTRACTION and pulled the field into the cursor. The owner caught
+         it: *"the particles are now coming towards the mouse instead of repaling"*.
+         ⛔ Keep these two in step: swap the operand order and the sign must swap with it.
+         ⛔ `p.vx`/`p.vy` are the VIEWPORT coords and `p.x`/`p.y` the DOCUMENT ones, but the
+         two differ only by the scroll offset — a constant translation — so the DIRECTION
+         is identical in both spaces and no correction is needed between them. */
+      var dx = p.vx - mouse.x, dy = p.vy - mouse.y;
+      var d = Math.sqrt(dx * dx + dy * dy);
+      if (d < CURSOR_R + p.size && d > 0.001) {
+        var f = (CURSOR_R - d) / CURSOR_R;
+        /* ⛔ scaled by `k` with the drift below. The push is a POSITIONAL nudge per frame,
+           so leaving it unscaled would make the cursor clear the field twice as hard at
+           30fps as at 60 — the same picture, twice the shove. */
+        p.x += (dx / d) * f * PUSH * k;
+        p.y += (dy / d) * f * PUSH * k;
       }
-
-      p.x += p.dx; p.y += p.dy;
-      /* bounce off the card's own box, so a dot can never wander out of the mask */
-      if (p.x < 0 || p.x > s.w) { p.dx = -p.dx; p.x += p.dx; }
-      if (p.y < 0 || p.y > s.h) { p.dy = -p.dy; p.y += p.dy; }
-
-      g.moveTo(p.x + DOT_R, p.y);
-      g.arc(p.x, p.y, DOT_R, 0, 6.2832, false);
-    }
-    g.fillStyle = s.col;
-    g.fill();
-  }
-
-  function stop() {
-    if (!cur) return;
-    if (cur.raf) cancelAnimationFrame(cur.raf);
-    try { cur.ctx.clearRect(0, 0, cur.w, cur.h); } catch (e) {}
-    /* ⛔ BEFORE `cur` is nulled. Removing `.fx-live` is what fades the static dot grid back
-       in — the CSS keys that fade on this class, never on `:hover`, so the two layers can
-       never be out of step. */
-    cur.el.classList.remove('fx-live');
-    cur = null;
-  }
-
-  function start(el) {
-    if (cur && cur.el === el) return;
-    stop();
-
-    var cv = el.querySelector(':scope > .fx-particles');
-    if (!cv) {
-      /* ⛔ created on FIRST hover, never up front — a canvas per card is real memory and
-         only one is ever animated. `#cardFxLayers` is not the place for it. */
-      cv = document.createElement('canvas');
-      cv.className = 'fx-particles';
-      cv.setAttribute('aria-hidden', 'true');
-      el.appendChild(cv);
     }
 
-    /* ⛔⛔ PHASE-LOCK THE TRAVELLING WAVE TO THE STATIC LAYER'S.
-       `@keyframes dotWave` animates `mask-position` from `0 0` to `160px 0` — one full
-       period — so the phase decides WHERE THE BRIGHT BANDS SIT. `.fx-dots` has been running
-       since page load; this canvas is created the moment the pointer arrives, so without
-       this the two layers show bright bands in different places and the 0.3s cross-fade
-       makes the whole field appear to JUMP sideways.
-       ⛔⛔ THE ARITHMETIC, BECAUSE THE OBVIOUS VERSION IS WRONG IN A WAY THAT LOOKS RIGHT.
-       A CSS animation's phase is `(now - createdAt + delay)`. The first attempt used
-       `delay = -now`, which gives `now - createdAt - now` = `now - 2 * createdAt` — the sign
-       inverted, not cancelled. It was caught by measurement, not by reading: with the canvas
-       and the dots each rendered alone, **476 of 476 lit dot pixels in a text-free band had
-       no particle on them**, the same as deliberately shifting the canvas 5px.
-       ⛔ The delay must be ≡ `createdAt` (mod the period) AND in (-3.6, 0] — a POSITIVE delay
-       would make the animation WAIT, freezing the mask for that long, so the only correct
-       form is the negative one below.
-       ⛔ `3.6` is `dotWave`'s duration and `160px` its travel; both are in the `#cardFx`
-       block. Change one there and this number has to follow. */
-    var dots = el.querySelector(':scope > .fx-dots');
-    if (dots) {
-      var d = parseFloat(getComputedStyle(dots).animationDelay) || 0;   // 0, -.9s, or -1.8s
-      var now = performance.now() / 1000;
-      var phase = (now + d) % 3.6;
-      if (phase < 0) phase += 3.6;
-      cv.style.animationDelay = (phase ? -(3.6 - phase) : 0) + 's';
-    }
-
-    var s = { el: el, cv: cv, ctx: cv.getContext('2d'), mx: null, my: null, raf: 0 };
-    if (!s.ctx || !seed(s)) return;
-    /* ⛔⛔ ADDED ONLY AFTER THE CANVAS IS BUILT **AND** SEEDED. The CSS fades the static dot
-       grid out on `.fx-live` and fades this canvas in on the same class, so a failure to get
-       a 2D context or a zero-sized card leaves the pattern exactly where it was instead of
-       blanking it. Keying that fade on `:hover` would have made every one of those failures
-       invisible — and silent, because a missing pattern looks the same as a subtle one. */
-    el.classList.add('fx-live');
-    cur = s;
-    frame();
+    /* ⛔ `k` — one 60fps frame's worth of motion per unit, so the drift speed is the same
+       whether this runs at 60fps or the capped 30. See `frame()`. */
+    p.x += p.dx * k;
+    p.y += p.dy * k;
   }
 
-  /* ⛔ DELEGATED on document — one listener for every card, and it keeps working for cards
-     added later. `pointerover`/`pointerout` bubble, so each fires again for every child the
-     pointer crosses; `start` returns early when the card is already the live one, and the
-     `relatedTarget` test is what distinguishes "moved onto the heading" from "left". */
-  document.addEventListener('pointerover', function (e) {
-    var t = e.target;
-    if (!t || !t.closest) return;
-    var el = t.closest(SEL);
-    if (!el || !el.classList.contains('card-fx')) return;
-    start(el);
-  }, { passive: true });
+  /* ⛔⛔ ONE PATH AND ONE fill() FOR THE WHOLE FIELD. This used to be `beginPath(); arc();
+     fill();` PER PARTICLE — up to ~200 individual fills a frame, each its own rasteriser
+     call. Every dot shares `NODE_FILL`, so they belong in a single path. Identical pixels,
+     a fraction of the cost.
+     ⛔ `moveTo` before each `arc` is what keeps the dots separate: without it `arc` draws a
+     line from the previous dot and the field becomes a scribble. */
+  function drawAll() {
+    var i, p;
+    ctx.beginPath();
+    for (i = 0; i < vis.length; i++) {
+      p = vis[i];
+      ctx.moveTo(p.vx + p.size, p.vy);
+      ctx.arc(p.vx, p.vy, p.size, 0, 6.2832, false);
+    }
+    ctx.fillStyle = NODE_FILL;
+    ctx.fill();
+  }
 
-  document.addEventListener('pointerout', function (e) {
-    if (!cur) return;
-    var to = e.relatedTarget;
-    if (to && cur.el.contains(to)) return;      // still inside the card
-    stop();
-  }, { passive: true });
+  /* ⛔⛔ THE LINK PASS, BATCHED BY ALPHA. The previous version set `ctx.strokeStyle` to a
+     freshly concatenated `rgba(...)` string AND ran `beginPath/moveTo/lineTo/stroke` once per
+     link — thousands of string allocations and thousands of separate stroke calls every
+     frame. It was the single most expensive thing on the page.
+     ⛔⛔ THE LOOK IS PRESERVED BY BUCKETING, NOT BY FLATTENING. The alpha varies with distance
+     (`1 - d2/FADE`), so one path per distinct alpha is impossible. Quantising it into
+     LINK_BUCKETS levels and stroking each level once keeps the gradient across the field —
+     the maximum error is half a bucket, about 4% of alpha, on a 1px line at partial opacity.
+     Flattening to a single alpha WOULD have been visible, which is why this is bucketed.
+     ⛔ The two colours stay separate (`LINE_FAR` / `LINE_NEAR`), so the near-cursor highlight
+     is untouched.
+     ⛔ `seg[b].length = 0` reuses each array's backing store instead of reallocating — this
+     runs 60 times a second and allocating per frame is how a smooth field causes GC stutter. */
+  var segFar = [], segNear = [];
+  function connect() {
+    var n = vis.length, a, b, i, pa, pb, ax, ay, d2, alpha, bi;
+    if (segFar.length !== LINK_BUCKETS) {
+      segFar.length = 0; segNear.length = 0;
+      for (b = 0; b < LINK_BUCKETS; b++) { segFar.push([]); segNear.push([]); }
+    }
+    for (b = 0; b < LINK_BUCKETS; b++) { segFar[b].length = 0; segNear[b].length = 0; }
 
-  document.addEventListener('pointermove', function (e) {
-    if (!cur) return;
-    var r = cur.el.getBoundingClientRect();
-    cur.mx = e.clientX - r.left;
-    cur.my = e.clientY - r.top;
-  }, { passive: true });
+    for (a = 0; a < n; a++) {
+      pa = vis[a];
+      /* ⛔ the cursor test is hoisted out of the inner loop: it depends only on `a`,
+         and the original recomputes it for every b. Same output, a fraction of the
+         work in the O(n^2) pass. */
+      var nearCursor = false;
+      if (mouse.x !== null && mouse.y !== null) {
+        var mx = pa.vx - mouse.x, my = pa.vy - mouse.y;
+        nearCursor = (mx * mx + my * my) < CURSOR_R * CURSOR_R;
+      }
+      var bucket = nearCursor ? segNear : segFar;
 
-  /* the grid is derived from the card's box, so a reflow makes it wrong — reseed */
+      for (b = a + 1; b < n; b++) {
+        pb = vis[b];
+        ax = pa.vx - pb.vx; ay = pa.vy - pb.vy;
+        d2 = ax * ax + ay * ay;
+        if (d2 >= linkDist2) continue;
+        /* ⛔ clamped — see note 2 at the top of the file */
+        alpha = 1 - d2 / FADE;
+        if (alpha <= 0) continue;
+        if (alpha > 1) alpha = 1;
+        bi = (alpha * LINK_BUCKETS) | 0;
+        if (bi >= LINK_BUCKETS) bi = LINK_BUCKETS - 1;
+        bucket[bi].push(pa.vx, pa.vy, pb.vx, pb.vy);
+      }
+    }
+
+    ctx.lineWidth = 1;
+    for (b = 0; b < LINK_BUCKETS; b++) {
+      /* the bucket's own midpoint alpha, so the error is symmetric rather than biased */
+      var av = ((b + 0.5) / LINK_BUCKETS).toFixed(3);
+      var seg = segFar[b];
+      if (seg.length) {
+        ctx.strokeStyle = 'rgba(' + LINE_FAR[0] + ',' + LINE_FAR[1] + ',' + LINE_FAR[2] + ',' + av + ')';
+        ctx.beginPath();
+        for (i = 0; i < seg.length; i += 4) {
+          ctx.moveTo(seg[i], seg[i + 1]);
+          ctx.lineTo(seg[i + 2], seg[i + 3]);
+        }
+        ctx.stroke();
+      }
+      seg = segNear[b];
+      if (seg.length) {
+        ctx.strokeStyle = 'rgba(' + LINE_NEAR[0] + ',' + LINE_NEAR[1] + ',' + LINE_NEAR[2] + ',' + av + ')';
+        ctx.beginPath();
+        for (i = 0; i < seg.length; i += 4) {
+          ctx.moveTo(seg[i], seg[i + 1]);
+          ctx.lineTo(seg[i + 2], seg[i + 3]);
+        }
+        ctx.stroke();
+      }
+    }
+  }
+
+  /* ⛔ ONE viewport pass, shared by the animated frame and the reduced-motion still —
+     `connect()` reads `vis`, so any path that draws MUST run this first or it links
+     against the previous frame's list. */
+  function computeViewport() {
+    /* ⛔⛔ THE SINGLE LINE THAT MAKES THE WHOLE THING WORK IN A TALL FRAME. Everything drawn
+       is already in canvas-local coordinates — the canvas is anchored at the visible band, so
+       subtracting the BAND's top gives exactly the same numbers as subtracting the scroll
+       offset would in a normal window. In a normal window the two are the same value, which
+       is why one expression covers both cases.
+       ⛔ Before this, `window.scrollY` was 0 forever inside a 20000px frame (the parent does
+       the scrolling), so the field never moved with the user and only the top of the page was
+       ever populated. */
+    var sx = window.scrollX || 0;
+    var sy = frameIsTall && bandReady ? cvTop : (window.scrollY || 0);
+    /* ⛔ a margin of one link range past each edge, or the links would POP as their
+       particles crossed the boundary — a pair is drawn while both ends are inside */
+    var M = Math.sqrt(linkDist2);
+    var i, p;
+    for (i = 0; i < parts.length; i++) {
+      p = parts[i];
+      p.vx = p.x - sx;
+      p.vy = p.y - sy;
+      p.on = (p.vx > -M && p.vx < W + M && p.vy > -M && p.vy < H + M);
+    }
+    vis.length = 0;
+    for (i = 0; i < parts.length; i++) if (parts[i].on) vis.push(parts[i]);
+  }
+
+  /* ⛔⛔ FRAME CAPPED AT 30fps, WITH THE STEP SCALED SO THE FIELD MOVES AT THE SAME SPEED.
+     Owner: *"optimize in a way that the quality stays the same"*. Halving the frame rate is
+     HALF the work of every pass below, and it is the last big lever after the batching — but
+     the drift is written as a fixed `p.x += p.dx` PER FRAME, so simply skipping frames would
+     halve the speed and the field would visibly crawl. `k` carries the elapsed time instead,
+     so one second of motion covers the same distance whether it is drawn 60 times or 30.
+     ⛔ `k` is clamped at 2.5 frames' worth: a background tab, a slow resize or a long GC can
+     hand back a huge `t - last`, and an unclamped `k` would teleport the field across the
+     page in one step. The clamp turns that into a brief slow-down instead of a jump.
+     ⛔ The reduced-motion path is a single still frame and never touches this. */
+  var FRAME_MS = 1000 / 30;
+  var lastT = 0;
+
+  function frame(t) {
+    raf = requestAnimationFrame(frame);
+    if (t - lastT < FRAME_MS - 2) return;          // under one 30fps beat — skip this frame
+    /* ⛔ the field has not been built yet because the band is unknown — see `rebuild()`. */
+    if (frameIsTall && !bandReady) return;
+    var k = lastT ? (t - lastT) / (1000 / 60) : 1;
+    if (k > 2.5) k = 2.5;
+    lastT = t;
+
+    /* ⛔ the band moved since the last frame — reposition the canvas WITHOUT reseeding.
+       A reseed here would throw away every particle the moment the parent scrolled, and the
+       field is anchored in document space precisely so that moving the canvas does not move
+       the picture. */
+    if (bandDirty && frameIsTall && bandReady) {
+      bandDirty = false;
+      /* only when the band would LEAVE the canvas; otherwise it is already covered and the
+         slack absorbed the movement. `measure()` reallocates the backing store, so it runs
+         only when that is actually required. */
+      if (fitCanvasToBand()) { measure(); canvas.style.top = cvTop + 'px'; }
+    }
+
+    ctx.clearRect(0, 0, W, H);
+
+    for (var i = 0; i < parts.length; i++) step(parts[i], k);
+    computeViewport();
+
+    drawAll();
+    connect();
+  }
+
+  function stop() { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+
+  /* ---------------------------------------------------------- lifecycle */
+  function start() {
+    if (raf || reduce) return;
+    raf = requestAnimationFrame(frame);
+  }
+
+  function paintOnce() {
+    /* the reduced-motion state: a real frame, held still */
+    ctx.clearRect(0, 0, W, H);
+    computeViewport();                 // ⛔ before any draw — `connect()` reads `vis`
+    drawAll();                         // ⛔ not a per-particle loop any more — see `drawAll`
+    connect();
+  }
+
+  function rebuild() {
+    /* ⛔⛔ NOTHING IS BUILT UNTIL THERE IS A VISIBLE BAND TO BUILD FROM.
+       In a frame taller than the screen, `window.innerHeight` is the whole document, so
+       sizing or seeding before the observer reports would produce the 20000px canvas and the
+       2000px link range all over again. Waiting costs the first frame or two and changes
+       nothing else: `frame()` refuses on the same condition, so nothing is drawn either.
+       ⛔ In a normal window `frameIsTall` is false and this never triggers. */
+    if (frameIsTall && !bandReady) return;
+    measure();
+    /* ⛔ the canvas has to be PLACED as well as sized when the frame is the whole page —
+       `measure()` sets the backing store, this puts it at the visible band. In a normal window
+       the canvas stays `fixed` and needs neither the offset nor the repositioning. */
+    if (frameIsTall && bandReady) {
+      fitCanvasToBand();
+      measure();
+      canvas.style.position = 'absolute';
+      canvas.style.left = '0';
+      canvas.style.top = cvTop + 'px';
+    } else {
+      canvas.style.position = '';
+      canvas.style.top = '';
+    }
+    bandDirty = false;
+    seed();
+    if (reduce) paintOnce();
+  }
+
   var rt = 0;
   window.addEventListener('resize', function () {
-    if (!cur) return;
-    var el = cur.el;
     if (rt) clearTimeout(rt);
-    rt = setTimeout(function () { stop(); start(el); }, 160);
+    rt = setTimeout(rebuild, 160);
   });
 
+  /* ⛔ a hidden tab must not keep animating — the original never pauses */
   document.addEventListener('visibilitychange', function () {
-    if (document.hidden) stop();
+    if (document.hidden) { visible = false; stop(); }
+    else { visible = true; start(); }
   });
+
+  /* the cursor is tracked on the window: the canvas itself is `pointer-events:none` */
+  window.addEventListener('mousemove', function (e) {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  }, { passive: true });
+  window.addEventListener('mouseout', function (e) {
+    if (!e.relatedTarget) { mouse.x = null; mouse.y = null; }
+  });
+
+  /* ⛔⛔ THE BAND PROBE IS STARTED BEFORE THE FIRST BUILD, and it is what decides whether
+     this page is a normal window or a full-height store frame. `rebuild()` runs twice in the
+     embed case — once on the initial guess and again the moment the observer reports the real
+     band — which is cheap (one reseed) and means the first painted frame is already close
+     rather than showing a 20000px canvas for a second.
+     ⛔ If `IntersectionObserver` is unavailable or throws, `setupBandProbe()` returns false,
+     `frameIsTall` stays false, and every code path below falls back to `window.scrollY` —
+     the behaviour this page had before any of this existed. */
+  setupBandProbe();
+  rebuild();
+  if (!visible) return;
+  start();
 })();
 </script>
 
-<!-- ============================================================ -->
-<!-- SUPERHIVE EMBED RUNTIME — added in the second bounded pass.  -->
-<!-- Loaded with defer, and INERT unless the URL query carries    -->
-<!-- ?embed=superhive. Suspends offscreen autoplay videos and CSS -->
-<!-- animations via IntersectionObserver root:null (which sees    -->
-<!-- the host's clipping across the iframe boundary), keeps       -->
-<!-- explicit user pauses, and applies overflow:clip to html/body -->
-<!-- ONLY while the deepest content fits the 16000px embed        -->
-<!-- viewport. If it does not fit, nothing is clipped and the     -->
-<!-- incompatibility is recorded in window.__superhiveEmbed and   -->
-<!-- reported in OPTIMIZATION-REPORT.md. No parent DOM access,    -->
-<!-- no wheel/touch handlers, nav scrollIntoView left untouched.  -->
-<!-- ============================================================ -->
-<script src="assets/js/embed-runtime.js" defer></script>
+<!-- ⛔⛔ THE VISIBILITY GATE — deleted; its job moved to `#fxAnimGate` below.
+     Owner: *"why did you pause the animations"*, which found a real defect.
+     This toggled `animation-name` on `.fx-dots` and `.fx-ring` per card. Measured, it
+     recovered the full 32% those layers cost. ⛔⛔ BUT `animation-name: none` is not a
+     pause: it DESTROYS the animation, and restoring the name recreates it FROM ZERO — so
+     every card's wave and ring visibly restarted as it scrolled into view, and the 200px
+     `rootMargin` put that restart just before the card appeared, in plain sight.
+     `pause()`/`play()` preserves the phase and never touches the stagger delays, so there is
+     now ONE gate, for the whole page. The `.fx-live` hook remains but no rule reads it; if a
+     CSS gate is ever added back here it MUST use `animation-play-state`, never the name. -->
+
+<script>
+/* ⛔⛔ PAUSE EVERY INFINITE ANIMATION THAT IS OFF SCREEN — the whole page, not just the cards.
+   Owner: *"make it use as little as possible"*.
+
+   ⛔⛔ WHY THIS AND NOT A LIST OF SELECTORS. With the card layers already gated, disabling
+   EVERY remaining CSS animation still measured 0.172s of the 0.86s the page spends per three
+   seconds — 20%, and the largest identified cost left. Those animations are scattered: the
+   `btnShine` sheens on buttons and the offer band, the clip-bar fills, the offer band's and
+   price cards' dot waves, the arrow pulses. Enumerating them is a list that goes stale the
+   moment a card is added, which is the mistake that produced three separate hover fixes
+   earlier in this session. `document.getAnimations()` asks the browser instead.
+   ⛔⛔ ONLY `iterations: Infinity` ONES ARE TOUCHED, AND ONLY PAUSED, NEVER CANCELLED.
+   Pausing an infinite animation is seamless — it resumes exactly where it stopped and the
+   element is never in a different state than it was. A finite animation (an entrance, a
+   one-shot reveal) is left completely alone, because pausing one of those would delay it and
+   change when the element arrives. `pause()` rather than removing the name is also what keeps
+   this reversible: scrolling back resumes mid-cycle, with no jump.
+   ⛔ `rootMargin: 200px`, so anything about to appear is already running before it is seen.
+   ⛔ Safe with no IntersectionObserver or no `getAnimations`: the loop simply finds nothing and
+   every animation keeps running exactly as it does now. Nothing is left half-paused.
+   ⛔ The card layers are not in this set — the gate above removes their `animation-name`
+   entirely, so they do not appear in `getAnimations()` at all. The two do not overlap. */
+(function () {
+  'use strict';
+  if (!window.IntersectionObserver || !document.getAnimations) return;
+
+  function infinite(anim) {
+    if (!anim || !anim.effect || !anim.effect.getTiming) return false;
+    try { return anim.effect.getTiming().iterations === Infinity; } catch (e) { return false; }
+  }
+
+  var io = new IntersectionObserver(function (entries) {
+    for (var i = 0; i < entries.length; i++) {
+      var e = entries[i];
+      if (!e.target.getAnimations) continue;
+      var anims = e.target.getAnimations();
+      for (var j = 0; j < anims.length; j++) {
+        if (!infinite(anims[j])) continue;
+        try { e.isIntersecting ? anims[j].play() : anims[j].pause(); } catch (err) {}
+      }
+    }
+  }, { root: null, rootMargin: '200px 0px 200px 0px', threshold: 0 });
+
+  /* ⛔⛔ THE COLLECTION RUNS MORE THAN ONCE, AND THAT IS THE WHOLE FIX.
+     It used to run once, at parse time. MEASURED: that left only 30 of 122 infinite
+     animations paused, and the 92 still running included **23 off-screen `dotWave` and 19
+     off-screen `fxOrbit`** — the card layers this gate exists for.
+     ⛔⛔ WHY THEY WERE MISSED: `#cardFxLayers` builds the cards on `DOMContentLoaded`, which
+     has NOT fired while the body is still being parsed. So at parse time the `.card-fx` cards
+     — and therefore their `.fx-dots` and `.fx-ring` animations — did not exist yet, and
+     `document.getAnimations()` could not report them. Only the animations created by markup
+     that was already parsed (the clip bars, the pulses) were observed.
+     ⛔ `watched` makes re-running free: an element already observed is skipped, and
+     `io.observe()` on a new element fires its initial callback immediately, so anything found
+     late is paused in the same tick.
+     ⛔ Three passes because animated elements appear at three different times: on
+     `DOMContentLoaded` (the card layers), on `load` (anything waiting for a resource), and
+     once more on a timer for anything a script adds afterwards. */
+  var io, watched = [];
+
+  function collect() {
+    var all = document.getAnimations(), i, el;
+    for (i = 0; i < all.length; i++) {
+      if (!infinite(all[i])) continue;
+      el = all[i].effect.target;
+      if (!el || watched.indexOf(el) >= 0) continue;
+      watched.push(el);
+      io.observe(el);
+    }
+  }
+
+  io = new IntersectionObserver(function (entries) {
+    for (var i = 0; i < entries.length; i++) {
+      var e = entries[i];
+      if (!e.target.getAnimations) continue;
+      var anims = e.target.getAnimations();
+      for (var j = 0; j < anims.length; j++) {
+        if (!infinite(anims[j])) continue;
+        try { e.isIntersecting ? anims[j].play() : anims[j].pause(); } catch (err) {}
+      }
+    }
+  }, { root: null, rootMargin: '200px 0px 200px 0px', threshold: 0 });
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', collect);
+  else collect();
+  window.addEventListener('load', collect);
+  /* ⛔ MEASURED: after the two standard passes, 48 infinite animations were still running off
+     screen — the clip-bar layers most of all, 14 of them, because the clip-bar script builds
+     its elements AFTER the videos report their duration rather than during parsing. A later
+     pass catches them for one `getAnimations()` call. `watched` makes each re-run a no-op for
+     everything already observed. */
+  setTimeout(collect, 1500);
+  setTimeout(collect, 4000);
+})();
+</script>
+
+<!-- ⛔ REMOVED: the `#fxParticles` script. It built a <canvas> per card, seeded it on the
+     10px dot grid, animated it with requestAnimationFrame, phase-locked its mask to the
+     static layer's, and gated the whole thing behind a `.fx-live` class.
+     ⛔ Owner: *"implement the exact same as in pricing cards"*. The pricing card's cursor
+     pool is `html.dark .price-card::after` — a static dot grid behind a
+     `radial-gradient(200px circle at var(--mx) …)` mask at `opacity: .75`. That is entirely
+     CSS, so the pool on these cards is now `html.dark .card-fx > .fx-pool`, injected as a
+     plain span by `#cardFxLayers` next to `.fx-dots` and `.fx-ring`.
+     ⛔ Nothing here is left switched off: no canvas is created, no rAF runs, and there is no
+     `.fx-live` class any more — `grep -c fxParticles` on this file should find only
+     comments. Re-adding the block would put a SECOND pool on every card.
+     🗑 The page background's own field (`assets/js/particle-field.js`, `#interactiveBg`) is
+     untouched and still runs — it is a different element with different behaviour. -->
 
 <!-- ⛔ NO SCRIPT SIZES `.topbar-backing`. It is a fixed 20px strip holding two corner
      tiles, so it is independent of the bar's height — the bar can wrap to two rows on a
