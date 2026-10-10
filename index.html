@@ -288,24 +288,15 @@ header.site-header {
 .nav-links a:hover { color: var(--ink); }
 .header-actions { display: flex; align-items: center; gap: .8rem; }
 
-/* Theme toggle switch */
-.theme-toggle {
-  position: relative; width: 58px; height: 30px; flex: none;
-  border-radius: 999px; cursor: pointer;
-  background: var(--card-bg); border: 1px solid var(--border-strong);
-  transition: background .3s ease, border-color .3s ease;
-}
-.theme-toggle .knob {
-  position: absolute; top: 2px; left: 2px; width: 24px; height: 24px;
-  border-radius: 50%; background: var(--color-tertiary); color: var(--bg);
-  display: grid; place-items: center;
-  transition: transform .35s cubic-bezier(.65,.05,.36,1), background .3s ease, color .3s ease;
-}
-.dark .theme-toggle .knob { transform: translateX(28px); }
-.theme-toggle svg { width: 14px; height: 14px; }
-.theme-toggle .icon-moon { display: none; }
-.dark .theme-toggle .icon-moon { display: block; }
-.dark .theme-toggle .icon-sun { display: none; }
+/* 🗑 THE THEME TOGGLE'S OWN RULES ARE GONE (owner, 2026-10-11: *"remove light theme and
+   topbar theme switch"*). The switch was a 58x30 pill with a 24px knob that slid 28px on
+   `translateX` and swapped a sun for a moon — six rules, all of them the ONLY thing that
+   styled `.theme-toggle`, so the element and its styling were removed together.
+   ⛔ What is deliberately NOT touched: every SHARED selector list further down that still
+   names `.theme-toggle` (`.btn,.btn-ghost,.theme-toggle,…` and the two ring lists). Those
+   are shared button/ring styles, not light-theme CSS — the dead token in them is inert and
+   editing a fifteen-element selector list to drop one name is the kind of churn that breaks
+   the other fourteen. */
 
 /* Mobile menu button */
 .menu-btn {
@@ -462,34 +453,115 @@ header.site-header {
   /* short: the fallback writes this on every media event, and a long transition would lag it */
   transition: transform .06s linear;
 }
-/* the hero's own bar keeps the wider inset and higher lift asked for earlier */
-.hero-media { --clip-bar-inset: 22px; --clip-bar-lift: 16px; --clip-bar-h: 5px; }
+/* the hero's own bar keeps the wider inset and higher lift asked for earlier.
+   ⛔ `--clip-load-fs` rides along here because it is the same fact: this box is
+   1000px wide against the feature cells' ~346px, so the loading mark is set larger
+   for it and at feature-cell size everywhere else. See "Clip loading mark" above. */
+.hero-media { --clip-bar-inset: 22px; --clip-bar-lift: 16px; --clip-bar-h: 5px; --clip-load-fs: 2.1rem; }
 
-/* ---- Clip loading spinner ----
+/* ---- Clip loading mark — oversized "Loading" wordmark + outline motif + percent ----
    One per clip, injected with the bar. Shown while there is not yet enough of the
    clip to play (a switch to a 5–14MB clip leaves a blank frame otherwise) and
    hidden the moment it can play.
+   ⛔ THIS REPLACES THE 44px SPINNING RING (owner, 2026-10-10). The ring was a disc
+   with an azure arc; the mark is now the word "Loading" set oversized and heavy, a
+   thin animated outline motif at its right edge, and the real percentage under it.
+   The ring's own job is unchanged — same trigger events, same `.on` class, same
+   `z-index` slot above the bar — so everything that referenced `.clip-load` (the
+   off-screen ANIM_ROOTS gate, the `.fx-abs` snapshot in the card layers) still
+   names the same element.
+   ⛔ IT SITS IMMEDIATELY ABOVE THE PROGRESS BAR, on the bar's own two geometry
+   variables, so a host that re-insets or re-lifts its bar (`.hero-media` does both)
+   carries the mark with it instead of leaving it floating at a hard-coded height.
+   The extra 10px clears the bar's invisible ±6px scrub band (`.clip-bar::after`).
    ⛔ It MUST also hide on `error`: the page has clips that can never load (files
    that do not exist, and HEVC on a browser with no hardware decode), and without
-   that they would spin for ever on a frozen frame. */
+   that they would turn for ever on a frozen frame. */
 .clip-load {
-  position: absolute; z-index: 4; inset: 0; margin: auto;
-  width: 44px; height: 44px; border-radius: 50%;
-  /* ⛔ It needs its OWN backing: a thin ring at low opacity over a bright, busy
-     frame is invisible in practice (measured — at full opacity it could not be
-     picked out of a screenshot). The dark disc + blur keeps it legible over any
-     frame, and the azure arc stays the moving part. */
-  background: rgba(0, 0, 0, 0.3);
-  border: 3px solid color-mix(in srgb, var(--ink) 34%, transparent);
-  border-top-color: #0096ff;
-  box-shadow: 0 0 16px color-mix(in srgb, #0096ff 45%, transparent),
-              inset 0 0 10px color-mix(in srgb, #000 30%, transparent);
-  animation: clipSpin .8s linear infinite;
+  position: absolute; z-index: 4;
+  left: var(--clip-bar-inset, 14px); right: var(--clip-bar-inset, 14px);
+  bottom: calc(var(--clip-bar-lift, 16px) + var(--clip-bar-h, 4px) + var(--clip-load-gap, 10px));
+  /* ⛔ SHRINK-TO-FIT, CENTRED BETWEEN THE BAR'S OWN INSETS. The mark is anchored to
+     the bar's two edges so it can never wander, but it is SIZED by its content: the
+     scrim below is painted on this box, and a full-width box would draw a band
+     across the whole clip instead of a soft backing around two short lines of type.
+     `margin-inline: auto` is what centres it — with left, right AND width all
+     resolved there is no free space left for the box to sit in, so the auto margins
+     take it. */
+  width: fit-content; max-width: 100%; margin-inline: auto;
+  display: grid; justify-items: center; gap: .3em;
+  /* ⛔ ONE SIZE KNOB FOR THE WHOLE MARK. Everything below is em, so a host that
+     wants a bigger wordmark sets `--clip-load-fs` and nothing else moves apart.
+     The two hosts that carry clips at very different scales set their own: the
+     1000px hero box and the ~346px feature cells. */
+  font-size: var(--clip-load-fs, 1.15rem);
+  font-family: 'Outfit', sans-serif;
+  text-align: center;
+  padding: .5em .8em .42em;
+  border-radius: .75em;
+  /* ⛔ IT STILL NEEDS ITS OWN BACKING, for the reason the ring did: this mark is
+     cream type, and cream over a bright frame is unreadable. A radial scrim that
+     fades to nothing at the edges keeps the wordmark legible without drawing a box
+     edge across the footage — no border, no plate corner, nothing to line up with
+     the clip's own rounded edge. */
+  background: radial-gradient(96% 128% at 50% 46%,
+              rgba(3, 17, 29, .82), rgba(3, 17, 29, .5) 58%, rgba(3, 17, 29, 0));
+  color: var(--clip-load-ink, #f2efe2);
   pointer-events: none;
-  opacity: 0; transition: opacity .2s ease;
+  opacity: 0; visibility: hidden;
+  transition: opacity .25s ease, visibility 0s linear .25s;
 }
-.clip-load.on { opacity: 1; }
-@keyframes clipSpin { to { transform: rotate(360deg) } }
+.clip-load.on { opacity: 1; visibility: visible; transition: opacity .25s ease, visibility 0s; }
+/* the wordmark — oversized, black weight, tight sidebearings, the way the reference
+   sets it. `padding-right` is the motif's landing strip: the motif is pulled back
+   over the last letter's edge on purpose (see below). */
+.clip-load-word {
+  position: relative; display: inline-block;
+  font-size: 2.05em; font-weight: 900; letter-spacing: -.035em; line-height: .92;
+  padding-right: .1em;
+}
+/* the outline motif — a thin-stroke quad crossed by one long diagonal, hung off the
+   RIGHT EDGE of the wordmark and deliberately overlapping it, which is what makes it
+   read as an annotation on the word rather than a second icon beside it. */
+.clip-load-motif {
+  position: absolute; left: 100%; bottom: .06em;
+  width: 1.05em; height: 1.05em; margin-left: -.34em;
+  overflow: visible;
+}
+.clip-load-motif path {
+  fill: none; stroke: var(--clip-load-motif, #8fd0ff);
+  /* ⛔ thin, and measured on the RENDERED size: the viewBox is 40 units across and
+     the svg draws ~72px wide on the hero, so 1.25 units lands at ~2.2px — a hairline
+     against the 69px wordmark beside it, which is the whole point of the motif. */
+  stroke-width: 1.25; stroke-linejoin: round; stroke-linecap: round;
+  /* ⛔ `pathLength="100"` ON THE PATHS (in the markup) is what makes this dash maths
+     stand still: without it these two numbers would have to be the two paths' real
+     lengths, measured by hand and re-measured on every edit to the shapes. */
+  stroke-dasharray: 100; stroke-dashoffset: 100;
+  animation: clipMotifDraw 2.6s cubic-bezier(.45, 0, .25, 1) infinite;
+}
+.clip-load-motif path:nth-child(2) { animation-delay: .34s; }
+/* draws on, holds one beat, then erases through the same edge it arrived on */
+@keyframes clipMotifDraw {
+  0%   { stroke-dashoffset: 100; }
+  32%  { stroke-dashoffset: 0; }
+  68%  { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -100; }
+}
+/* the percentage — its own line under the wordmark, tabular so a changing digit
+   cannot shuffle the row's width */
+.clip-load-pct {
+  font-size: .74em; font-weight: 600; letter-spacing: .08em; line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--clip-load-pct, rgba(242, 239, 226, .84));
+}
+/* ⛔ REDUCED MOTION KEEPS THE MARK, DROPS ITS MOVEMENT: the motif is drawn ON and
+   left drawn, and the show/hide stops fading. The percentage is text and is
+   unaffected — a visitor who asks for less motion still gets the status. */
+@media (prefers-reduced-motion: reduce) {
+  .clip-load { transition: none; }
+  .clip-load-motif path { animation: none; stroke-dashoffset: 0; }
+}
 /* the control fades in on hover or keyboard focus — and stays visible whenever
    the clip is NOT playing, so a blocked autoplay still shows a button to press */
 .hero-media .play-btn {
@@ -1534,7 +1606,6 @@ header.site-header {
 }
 /* ⚠ the label is #33aaff for brightness on the dark card, but that only reaches ~2.5:1 on the
    LIGHT theme's card, so the light theme takes the darker brand azure (3.07:1 measured) */
-html:not(.dark) .support-badge { color: #0096ff; }
 .support-badge .pulse {
   width: 9px; height: 9px; border-radius: 50%;
   background: #0096ff;
@@ -1555,7 +1626,20 @@ html:not(.dark) .support-badge { color: #0096ff; }
   text-decoration: none; color: inherit;
   transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
 }
-.support-card:hover { transform: translateY(-5px); border-color: var(--color-tertiary); box-shadow: var(--shadow); }
+/* ⛔⛔ NO HOVER STATE AT ALL ON THE SUPPORT CARDS (owner, 2026-10-11: *"REMOVE ... ALL
+   hover visual effects (lift/scale/glow/border swaps/cursor pool effects)"*).
+   This rule was `transform: translateY(-5px); border-color: var(--color-tertiary);
+   box-shadow: var(--shadow)` — the lift, the border swap and the glow, all three from
+   one declaration. It is DELETED rather than overridden with a pinned copy of the
+   resting values, so `transform`, `border-color` and `box-shadow` simply keep what the
+   resting rule above gives them and there is no second copy to drift.
+   ⛔ THE OTHER TWO HOVER SOURCES ARE REMOVED SEPARATELY: the page-wide `ringOut` rule
+   (~:2752) and the glass sweep (~:3045) both named `.support-card:hover`, and the
+   arrow nudge is the `:hover .support-link svg` rule below. `.support-card` keeps its
+   place in the REST lists — only the `:hover` tokens go.
+   ⛔ FOCUS IS NOT HOVER AND IS KEPT — see the `:focus-visible` rule at the end of this
+   block. Nothing else about the card changes: same markup, same `href`/`target`/`rel`,
+   same icon and copy, same padding, radius and normal 1px border. */
 .support-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: .5rem; }
 .support-icon {
   width: 46px; height: 46px; border-radius: 14px; flex: none;
@@ -1579,7 +1663,13 @@ html:not(.dark) .support-badge { color: #0096ff; }
   color: var(--color-tertiary);
 }
 .support-link svg { width: 15px; height: 15px; transition: transform .25s ease; }
-.support-card:hover .support-link svg { transform: translateX(4px); }
+/* ⛔ `:hover .support-link svg { transform: translateX(4px) }` WAS HERE — the arrow
+   sliding right on hover, the fourth and last hover visual on these cards. Deleted
+   with the rest. */
+/* ⛔ KEYBOARD FOCUS KEEPS A REAL INDICATION (the cards are `outline: 1px solid
+   transparent` at rest from the page-wide ring list, which suppresses the browser's
+   own ring). The card is an `<a>`, so without this it would be focusable but silent. */
+.support-card:focus-visible { outline: 2px solid var(--color-tertiary); outline-offset: 3px; }
 
 @media (max-width: 860px) {
   .support-grid { grid-template-columns: 1fr; max-width: 460px; margin-inline: auto; }
@@ -1781,7 +1871,26 @@ html:not(.dark) .support-badge { color: #0096ff; }
   text-decoration: none; color: inherit;
   transition: transform .2s ease, border-color .2s ease;
 }
-.version-badge:hover { transform: translateY(-1px); border-color: var(--color-tertiary); }
+/* ⛔⛔ THE VERSION / CHANGELOG CONTROL HAS NO HOVER STATE AND NO SHEEN (owner,
+   2026-10-11: *"remove the sheen and hover over effect"*).
+   ⛔ BOTH `.version-badge:hover` RULES ARE DELETED — this one and the Gobos-Master one
+   at ~:2495 — rather than overridden with a pinned copy of the resting values. Deleting
+   is what makes it exact: with no hover rule matching at all, `transform`, `border-color`
+   and `box-shadow` simply keep their RESTING values, so the resting glow, the metallic
+   conic ring and the radius cannot drift out of step with a duplicated literal. The same
+   edit removes the lift, the grown glow and the tertiary border together.
+   ⛔ THE SHEEN IS `animation: badgeSpin` ON `.version-badge` (~:2493) — removed there.
+   `@keyframes badgeSpin` and `@property --badge-angle` are left in place: they are inert
+   once nothing references them, and deleting them is a wider change than this asked for.
+   ⛔ THE HOVER LIFT FROM THE PAGE-WIDE RING LIST IS REMOVED SEPARATELY — `.version-badge
+   :hover` is dropped from the `ringOut` selector at ~:2641, which is where the expanding
+   outline AND a `translateY(-1px)` were coming from.
+   ⛔ KEYBOARD FOCUS KEEPS A REAL INDICATION. The rest state above sets
+   `outline: 1px solid transparent`, which suppresses the browser's own ring, so focus
+   needs an explicit one or the control would become unfocusable-by-eye. This is the
+   page's own quick-nav idiom. Nothing else about the control changes: same markup, same
+   `href`, same `target`/`rel`, same title, same resting styling. */
+.version-badge:focus-visible { outline: 2px solid var(--color-tertiary); outline-offset: 3px; }
 .ver-date { margin-left: .6rem; font-size: .8rem; font-weight: 500; color: var(--muted); font-family: 'Outfit', sans-serif; letter-spacing: .02em; }
 
 /* 2-Click Workflow steps */
@@ -1888,6 +1997,15 @@ html:not(.dark) .support-badge { color: #0096ff; }
 .coupon-code { font-family: 'Outfit', monospace; font-size: 1.15rem; font-weight: 800; letter-spacing: .08em; color: var(--color-tertiary); }
 .coupon-copy { font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--bg); background: var(--color-accent); padding: .32rem .75rem; border-radius: 999px; }
 .coupon-hint { margin-top: .6rem; font-size: .78rem; color: var(--muted); }
+/* ⛔ THE COUPON CONTROL IS AN ANCHOR NOW, NOT A BUTTON — see the wiring script. It
+   keeps `.coupon-btn` and every declaration above; all this adds is the two things an
+   `<a>` needs that a `<button>` did not: no underline, and an inherited colour so the
+   label spans keep painting their own. `text-align: center` is belt-and-braces for the
+   line box if a host ever renders it as a block. */
+a.coupon-btn { text-decoration: none; color: inherit; text-align: center; }
+a.coupon-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+/* the hint doubles as the status line — no second element, no second button */
+.coupon-hint.is-status { color: var(--ink); }
 
 /* Coupon inside the Special Offer card — azure, to match that card's accent
    (the page's only chromatic accent is the #0096ff button azure). */
@@ -2400,9 +2518,15 @@ html.dark .offer-band .so-kicker { color: #fff; }
   box-shadow:0 4px 12px -6px color-mix(in srgb,var(--ink) 25%,transparent),0 0 20px -4px rgba(0,150,255,.6);
   white-space:nowrap;text-decoration:none;color:inherit;
   transition:transform .2s ease,border-color .2s ease,box-shadow .3s ease;
-  animation:badgeSpin 4s linear infinite;
+  /* ⛔ `animation: badgeSpin 4s linear infinite` STOOD HERE — that was the sheen, the
+     conic ring rotating behind the pill. Owner, 2026-10-11: "remove the sheen and hover
+     over effect". The ring still paints at `--badge-angle: 0deg`, so the metallic edge
+     is unchanged at rest; it simply no longer travels. */
 }
-.version-badge:hover{transform:translateY(-1px);border-color:transparent;box-shadow:0 4px 12px -6px color-mix(in srgb,var(--ink) 25%,transparent),0 0 26px -2px rgba(0,150,255,.8)}
+/* ⛔ `:hover` WAS HERE — lift, transparent border and a glow grown from 20px/-4px/.6 to
+   26px/-2px/.8. The rule is deleted, not overridden: with nothing matching `:hover` the
+   control keeps its resting transform, border and box-shadow exactly, so there is no
+   second copy of those values to fall out of sync. */
 .version-badge .latest-tag{margin-left:-5px}
 .latest-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(0,150,255,.2);padding:2px 7px;border-radius:20px;font-weight:600;color:rgb(0,150,255);white-space:nowrap;font-size:.68rem}
 .latest-dot{width:6px;height:6px;border-radius:50%;background:rgb(0,150,255);animation:latestBlink 1.2s ease-in-out infinite}
@@ -2434,7 +2558,6 @@ html.dark .offer-band .so-kicker { color: #fff; }
 .dark .site-header .version-badge .vb-version{color:#fff}
 .dark .site-header .faq-btn{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.22)}
 .dark .site-header .brand span{color:#fff}
-html:not(.dark) .site-header .brand-mark img{filter:invert(1)}
 
 /* More from Mr3D — Gobos Master structure */
 #gallery .quickfog-outer{
@@ -2525,7 +2648,6 @@ h1,h2,h3,h4,.site-header .brand,.section-title,.g-title,.g-name,.acc-head,.vb-ve
   background-color:rgba(0,0,0,.3);
   border-color:rgba(255,255,255,.18);
 }
-html:not(.dark) .btn,html:not(.dark) .theme-toggle,html:not(.dark) .g-arrow,html:not(.dark) .faq-btn,html:not(.dark) .version-badge,html:not(.dark) .step-num{border-color:rgba(0,0,0,.16)}
 
 /* ============================================================
    HOVER EFFECTS — Gobos Master (expanding outline rings + lift)
@@ -2548,7 +2670,11 @@ html:not(.dark) .btn,html:not(.dark) .theme-toggle,html:not(.dark) .g-arrow,html
   outline-offset:0;
   transition:transform .2s ease,border-color .2s ease,box-shadow .5s ease,outline-offset .7s cubic-bezier(.19,1,.22,1),outline-color .7s cubic-bezier(.19,1,.22,1);
 }
-.btn:hover,.btn-ghost:hover,.faq-btn:hover,.version-badge:hover,.theme-toggle:hover,.g-arrow:hover:not(:disabled),.menu-btn:hover,.action-btn:hover{
+/* ⛔ `.version-badge:hover` IS DELIBERATELY ABSENT FROM THIS LIST (owner, 2026-10-11).
+   It was the one that added the expanding `ringOut` outline AND a `translateY(-1px)`
+   on hover to the version/changelog pill. Dropping the token here removes both without
+   touching the rule for the other eight controls, which keep their rings. */
+.btn:hover,.btn-ghost:hover,.faq-btn:hover,.theme-toggle:hover,.g-arrow:hover:not(:disabled),.menu-btn:hover,.action-btn:hover{
   box-shadow:inset 0 0 20px color-mix(in srgb,var(--ink) 50%,transparent),0 0 20px color-mix(in srgb,var(--ink) 16%,transparent);
   animation: ringOut 1s cubic-bezier(.19,1,.22,1) var(--ring-repeat);
   outline-color:transparent;
@@ -2557,8 +2683,6 @@ html:not(.dark) .btn,html:not(.dark) .theme-toggle,html:not(.dark) .g-arrow,html
 }
 .btn:active,.btn-ghost:active{transform:translateY(0) scale(.98)}
 /* light theme rings */
-html:not(.dark) .quickfog-outer,html:not(.dark) .feature-card,html:not(.dark) .compare-card,html:not(.dark) .accordion,html:not(.dark) .img-frame,html:not(.dark) .g-frame,html:not(.dark) .c-card,html:not(.dark) .rating-card,html:not(.dark) .time-chip,html:not(.dark) .feature-media,html:not(.dark) .hero-media,html:not(.dark) .spec-item,html:not(.dark) .btn,html:not(.dark) .btn-ghost,html:not(.dark) .faq-btn,html:not(.dark) .version-badge,html:not(.dark) .theme-toggle,html:not(.dark) .g-arrow,html:not(.dark) .menu-btn,html:not(.dark) .action-btn,html:not(.dark) .tag{outline-color:transparent}
-html:not(.dark) .quickfog-outer:hover,html:not(.dark) .feature-card:hover,html:not(.dark) .compare-card:hover,html:not(.dark) .accordion:hover,html:not(.dark) .img-frame:hover,html:not(.dark) .g-frame:hover,html:not(.dark) .c-card:hover,html:not(.dark) .rating-card:hover,html:not(.dark) .feature-media:hover,html:not(.dark) .spec-item:hover,html:not(.dark) .btn:hover,html:not(.dark) .btn-ghost:hover,html:not(.dark) .faq-btn:hover,html:not(.dark) .version-badge:hover,html:not(.dark) .theme-toggle:hover,html:not(.dark) .g-arrow:hover:not(:disabled),html:not(.dark) .menu-btn:hover,html:not(.dark) .action-btn:hover{outline-color:transparent}
 
 /* ============================================================
    GOBOS MASTER EFFECTS PORT
@@ -2630,14 +2754,12 @@ body::after{
   transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease,
     outline-offset .7s cubic-bezier(.19,1,.22,1),outline-color .7s cubic-bezier(.19,1,.22,1);
 }
-.price-card:hover,.workflow-card:hover,.support-card:hover,.c-card:hover,.compare-card:hover,.rating-card:hover,.g-card:hover .g-frame,.accordion:hover,.feature-card:hover,.img-frame:hover,.time-chip:hover{
+.price-card:hover,.workflow-card:hover,.c-card:hover,.compare-card:hover,.rating-card:hover,.g-card:hover .g-frame,.accordion:hover,.feature-card:hover,.img-frame:hover,.time-chip:hover{
   animation: ringOut 1s cubic-bezier(.19,1,.22,1) var(--ring-repeat);
   outline-color:transparent;
   outline-offset:12px;
   transform:translateY(-3px);
 }
-html:not(.dark) .price-card,html:not(.dark) .workflow-card,html:not(.dark) .support-card,html:not(.dark) .compare-card,html:not(.dark) .time-chip,html:not(.dark) .accordion{outline-color:transparent}
-html:not(.dark) .price-card:hover,html:not(.dark) .workflow-card:hover,html:not(.dark) .support-card:hover,html:not(.dark) .compare-card:hover,html:not(.dark) .time-chip:hover,html:not(.dark) .accordion:hover,html:not(.dark) .g-card:hover .g-frame{outline-color:transparent}
 
 /* More from Mr3D — static grid, no arrows/dots */
 #gallery .gallery-head,
@@ -2731,8 +2853,6 @@ html:not(.dark) .price-card:hover,html:not(.dark) .workflow-card:hover,html:not(
   outline-offset:12px;
   transform:translateY(-3px);
 }
-html:not(.dark) .m3-wrap{outline-color:transparent}
-html:not(.dark) .m3-wrap:hover{outline-color:transparent}
 
 /* Workflow background card */
 .wf-wrap{
@@ -2749,8 +2869,6 @@ html:not(.dark) .m3-wrap:hover{outline-color:transparent}
     outline-offset .7s cubic-bezier(.19,1,.22,1),outline-color .7s cubic-bezier(.19,1,.22,1);
 }
 .wf-wrap:hover{animation: ringOut 1s cubic-bezier(.19,1,.22,1) var(--ring-repeat);outline-color:transparent;outline-offset:12px;transform:translateY(-3px)}
-html:not(.dark) .wf-wrap{outline-color:transparent}
-html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 .quickfog-outer{border-radius:22px}
 
 /* Compare cards — same glass design as workflow cards */
@@ -2798,7 +2916,22 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 /* the pill on the standalone bar sits above it, like a section seam label */
 .sub-divider .seam-label{top:-15px}
 
-/* Full Catalog section — SHOWN (was hidden). Re-hide with: .catalog-section{display:none!important} */
+/* ⛔ THE FULL CATALOG SECTION IS HIDDEN (owner, 2026-10-10: "hide the Full Catalog
+   section"). This is the SAME one-line switch this comment used to describe in the
+   other direction — it read "SHOWN (was hidden). Re-hide with:
+   .catalog-section{display:none!important}" — so the convention, the selector and the
+   `!important` are all the page's own, not a new mechanism.
+   ⛔ NOTHING IS DELETED. `<section class="catalog-section" id="catalog">` (~:6926) and
+   every card, page and the `#catalogViewport` scroller inside it are untouched and stay
+   in the document: removing this one declaration brings the whole section back.
+   ⛔ `display: none` also takes it out of layout, so the seam rail
+   (`RAIL_SEL = '.section, .gallery-section, .catalog-section, .site-footer'`, ~:9268)
+   and the seam-label pass skip it on their own — that is exactly how it behaved the
+   last time this switch was down.
+   ⛔ NO DEAD JUMP TO REMOVE: there is no `href="#catalog"` anywhere in the document —
+   the only other `#catalog` in the file is `#catalogViewport` (~:8681), an element id
+   inside the hidden section, not a link target. */
+.catalog-section { display: none !important; }
 
 /* Specs & FAQ — selectable text */
 #specs,#specs *{user-select:text!important;-webkit-user-select:text!important}
@@ -2809,7 +2942,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 .hero-center h1{max-width:none}
 .hero-side{position:relative;overflow:hidden;border:1px solid var(--border-strong);border-radius:18px;padding:0;margin:0;background-image:none!important;background:var(--card-bg)!important}
 .hero-side::after{content:none!important}
-.hero-side video{display:block;width:100%;height:100%;object-fit:cover;aspect-ratio:1/3}
+.hero-side video{display:block;width:100%;height:100%;object-fit:cover;aspect-ratio:1/5}
 @media (max-width:900px){.hero-cards{gap:.4rem}}
 @media (max-width:560px){.hero-cards{gap:.25rem}}
 
@@ -2828,10 +2961,135 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
 #specs .acc-inner p{max-width:78ch;line-height:1.7}
 #showcase .quickfog-outer{position:relative;overflow:hidden;background-image:none;background:var(--card-bg)}
 #showcase .support-card{position:relative;overflow:hidden;background-image:none;background:var(--card-bg)}
-#showcase .support-card::after{
-  content:'';position:absolute;top:0;left:0;width:45%;height:100%;pointer-events:none;
-  background:linear-gradient(105deg,transparent 45%,rgba(255,255,255,.9) 45%,rgba(255,255,255,.9) 60%,transparent 60%);
-  transform:translateX(-170%) skewX(-20deg);animation:btnShine 3s linear infinite;
+/* ⛔⛔ THE SUPPORT CARDS' DIAGONAL SHEEN IS STILL OFF, BUT `::after` NOW CARRIES THE
+   PATTERN (owner, 2026-10-11: *"REMOVE their diagonal sheen and ALL hover visual
+   effects"*, then *"there is only pattern I want full pattern effect with colors"*).
+   `::after` was the 45%-wide skewed white band sweeping on the shared 3s `btnShine`
+   beat; the sheen is gone for good and the pseudo is repurposed into the cursor pool,
+   which is EXACTLY the trade `html.dark .price-card::after` (~:3625) already made. The
+   `btnShine` keyframes are untouched — `.btn-primary` and the changelog items still
+   use them.
+   ⛔ THE POOL RULE RE-DECLARES EVERY PROPERTY THE SHEEN USED — `inset` AND an explicit
+   `width`/`height` — because the two recipes disagree about box sizing. The sheen was
+   `top:0; left:0; width:45%; height:100%`; `inset:0` alone would leave `width:45%` in
+   force (with both `left` and `right` set and a width present, `right` is the one the
+   box ignores), so the pool would be a 45%-wide sliver. `width:auto; height:auto` is
+   what makes `inset:0` fill the card. */
+
+/* ⛔⛔ ONE TOKEN PER CARD, FOUR CONSUMERS — the shared mechanism, not four literals.
+   `--sc-accent` is the support cards' `--tier`: declared once per card here and read by
+   the standing halftone, the cursor pool, the card's own ambient glow AND its outer
+   halo, so a card's whole pattern is one colour that cannot drift between layers.
+   ⛔ THE COLOURS ARE THE PAGE'S OWN, NOT NEW ONES. Azure `#0096ff` is the brand azure
+   the pricing cards default `--tier` to; `#b5a0ff` is `.tier-team` AND the `#shapekeys`
+   pill; `#54d5df` is `.tier-studio` AND the `#features` pill. Email / Discord /
+   Documentation therefore read as three members of a family the page already has
+   rather than three new spot colours.
+   ⛔ `:nth-child`, NOT `:nth-of-type`: `.support-grid` holds exactly these three
+   `<a class="support-card">` and nothing else, and `:nth-child` cannot be thrown off by
+   the element type. Order in the markup is the order on screen, so this reads
+   left-to-right: Email, Discord, Documentation. */
+#showcase .support-card              { --sc-accent: #0096ff; }  /* Email — azure */
+#showcase .support-card:nth-child(2) { --sc-accent: #b5a0ff; }  /* Discord — violet */
+#showcase .support-card:nth-child(3) { --sc-accent: #54d5df; }  /* Documentation — teal */
+
+/* ⛔⛔ THE DOT FIELD THE PRICING CARDS WEAR, REUSED RATHER THAN REINVENTED. Every value
+   here — the 10px tile, the 1.1px/1.5px dot, the corner mask at `88% 0%`, the two-layer
+   `intersect` composite, the 160px wave and its 3.6s beat — is
+   `html.dark .price-card::before` (~:3856) verbatim, with one substitution: the dot
+   colour is `var(--sc-accent)` where the pricing card reads `var(--tier, #0096ff)`.
+   No new element, no nested card: it is a pseudo on the card that already exists.
+   ⛔ THE WAVE IS THE "ANIMATED" HALF and it is the page's own `dotWave`, not a new
+   keyframe: it slides the 160px repeating band through the corner fade on its own
+   3.6s clock, so the brightness travels across the dots with no pointer involved.
+   ⛔ NAMING CORRECTION TO AN EARLIER VERSION OF THIS COMMENT: it used to say the pool
+   was deliberately NOT copied here. That was the right reading of *"stable / not hover
+   driven"*, but the owner has since asked for the full pattern by name, so the pool is
+   now present and the sentence is rewritten rather than left to contradict the code.
+   ⛔ `html.dark` MATCHES THE PRICING CARDS EXACTLY: the page's dot field is a
+   dark-theme treatment there too.
+   ⛔ THE CONTENT IS LIFTED ABOVE THE FIELD. A positioned `::before` with `z-index: 0`
+   paints over in-flow static children, so the same `> *` lift the pricing card uses is
+   applied below — every child here is static (`.support-card-top`, `h3`, `p`,
+   `.support-link`), so `position: relative` cannot disturb the flex layout. */
+html.dark #showcase .support-card::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none; z-index: 0;
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--sc-accent) 95%, transparent) 1.1px, transparent 1.5px);
+  background-size: 10px 10px;
+  -webkit-mask-image:
+    radial-gradient(130% 95% at 88% 0%, #000, transparent 70%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .15) 0px, #000 80px, rgba(0, 0, 0, .15) 160px);
+          mask-image:
+    radial-gradient(130% 95% at 88% 0%, #000, transparent 70%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .15) 0px, #000 80px, rgba(0, 0, 0, .15) 160px);
+  -webkit-mask-composite: source-in;
+          mask-composite: intersect;
+  animation: dotWave 3.6s linear infinite;
+}
+/* ⛔⛔ THE CURSOR POOL — `html.dark .price-card::after` (~:3625) with `--tier` swapped
+   for `--sc-accent`. Same 10px tile and same 1.1px/1.5px dot as the field above, on
+   purpose: where the two overlap they must be one grid, or the pattern reads as two
+   misaligned screens.
+   ⛔ IT IS AN ORDINARY PART OF THE PATTERN, NOT A HOVER STATE. `opacity: .75` and
+   `animation: none` are constant — the pool is always painted, at the fallback
+   `88% 0%` before any pointer arrives and tracking smoothly after. Nothing here is
+   gated on `:hover`, so there is no pop when the pointer crosses the card and no
+   geometry moves; only the mask centre translates. `--mx`/`--my` are written by
+   `#pricingGlow`, which now includes `.support-card` in its `closest()` list.
+   ⛔ `z-index: 0`, the same rung as `::before`, and `::after` paints last, so the pool
+   rides ON TOP of the standing field — the same order the pricing card relies on. */
+html.dark #showcase .support-card::after {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none; z-index: 0;
+  width: auto; height: auto;
+  transform: none;
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--sc-accent) 95%, transparent) 1.1px, transparent 1.5px);
+  background-size: 10px 10px;
+  background-repeat: repeat;
+  background-position: 0 0;
+  -webkit-mask-image: radial-gradient(200px circle at var(--mx, 88%) var(--my, 0%), #000, transparent 74%);
+          mask-image: radial-gradient(200px circle at var(--mx, 88%) var(--my, 0%), #000, transparent 74%);
+  opacity: .75;
+  animation: none;
+}
+/* ⛔⛔ THE AMBIENT GLOW AND THE HALO — THE THIRD PIECE OF THE PATTERN, ON THE CARD
+   ITSELF. `html.dark .price-card` (~:3560) carries the identical pair with `--tier`;
+   this is that pair with `--sc-accent`. Layer 1 is the soft pool that follows the
+   pointer (`--mx`/`--my`), layer 2 is the standing halo anchored to the top edge so
+   the card has colour even before the pointer arrives.
+   ⛔ THE TWO INSET HIGHLIGHTS ARE RESTATED, AND THEY HAVE TO BE. `box-shadow` is ONE
+   property: the shared surface rule (~:3077) gives these cards
+   `inset 0 1px 0 rgba(255,255,255,.30), inset 0 -1px 0 rgba(255,255,255,.06)`, and
+   declaring only the glow would DELETE both and flatten the card. Order is insets
+   first, then the hairline accent ring, then the halo — the pricing card's order.
+   ⚠ `spread` is -14px on the halo so it reads as light bleeding out rather than a
+   second border.
+   ⛔ NO `:hover` COPY OF THIS RULE EXISTS AND NONE SHOULD BE ADDED. The hover lift,
+   border swap and glow were removed from these cards on the owner's word and are not
+   being brought back; this glow is the RESTING state. */
+html.dark #showcase .support-card {
+  background-image:
+    radial-gradient(300px circle at var(--mx, 50%) var(--my, 0%),
+      color-mix(in srgb, var(--sc-accent) 20%, transparent), transparent 68%),
+    radial-gradient(135% 88% at 50% -14%,
+      color-mix(in srgb, var(--sc-accent) 16%, transparent), transparent 62%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .30),
+    inset 0 -1px 0 rgba(255, 255, 255, .06),
+    0 0 0 1px color-mix(in srgb, var(--sc-accent) 10%, transparent),
+    0 0 44px -14px color-mix(in srgb, var(--sc-accent) 30%, transparent);
+}
+html.dark #showcase .support-card > * { position: relative; z-index: 1; }
+/* ⛔ REDUCED MOTION STOPS THE WAVE AND NOTHING ELSE. The field holds at `.55` the way
+   the pricing card's does; the pool already has `animation: none` and `#pricingGlow`
+   returns before it installs a listener, so the glow and the pool both sit still at
+   their fallback centres. No layer is hidden, so the pattern is fully present — just
+   static. */
+@media (prefers-reduced-motion: reduce) {
+  html.dark #showcase .support-card::before { animation: none; opacity: .55; }
 }
 #changelog .acc-item{position:relative;overflow:hidden;background-image:none;background:var(--card-bg)}
 #changelog .acc-item::after{
@@ -2908,7 +3166,7 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
     inset 0 -1px 0 rgba(255,255,255,.06);
   transition:background-position .5s ease;
 }
-.price-card:hover,.workflow-card:hover,.support-card:hover,.catalog-card:hover{background-position:-20% 0,0 0,0 0}
+.price-card:hover,.workflow-card:hover,.catalog-card:hover{background-position:-20% 0,0 0,0 0}
 /* The Most popular card carries its own moving sheen (see .price-card.featured::after),
    so the glass hover sweep is dropped on that one card only — it keeps the lift, the
    border highlight and the expanding ring. */
@@ -3056,15 +3314,13 @@ html:not(.dark) .wf-wrap:hover{outline-color:transparent}
    effect, same .7s easing, now on every remaining piece of UI: pills,
    badges, tags, the hero tiles, the coupon, the seam labels.
    ⛔ the ring colour is a VARIABLE, not the hard-coded rgba() the old rules
-   use — a white ring is invisible on the light theme, and the existing
-   light-mode fix (a second `html:not(.dark)` selector list per card) would
-   have had to be duplicated for every element added here.
+   use — one declaration recolours every element that carries the ring
+   instead of repeating the same literal in each of them.
    ⛔ `outline-offset` only transitions on an OUTLINE — an element with no
    outline set shows nothing at rest — but the base rule still DECLARES a transparent
    one, because without any outline the offset has nothing to animate.
    ============================================================ */
 :root { --ring: rgba(255,255,255,.5); --ring-repeat: infinite; }
-html:not(.dark) { --ring: rgba(0,0,0,.35); }
 /* ⛔ The ring now pulses for as long as the pointer stays on the element (owner:
    "repeat ... for every .5s"). An animation that loops FOREVER is precisely what this
    setting exists to suppress, so it collapses to a single pass here. Driving it from a
@@ -3132,7 +3388,7 @@ html:not(.dark) { --ring: rgba(0,0,0,.35); }
 .btn:hover,.btn-primary:hover,.btn-ghost:hover,.menu-btn:hover,.theme-toggle:hover,
 .tab-btn:hover,.card:hover,.price-card:hover,.offer-card:hover,.socials a:hover,
 .g-arrow:hover,.g-arrow:hover:not(:disabled),.action-btn:hover,.c-card:hover,
-.support-card:hover,.version-badge:hover,.workflow-card:hover,.coupon-btn:hover,
+.workflow-card:hover,.coupon-btn:hover,
 .pb-code:hover,.quick-nav a:hover,.faq-btn:hover,.wf-wrap:hover,.m3-wrap:hover,
 .quickfog-outer:hover,.feature-card:hover,.compare-card:hover,.accordion:hover,
 .img-frame:hover,.g-frame:hover,.rating-card:hover,.feature-media:hover,
@@ -3232,22 +3488,6 @@ html.dark body {
       #011845 100%);
 }
 /* ---------- LIGHT — the same hue journey at paper luminance ---------- */
-html:not(.dark) body {
-  background-image:
-    radial-gradient(118rem 60rem at 96% -10%, rgba(61, 230, 253, .20), transparent 58%),
-    radial-gradient(72rem 46rem at 2% 3%, rgba(2, 127, 252, .10), transparent 60%),
-    linear-gradient(180deg,
-      #f6faff 0%,
-      #eff6fe 12%,
-      #e8f1fd 24%,
-      #e1edfc 36%,
-      #d9e8fc 48%,
-      #d0e3fb 60%,
-      #c8e0fb 72%,
-      #d0e3fb 84%,
-      #dfeafd 92%,
-      #edf4fe 100%);
-}
 /* ⛔ `background-attachment` is deliberately left at its default `scroll` so the
    ramp spans the DOCUMENT and builds as you descend. `fixed` would pin it to the
    viewport and it would stop being a ramp through the sections at all — the
@@ -3362,11 +3602,6 @@ html:not(.dark) body {
   color: #0096ff;
   -webkit-text-fill-color: transparent;
 }
-html:not(.dark) .afmp-intro-card h3,
-html:not(.dark) .compare-card h3 {
-  background-image: linear-gradient(115deg, #0b1a2b 6%, #0d5ea8 52%, #0096ff 100%);
-  color: #0d5ea8;
-}
 .afmp-intro-card p { color: color-mix(in srgb, var(--ink) 88%, #0096ff); }
 .compare-steps li { color: color-mix(in srgb, var(--ink) 90%, #0096ff); }
 /* the number chips take the page's own azure button gradient, not --color-accent
@@ -3412,9 +3647,14 @@ html:not(.dark) .compare-card h3 {
 html.dark .price-card {
   background-color: rgba(0, 0, 0, 0.3);
   /* layer 1 is the CURSOR GLOW — --mx/--my come from #pricingGlow */
+  /* ⛔ `var(--tier, #0096ff)` — THE CARD'S ACCENT IS NOW A PER-CARD VALUE (owner,
+     2026-10-10). Every literal in this block used to be the page azure; they now read
+     `--tier`, which defaults to that same `#0096ff` and is overridden only by the
+     three new higher tiers. For the Personal and Commercial cards the computed colour
+     is therefore IDENTICAL to before, character for character. */
   background-image:
     radial-gradient(300px circle at var(--mx, 50%) var(--my, 0%),
-      color-mix(in srgb, #0096ff 22%, transparent), transparent 68%);
+      color-mix(in srgb, var(--tier, #0096ff) 22%, transparent), transparent 68%);
   border: 1px solid rgba(255, 255, 255, .10);
   border-radius: 12px;
   padding: 1.5rem;
@@ -3427,16 +3667,16 @@ html.dark .price-card {
      of the card rather than a hard second border. */
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, .20),
-    0 0 0 1px color-mix(in srgb, #0096ff 10%, transparent),
-    0 0 44px -14px color-mix(in srgb, #0096ff 38%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--tier, #0096ff) 10%, transparent),
+    0 0 44px -14px color-mix(in srgb, var(--tier, #0096ff) 38%, transparent);
   transition: border-color .3s ease, box-shadow .3s ease;
 }
 html.dark .price-card:hover {
-  border-color: color-mix(in srgb, #0096ff 40%, transparent);
+  border-color: color-mix(in srgb, var(--tier, #0096ff) 40%, transparent);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, .26),
-    0 0 0 1px color-mix(in srgb, #0096ff 24%, transparent),
-    0 0 62px -12px color-mix(in srgb, #0096ff 62%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--tier, #0096ff) 24%, transparent),
+    0 0 62px -12px color-mix(in srgb, var(--tier, #0096ff) 62%, transparent);
 }
 /* ⛔⛔ NO HOVER SHEEN — owner, 2026-10-07: *"remove the hover over sheen only"*.
    The base rules sweep the glass on hover with
@@ -3474,8 +3714,10 @@ html.dark .price-card::after {
   position: absolute; inset: 0; border-radius: inherit;
   pointer-events: none; z-index: 0;
   /* ⛔ raised with `.card-fx > .fx-dots` (*"make the patern brighter"*) — see the note there.
-     The two must stay the same value, and this pool must ALSO match `::before` below. */
-  background-image: radial-gradient(circle, rgba(0, 150, 255, .95) 1.1px, transparent 1.5px);
+     The two must stay the same value, and this pool must ALSO match `::before` below.
+     ⛔ the dot takes `--tier`: `color-mix(in srgb, #0096ff 95%, transparent)` resolves to
+     exactly `rgba(0, 150, 255, .95)`, so the default is unchanged to the byte. */
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--tier, #0096ff) 95%, transparent) 1.1px, transparent 1.5px);
   background-size: 10px 10px;
   background-repeat: repeat;
   background-position: 0 0;
@@ -3543,10 +3785,6 @@ html.dark .price-card::after {
 }
 /* the light theme keeps the SAME cyan wash, so white dots would vanish — the dots
    invert instead of the mask moving */
-html:not(.dark) .offer-band::before,
-html:not(.dark) .offer-band::after {
-  background-image: radial-gradient(circle, color-mix(in srgb, #062a44 78%, transparent) 1.1px, transparent 1.5px);
-}
 
 /* ============ 6. INTERACTIVE BACKGROUND — replaces the SVG topology tile ============
    Owner: *"the background sapose to look like this"* + a full procedural brief
@@ -3674,11 +3912,6 @@ html:not(.dark) .offer-band::after {
   color: #0096ff;                        /* fallback where background-clip is absent */
   -webkit-text-fill-color: transparent;
 }
-html:not(.dark) .brand-title-grad {
-  --brand-grad: linear-gradient(100deg, #0b4f8f 0%, #0096ff 52%, #22b8e6 100%);
-  background-image: var(--brand-grad);
-  color: #0b4f8a;
-}
 /* ⛔⛔ THE WORDMARK ANIMATION IS REMOVED (owner: *"remove the animation"*).
    Three things went together, and all three must come back together or the
    wordmark is left in a half-state:
@@ -3694,7 +3927,6 @@ html:not(.dark) .brand-title-grad {
    (`assets/js/brand-assemble.js`) was removed the same day for the same reason. Both
    modules sit on disk unreferenced. **Do not assume either is running.** */
 
-html:not(.dark) .brand-title-text { color: #0b1a2b; }
 /* the halftone. `::before` is free on .price-card — only .featured uses ::after,
    for the sheen. Masked to a soft corner so it fades rather than stopping. */
 /* the halftone — ⛔ VISIBLE AT REST, and it follows the pointer when there is one.
@@ -3712,7 +3944,9 @@ html.dark .price-card::before {
   content: '';
   position: absolute; inset: 0; border-radius: inherit;
   pointer-events: none; z-index: 0;
-  background-image: radial-gradient(circle, rgba(0, 150, 255, .95) 1.1px, transparent 1.5px);
+  /* ⛔ same tier-aware dot as the pool above — the two masks are the same field and
+     the note below insists they stay identical, so they move together. */
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--tier, #0096ff) 95%, transparent) 1.1px, transparent 1.5px);
   background-size: 10px 10px;
   /* ⛔⛔ A WAVE, NOT A BLINK — owner, 2026-10-07: *"make it aniamte in wave"*,
      then *"instead of blinking"*. The blink is gone.
@@ -3753,12 +3987,25 @@ html.dark .price-card::before {
   html.dark .price-card::before,
   .offer-band::before { animation: none; opacity: .55; }
 }
+/* ⛔⛔ THE POPULAR CARD'S OPAQUE BASE IS GONE — IT IS TRANSPARENT LIKE THE OTHERS
+   (owner, 2026-10-10: *"make this transparent too"*, following the button-transparency
+   request). Measured before: this rule's background-image carried THREE layers, and the
+   third — `linear-gradient(180deg, #121722 0%, #0b0e14 100%)` — was an OPAQUE fill that
+   every other price card does not have. Those cards fall through to
+   `html.dark .price-card { background-color: rgba(0,0,0,.3) }` (~:3493); this one
+   covered that with a solid panel, so it read as a different surface from its
+   neighbours.
+   ⛔ ONLY THAT THIRD LAYER IS REMOVED. The two RADIAL layers above it are the card's
+   decorative glow — the pointer-following pool (`--mx`/`--my` from `#pricingGlow`) and
+   the top halo — and they stay exactly as they were, as do the `.featured` border, the
+   box-shadow ring/halo, the halftone dots on `::before`, the "Most popular" badge, the
+   type and the CTA. With the solid layer gone the 30% base shows through, which is the
+   same translucent surface every other card and every button on the page sits on. */
 html.dark .price-card.featured {
   background-image:
     radial-gradient(300px circle at var(--mx, 50%) var(--my, 0%),
       color-mix(in srgb, #0096ff 34%, transparent), transparent 68%),
-    radial-gradient(135% 88% at 50% -14%, rgba(0, 150, 255, .22), transparent 62%),
-    linear-gradient(180deg, #121722 0%, #0b0e14 100%);
+    radial-gradient(135% 88% at 50% -14%, rgba(0, 150, 255, .22), transparent 62%);
   border-color: color-mix(in srgb, #0096ff 45%, transparent);
   /* the featured card carries the SAME three layers, brighter, so all three glow
      alike and only the intensity separates "Most popular" */
@@ -3864,13 +4111,6 @@ html.dark .price-card > *:not(.pop-badge) { position: relative; z-index: 1; }
    tight values: subtitle **4.53:1** against AA's 4.5 — passing, but by 0.03. It was
    4.59 before the glow went on, so this theme has almost nothing left to give.
    **Re-measure before touching hero type sizes or the card's padding.** */
-html:not(.dark) .hero-copy-card h1 {
-  text-shadow:
-    0 0 7px color-mix(in srgb, #0096ff 44%, transparent),
-    0 0 15px color-mix(in srgb, #0096ff 20%, transparent),
-    0 0 22px color-mix(in srgb, #0096ff 9%, transparent);
-}
-html:not(.dark) .hero-copy-card .hero-sub { text-shadow: none; }
 /* ⛔ THE HEADING IS THE BINDING CONSTRAINT — it is the card's first line, so its glyph
    tops are the closest thing to the card's top edge and the only place the halo can be
    cut. Measured with `_hero_glow_check.js`, which walks the rendered pixels ABOVE the
@@ -3953,15 +4193,12 @@ html:not(.dark) .hero-copy-card .hero-sub { text-shadow: none; }
    image ends and writes these two, so the fade sits in the empty band instead.
    ⛔ Both fall back to the text-only anchor, so a card with no image is unchanged. */
 .card-fx > .fx-dots {
-  /* ⛔⛔ ONE ALPHA, THREE PLACES — CHANGE ALL OF THEM TOGETHER.
-     Owner: *"make the patern brighter"*. The dot colour lives here for the dark theme, in
-     the `html:not(.dark)` override just below for the light one, and again as a string in
-     `#fxParticles` (`colourFor()`) where the hover field draws the SAME dots to canvas.
-     ⛔ Move one and not the others and the pattern changes brightness the moment the pointer
-     arrives — the cross-fade is only invisible while both layers are the same colour.
-     ⛔ `.38` -> `.58` dark and `.30` -> `.48` light, both raised by the same proportion rather
-     than set to one shared value: white and the dark navy sit on opposite sides of their
-     backgrounds, so equalising them would make one of the two themes lighter than asked for.
+  /* ⛔⛔ ONE ALPHA, ONE PLACE. The dot colour lives in this rule and nowhere else: the
+     `html:not(.dark)` light-theme override that used to sit just below it went with the
+     light theme, and the `#fxParticles` canvas that drew the SAME dots is deleted.
+     Owner: *"make the patern brighter"*.
+     ⛔ `.38` -> `.58` — raised rather than set to an absolute, so the dots keep whatever
+     headroom they had over the card surface behind them.
      ⛔ This is a SHARED layer — the Creating Shapekeys cards and the top bar carry the same
      `.fx-dots`, so all of them brighten together. That is the "linking" the owner asked for
      (*"use linking bcz if i ask you to update later it will update on the entire page"*). If
@@ -3977,10 +4214,6 @@ html:not(.dark) .hero-copy-card .hero-sub { text-shadow: none; }
   -webkit-mask-composite: source-in;
           mask-composite: intersect;
   animation: dotWave 3.6s linear infinite;
-}
-html:not(.dark) .card-fx > .fx-dots {
-  /* ⛔ the light theme's brand azure — see the note on `.card-fx > .fx-dots` above */
-  background-image: radial-gradient(circle, rgba(11, 79, 143, .85) 1.1px, transparent 1.5px);
 }
 
 /* ------------------------------------------------------------ the cursor pool
@@ -5000,24 +5233,36 @@ html.dark .hero-copy-card:hover {
 }
 </style>
 <script id="pricingGlow">
-/* Drives --mx/--my for the pricing cards AND the two offer bands (owner: "add mouse
-   hover to show the glow and the patern where the mouse is on the pricing cards",
-   then "implement the same patern effect for the banner at the top and below the
-   pricing").
-   ⛔ ONE listener covers both: the selector list is the only thing that changed when
-   the bands were added, so a band can never be forgotten and go dead while the cards
-   track.
-   ⛔ DELEGATED on document, one listener for all three cards — the glow and the
-   halftone mask both resolve their centre in the card's OWN box, so the offset
-   has to be measured per card, and doing it per-element would mean three
-   listeners for the same work.
+/* Drives --mx/--my for the pricing cards, the two offer bands AND the three support
+   cards (owner: "add mouse hover to show the glow and the patern where the mouse is on
+   the pricing cards", then "implement the same patern effect for the banner at the top
+   and below the pricing", then "there is only pattern I want full pattern effect with
+   colors" on the support cards).
+   ⛔ ONE listener covers all of them: the selector list is the only thing that has ever
+   changed here, so a surface can never be forgotten and go dead while the others track.
+   ⛔ `.support-card` WAS ADDED (owner, 2026-10-11: *"if cursor-following color pool is
+   part of original pattern system, include it as requested full pattern"*). The three
+   support cards now carry the same `::after` pool the pricing cards do, and that pool
+   resolves its mask centre from `--mx`/`--my` — without this entry the token would
+   never be written and the pool would sit at its `88% 0%` fallback forever, i.e. a
+   "cursor pool" that does not follow the cursor.
+   ⛔ UNPREFIXED ON PURPOSE. `#showcase .support-card` would scope it to the three cards
+   that carry the pattern, but `closest()` has to match the element the POINTER is over,
+   and writing the two custom properties on the three support cards that have no pool
+   costs one `setProperty` and changes nothing — there is no rule anywhere reading them
+   on those cards. A narrower selector here would be a second place to keep in sync with
+   the CSS for no gain.
+   ⛔ DELEGATED on document, ONE listener for every surface in the list — the glow and
+   the pool mask both resolve their centre in the surface's OWN box, so the offset has
+   to be measured per surface, and doing it per-element would mean a listener each for
+   the same work.
    ⛔ passive — this never calls preventDefault and must not add scroll jank.
    Returns early under `prefers-reduced-motion`. */
 (function () {
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   document.addEventListener('pointermove', function (e) {
     var el = e.target && e.target.closest
-      ? e.target.closest('.price-card, .offer-band, .card-fx') : null;
+      ? e.target.closest('.price-card, .offer-band, .card-fx, .support-card') : null;
     if (!el) return;
     var r = el.getBoundingClientRect();
     el.style.setProperty('--mx', Math.round(e.clientX - r.left) + 'px');
@@ -5248,13 +5493,23 @@ html.dark .hero-copy-card:hover {
 <!-- Interactive mouse-follow background glow -->
 <div class="mouse-glow" aria-hidden="true"></div>
 <noscript><style>.g-card{opacity:1;transform:none}.reveal{opacity:1;transform:none}</style></noscript>
-<!-- Theme init: apply saved preference BEFORE first paint to avoid flash -->
+<!-- ⛔ DARK IS THE ONLY THEME (owner, 2026-10-11: *"remove light theme and topbar theme
+     switch … make dark mode the sole supported active theme"*). The `<html>` tag carries
+     `class="dark"` as a literal, so the dark state is already true at parse time and there
+     is nothing to restore. The two restore paths that used to live here are DELETED rather
+     than defaulted: a stored `afmp-theme: light` from an earlier visit and a
+     `(prefers-color-scheme: dark)` probe both used to be able to flip the root here.
+     ⛔ This block is kept as a one-way guard, not as a preference reader — it re-asserts
+     `dark` and CLEARS the stale key, so a restored session, an extension or any later
+     script that strips the class before paint is corrected rather than believed.
+     ⛔ `color-scheme: dark` is declared on `html` in `#afmpFinalOverrides` so the UA's own
+     furniture (scrollbars, form controls, the canvas backdrop) is dark from the first
+     frame too. -->
 <script>
 (function () {
   var r = document.documentElement;
-  var s = localStorage.getItem('afmp-theme');
-  if (s) { r.classList.toggle('dark', s === 'dark'); }
-  else { r.classList.toggle('dark', window.matchMedia('(prefers-color-scheme: dark)').matches); }
+  r.classList.add('dark');
+  try { localStorage.removeItem('afmp-theme'); } catch (e) {}
 })();
 </script>
 
@@ -5280,21 +5535,32 @@ html.dark .hero-copy-card:hover {
     </div>
 
     <div class="header-version">
-      <a class="version-badge" href="index.html#changelog" target="_blank" rel="noopener" title="Open changelog">
+      <!-- ⛔ THE v1.0.0 PILL NO LONGER POINTS AT THE IN-PAGE `#changelog` SECTION. Owner,
+           2026-10-11: set its destination to the EXACT URL below. `target="_blank"` and
+           `rel="noopener"` are the ones that were already on the element and are unchanged,
+           as are both labels and the badge's own markup.
+           ⛔ THE SLUG WAS CORRECTED, AND ONLY HERE. The first pass used the sibling
+           product's slug (`gobos-master`) exactly as supplied; the owner then corrected it
+           to this product's own — `auto-face-mocap-pro`, the same slug the five purchase
+           CTAs use.
+           ⛔ THE TWO OTHER `gobos-master` LINKS ON THIS PAGE ARE LEFT ALONE, deliberately:
+           the gallery thumbnail and the "More from Mr3D" entry point at that sibling
+           product itself, which is a different destination from a version history. This
+           was a URL fix on one affordance, not a site-wide slug rename. -->
+      <a class="version-badge" href="https://superhivemarket.com/products/auto-face-mocap-pro/versions?ref=473" target="_blank" rel="noopener" title="Open changelog">
         <span class="latest-tag"><span class="latest-dot"></span><span>Latest</span></span>
         <span class="vb-version">v1.0.0</span>
       </a>
-      <a class="vb-changelog" href="index.html#changelog" target="_blank" rel="noopener">Click for Changelog</a>
+      <a class="vb-changelog" href="https://superhivemarket.com/products/auto-face-mocap-pro/versions?ref=473" target="_blank" rel="noopener">Click for Changelog</a>
     </div>
 
     <div class="header-actions">
+      <!-- 🗑 THE THEME SWITCH SAT HERE. Removed with the light theme (owner, 2026-10-11).
+           ⛔ THE COLUMN IS NOT LEFT EMPTY: `.header-actions` keeps the FAQ / Must Read
+           anchor, and `.header-inner`'s `1fr auto 1fr` grid still has all three tracks
+           filled — brand, version badge, actions — so the bar's layout is unchanged.
+           ⛔ Nothing else in this group was touched. -->
       <a class="faq-btn" href="#specs" title="FAQ">FAQ <span class="must-read">Must Read</span></a>
-      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light / dark theme" title="Toggle theme">
-        <span class="knob">
-          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
-        </span>
-      </button>
     </div>
   </div>
 </header>
@@ -5445,16 +5711,26 @@ html.dark .hero-copy-card:hover {
 
     <div class="ob-mid">
       <div class="coupon-wrap">
-        <button class="coupon-btn" id="couponBtnBand" type="button"
-                data-href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473"
-                aria-label="Copy the discount coupon code and open the store">
+        <!-- ⛔ AN ANCHOR, NOT A BUTTON (owner, 2026-10-11: "I want it in copy button no
+             extra buttons"). `target="_top"` is what makes ONE click copy the code and
+             take the whole TAB to the store — inside the Superhive iframe that means
+             the top-level tab, not the frame, and never a new window. `data-href` stays
+             the declared source and `href` carries the same URL so the control is a
+             real link: focusable, middle-clickable, and correct even before the script
+             wires the copy. The click handler does not preventDefault when the
+             synchronous copy succeeds, so this navigation rides the same click. -->
+        <a class="coupon-btn" id="couponBtnBand"
+           href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473"
+           data-href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473"
+           target="_top" rel="noopener"
+           aria-label="Copy the discount coupon code and open the store">
           <span class="coupon-label">Coupon</span>
           <span class="coupon-code">afmp</span>
           <span class="coupon-copy">Copy</span>
-        </button>
+        </a>
         <p class="coupon-hint">Click to copy the code.</p>
       </div>
-      <div class="so-valid" data-text="offer-expiry">Valid until December 31st, 2026</div>
+      <div class="so-valid" data-text="offer-expiry">Valid until October 18th 2026</div>
     </div>
 
     <!-- Right cell — the demo clip. This cell was deliberately EMPTY until now
@@ -5542,9 +5818,21 @@ html.dark .hero-copy-card:hover {
 
     <div class="hero-cards">
       <!-- Left rail clip — hosted on the Mr3D carrd CDN: video52.mp4 (replaced video50.mp4
-           on 2026-09-30). HEVC, 540x1620, 24 fps, 13.83 s — exactly the 1:3 of the box, so
-           it draws with ZERO crop; the .hero-side card around it stretches to the row
-           height and never moves.
+           on 2026-09-30). HEVC, 24 fps, 13.83 s.
+           ⛔ THE FILE WAS REPLACED IN PLACE TWICE (owner, 2026-10-10), and the token in
+           the src is now the token the PUBLIC PAGE publishes, read off
+           <https://mr3dpageclips.carrd.co/> itself rather than derived: both rail clips
+           are `?v=0dc1b103` there, video and poster alike. That is the whole point of the
+           token — the file's identity changes when its bytes do, so a src still carrying
+           the previous token is a src pointing at bytes that no longer exist on the CDN.
+           ⛔ A MANUAL `&cv=` CACHE-BUSTER WAS TRIED HERE IN BETWEEN AND IS GONE. It worked,
+           but it is a SECOND token doing the job `?v=` already does, and the two can
+           disagree; the published token is the one that cannot be stale.
+           ⛔ THE STRIP IS A TRUE 1:5 NOW — re-measured on the CDN: 540x2700, HEVC, 24 fps,
+           13.83 s, uploaded 2026-10-10 13:54 GMT. The box is 1:5 as well (the card and its
+           video, in the final overrides), so `object-fit:contain` fills it with no
+           letterboxing and no crop. The earlier 540x1620 copy this file used to describe
+           was the pre-update version.
            data-no-clip-bar: decorative loop, nothing to scrub — skips the bar, the
            spinner and the seek handlers in one go.
            ⛔ This clip is HEVC: check it with the GPU ON. A --disable-gpu run fails it with
@@ -5552,7 +5840,7 @@ html.dark .hero-copy-card:hover {
            ⛔ The CARD is the invariant, the clip is not — it was pulled and swapped twice
            in one afternoon; never delete this .hero-side div, only its src changes. -->
       <div class="quickfog-outer hero-side reveal">
-        <video muted loop playsinline data-autoplay data-no-clip-bar src="https://mr3dpageclips.carrd.co/assets/videos/video52.mp4?v=95329a86" aria-label="Demo clip (left)"></video>
+        <video muted loop playsinline data-autoplay data-no-clip-bar src="https://mr3dpageclips.carrd.co/assets/videos/video52.mp4?v=0dc1b103" aria-label="Demo clip (left)"></video>
       </div>
       <div class="hero-center">
         <div class="quickfog-outer hero-copy-card">
@@ -5590,14 +5878,17 @@ html.dark .hero-copy-card:hover {
       <!-- Right rail clip — hosted on the Mr3D carrd CDN: video51.mp4. Pulled and put back
            within a minute (2026-09-30: "remove the video51.mp4 from the page even if it's in
            the background" → "sorry add it to the right side …video51.mp4").
-           It is PORTRAIT 540x1620, HEVC, 24 fps, 13.83 s — the 10:02 GMT upload that
-           replaced the old landscape 256x136 concert loop — so this rail now draws with
-           ZERO crop too. The ?v= token is what keeps the edge from re-serving the old
-           file — it is the FILE's ETag, refreshed by /updateclips.
+           It is PORTRAIT, HEVC, 24 fps, 13.83 s. The ?v= token is what keeps the edge from
+           re-serving an older file.
+           ⛔ RE-UPLOADED IN PLACE WITH THE LEFT RAIL'S CLIP (owner, 2026-10-10), and both
+           now publish the SAME token on the live page: `?v=0dc1b103`, read off
+           <https://mr3dpageclips.carrd.co/>. Re-measured at the same time: 540x2700, i.e.
+           a true 1:5, matching the box. See the note on the left rail's clip above — the
+           `&cv=` cache-buster that briefly sat here has been removed in favour of it.
            data-no-clip-bar: decorative loop, nothing to scrub.
            ⛔ The CARD is the invariant, the clip is not — do not delete this .hero-side. -->
       <div class="quickfog-outer hero-side reveal">
-        <video muted loop playsinline data-autoplay data-no-clip-bar src="https://mr3dpageclips.carrd.co/assets/videos/video51.mp4?v=5a2a2d09" aria-label="Demo clip (right)"></video>
+        <video muted loop playsinline data-autoplay data-no-clip-bar src="https://mr3dpageclips.carrd.co/assets/videos/video51.mp4?v=0dc1b103" aria-label="Demo clip (right)"></video>
       </div>
     </div>
 
@@ -5783,8 +6074,15 @@ html.dark .hero-copy-card:hover {
          between them (the last one must not add a trailing gap inside the card) */
       .afmp-intro-card p { font-size: .85rem; line-height: 1.6; color: var(--muted); margin: 0 0 .6rem; }
       .afmp-intro-card p:last-child { margin-bottom: 0; }
+      /* ⛔ SUPERSEDED 2026-10-10: the halves are edge-to-edge in one frame now, so the
+         gap is 0. This line is kept as the pre-frame value; the frame rule in
+         `#afmpFinalOverrides` ("SPLIT BY ONE DIVIDER") is what actually lands. */
       .compare-grid.compact { gap: .6rem; }
-      .compare-grid.compact .compare-card { padding: 1rem .9rem; border-radius: 14px; }
+      /* ⛔ horizontal 1.5rem (24px), up from .9rem (14.4px): the shared panel's edge
+         fade is fully opaque at 24px, so 14.4px put the left column's badge, step
+         circles and time chip inside it and dimmed their outer ~10px. Vertical stays
+         1rem. `border-radius` here is dead — the panel has no corners to round. */
+      .compare-grid.compact .compare-card { padding: 1rem 1.5rem; border-radius: 14px; }
       .compare-grid.compact .compare-card .vs-badge { font-size: .55rem; letter-spacing: .09em; padding: .24rem .6rem; margin-bottom: .55rem; }
       .compare-grid.compact .compare-card h3 { font-size: .95rem; margin-bottom: .6rem; }
       .compare-grid.compact .compare-steps { gap: .42rem; margin-bottom: .85rem; }
@@ -5793,14 +6091,24 @@ html.dark .hero-copy-card:hover {
       .compare-grid.compact .time-chip { font-size: .74rem; padding: .34rem .62rem; border-radius: 9px; gap: .3rem; }
     </style>
 
-    <!-- ⛔ The wrapper's band and margin-top are BACK TO THEIR ORIGINAL VALUES on purpose: the
-         owner asked to reduce only the space BETWEEN the two columns ("the column center
-         padding") and then, when the frame's band went with it, "not the outter padding undo
-         it now". Only .compare-grid.compact's `gap` is reduced — do not touch this line. -->
+    <!-- ⛔ 2026-10-10 — THE PAIR IS ONE FRAME NOW, AND THAT OVERRIDES TWO EARLIER CALLS.
+         The history first, because both of these were explicit: the owner once asked to
+         reduce only the space BETWEEN the two columns ("the column center padding") and
+         then, when the frame's band went with it, said "not the outter padding undo it
+         now"; and later protected this wrapper's own .6rem padding while the gap above it
+         was being tightened. Both were about the pair as TWO cards.
+         Then: *"Make the two comparison halves edge-to-edge inside their shared frame, no
+         inset gap, with one center divider."* — the pair is one panel with a split in it,
+         and an inset gap is the one thing that reading cannot survive. So `.compare-grid
+         .compact`'s `gap` and THIS wrapper's padding both go to 0, in the frame rule in
+         `#afmpFinalOverrides` (search "SPLIT BY ONE DIVIDER"). The `padding:.6rem` below is
+         left in the attribute: an inline style loses to the author `!important` there, the
+         same way the `#workflow` padding-top note at ~:5700 describes, so there is one
+         source of truth for it and it is the stylesheet, not this line. -->
     <!-- the space between this card and the "What is Auto Face MoCap Pro" card above it —
          owner, 2026-09-30: "redcue the padding in the center of what is auto face mocap pro and
-         the workflow cards main card". `margin-top` 2.4rem → 1rem; the card's OWN .6rem padding
-         is untouched (the owner explicitly protected that one earlier). -->
+         the workflow cards main card". `margin-top` 2.4rem → 1rem. That margin is untouched
+         by the 2026-10-10 frame change — the frame is flush on the inside, not pulled up. -->
     <div class="quickfog-outer" style="margin-top:1rem;padding:.6rem;">
       <div class="compare-grid compact" style="margin:0;">
         <!-- Old way -->
@@ -5982,7 +6290,55 @@ html.dark .hero-copy-card:hover {
       </div>
     </div>
 
-    <!-- Row 4: Register Character -->
+    <!-- Row 4 (new, 2026-10-11) — THE CHARACTER TYPE POPUP, inserted immediately above
+         Multi-Character Support on the owner's word.
+         ⛔⛔ WHAT THE COPY IS ALLOWED TO SAY, AND WHY IT IS NARROW. `video56.mp4` is HEVC
+         (`hvc1` sample entry in an `mp42` container, read out of the file's own box table),
+         and every browser on this machine refuses to demux it — headless AND headed Chrome
+         and Edge all return `DEMUXER_ERROR_NO_SUPPORTED_STREAMS` from `FFmpegDemuxer`, so
+         the clip could not be stepped through frame by frame the way every other row's copy
+         on this page was written.
+         ⛔ WHAT WAS ACTUALLY READ is the clip's own poster frame, `video56_poster.jpg`, which
+         shows the add-on's N-panel at step **"2. CHARACTER"**, top to bottom: a
+         `Preset: Select a preset` dropdown with a `Focus` button, a preview tile with a play
+         control, a field reading **`Character Type: Stylized`**, the **`Register Character`**
+         button, and then "3. FACIAL TUNING". So three things are VERIFIED — the popup's
+         PURPOSE (choose the type before registering), its POSITION in the workflow (between
+         the preset picker and the register button), and ONE value it displays ("Stylized").
+         ⛔ WHAT IS NOT VERIFIED, AND IS THEREFORE NOT CLAIMED ANYWHERE BELOW: the full list
+         of types the popup offers. The copy names "Stylized" only as the value this clip
+         shows, never as a member of an enumerated set, and no other type name appears. If
+         the popup's options are meant to be listed exhaustively, the clip has to be readable
+         first — that is a one-line addition once it is.
+         ⛔ `rev` — THE ALTERNATING CONVENTION. The row above ("Compare side by side") is
+         plain, so this one reverses and the zig-zag continues across the seam that matters.
+         ⚠ Multi-Character Support below is ALSO `rev`, so this insertion leaves exactly one
+         doubled pair (two clips on the left, back to back). The convention is preserved
+         everywhere else and no existing row was touched: making it strictly alternate from
+         here down means flipping `rev` on Multi-Character Support and the five rows after
+         it, which is seven one-word edits — say the word and it is done, but it was NOT done
+         unasked because it moves clips the owner did not ask to move. -->
+    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+      <div class="feature-row side-row reveal rev" style="padding:0;">
+        <div class="feature-text">
+          <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
+            <h3 class="feature-title">Character Type popup</h3>
+            <p class="feature-copy">
+              Choose the character type in the popup before registration, so the add-on can use the
+              appropriate setup for that character. It sits in the Character step between the preset
+              picker and the Register Character button, and the panel shows the type it is currently
+              set to — Stylized in this clip.
+            </p>
+          </div>
+        </div>
+        <div class="feature-media" role="img" aria-label="Character type popup preview" style="margin:0;">
+          <video muted loop playsinline data-autoplay src="https://mr3dpageclips.carrd.co/assets/videos/video56.mp4?v=923c06c5" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <span class="media-tag">Character Type</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 5: Register Character -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
       <div class="feature-row side-row reveal rev" style="padding:0;">
         <div class="feature-text">
@@ -6106,8 +6462,12 @@ html.dark .hero-copy-card:hover {
       </div>
     </div>
 
-    <!-- Row 12 -->
-    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+    <!-- 🗑 ROW HIDDEN (owner, 2026-10-11) — `feat-off` on the wrapper.
+         The clip it points at, `assets/videos/live-preview.mp4`, 404s: there is no
+         `assets/videos` directory in this project. Nothing is deleted — drop the class
+         or the `.feat-off` rule and this row comes straight back. See the `.feat-off`
+         block in `#afmpFinalOverrides`. -->
+    <div class="quickfog-outer feat-off" style="margin-bottom:1rem;padding:.6rem;">
       <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
@@ -6125,8 +6485,9 @@ html.dark .hero-copy-card:hover {
       </div>
     </div>
 
-    <!-- Row 12 -->
-    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+    <!-- 🗑 ROW HIDDEN (owner, 2026-10-11) — `feat-off` on the wrapper, same as the row
+         above. `assets/videos/export.mp4` 404s. Nothing is deleted. -->
+    <div class="quickfog-outer feat-off" style="margin-bottom:1rem;padding:.6rem;">
       <div class="feature-row side-row reveal rev" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
@@ -6144,8 +6505,13 @@ html.dark .hero-copy-card:hover {
       </div>
     </div>
 
-    <!-- Row 12 -->
-    <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
+    <!-- 🗑 ROW HIDDEN (owner, 2026-10-11) — `feat-off` on the wrapper, same as the two
+         rows above. `assets/videos/presets.mp4` 404s. Nothing is deleted.
+         ⛔ THIS IS THE LAST ROW IN `#workflow`, so hiding it and its two neighbours takes
+         the section's tail with it — that is the whole of the request, not a side effect:
+         the three rows that read as empty cards are exactly these three, and they are the
+         only three `feature-row`s on the page whose source is a local path. -->
+    <div class="quickfog-outer feat-off" style="margin-bottom:1rem;padding:.6rem;">
       <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
@@ -6503,41 +6869,130 @@ html.dark .hero-copy-card:hover {
     </div>
 
     <div class="pricing-grid">
-      <!-- Personal -->
+      <!-- ⛔⛔ SIX CARDS, TWO ROWS OF THREE (owner, 2026-10-10). Read in order the grid
+           lays out as —
+             row 1: Personal Individual · Commercial Individual · Commercial Team
+             row 2: Studio            · Bigger Studio       · Contact Us (Enterprise)
+           ⛔ THE ENTERPRISE CARD WAS MOVED, NOT REWRITTEN, to the end of this block.
+           The owner's "move existing one on a second column" is this: Commercial
+           already owns column 2, so the card that had to give up its place to make
+           room for Studio and Bigger Studio is the Contact Us one, and it lands in
+           row 2 column 3. Its label, heading, "Contact Us" price line, list and CTA
+           are untouched.
+           ⛔ THE THREE NEW CARDS CARRY NO CHECKOUT LINK, AND THAT IS DELIBERATE. No
+           purchase URL was supplied for any of them, so none was invented: every one
+           reuses the page's ONLY existing contact affordance, the Enterprise card's
+           `<span class="btn btn-ghost">` — a plain label with no `href`, which is what
+           this page has always used for the plans you cannot self-serve. Their CTAs
+           name the plan so a reader knows what they are asking about; none of them
+           implies a licence different from the one on its own card.
+           ⛔ "Seat (1)" IS "Individual" NOW, in both the headings and the matching
+           list rows of the Personal and Commercial cards. The PRICE ROLE is
+           untouched: the Personal card's `$` amount is still
+           `<span data-price-src="regular">129</span>`, the follower the offer band's
+           `$89` and the coupon chain read from (~:8090) — the seat wording was
+           display text and never carried that link. -->
+      <!-- Personal — one seat -->
       <div class="price-card featured reveal">
         <span class="pop-badge">Most popular</span>
         <span class="plan">Personal</span>
-        <h3>Seat (1)</h3>
+        <h3>👤 Individual</h3>
         <div class="price"><sup>$</sup><span data-price-src="regular">129</span></div>
         <ul class="plan-list">
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Auto Face MoCap Pro (FULL)</li>
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Seat (1)</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Individual</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Customer Support (12 Months)</li>
         </ul>
-        <span class="btn btn-primary">Get Personal</span>
+        <!-- ⛔ A REAL ANCHOR, OPENING IN A NEW TAB (owner, 2026-10-10). These CTAs were
+             `<span class="btn …">` labels; the owner supplied the five purchase URLs, so
+             they are links now. `target="_blank"` on ALL FIVE as asked, and
+             `rel="noopener noreferrer"` with it — `noopener` is what stops the opened
+             page reaching back through `window.opener`, `noreferrer` keeps the referrer
+             header off the request as well.
+             ⛔ THE `&` IN THE QUERY IS `&amp;` IN THE SOURCE BY NECESSITY, and that is
+             not a rewrite: an HTML parser resolves it back to a literal `&` in the DOM,
+             which is what the browser actually requests. `ref=473` and the `variant` id
+             both survive verbatim — verified by reading `href` back off the DOM.
+             ⛔ STYLING IS UNCHANGED: same `.btn.btn-primary`, so padding, radius,
+             weight, the `margin-top: auto` pin and the hover lift are the shared rules'.
+             The label IS the accessible name; no `aria-label` restates or replaces it. -->
+        <a class="btn btn-primary" href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473&amp;variant=23321" target="_blank" rel="noopener noreferrer">Get Personal</a>
       </div>
 
-      <!-- Commercial -->
+      <!-- Commercial — one seat, commercial licence -->
       <div class="price-card reveal">
         <span class="plan">Commercial</span>
-        <h3>Seat (1)</h3>
+        <h3>👤 Individual</h3>
         <div class="price"><sup>$</sup>169</div>
         <ul class="plan-list">
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Auto Face MoCap Pro (FULL)</li>
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Seat (1)</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Individual</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Customer Support (12 Months)</li>
         </ul>
-        <span class="btn btn-ghost">Get Commercial</span>
+        <a class="btn btn-ghost" href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473&amp;variant=23322" target="_blank" rel="noopener noreferrer">Get Commercial</a>
       </div>
 
-      <!-- Enterprise -->
+      <!-- Commercial Team — row 1, column 3 — tier accent: violet -->
+      <div class="price-card reveal tier-team">
+        <span class="plan">Commercial</span>
+        <h3>👥 Team</h3>
+        <div class="price"><sup>$</sup>599</div>
+        <ul class="plan-list">
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Full Addon For Commercial Projects For 5 Team Members</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Priority Support &amp; Custom Feature Request</li>
+        </ul>
+        <!-- ⛔ THE ICON IS `aria-hidden` AND THE LABEL CARRIES THE NAME. "Get Team" is
+             already the whole accessible name, so the glyph must not repeat it into the
+             reading order. Same 24-unit stroke idiom the hero's "Get Now" arrow uses,
+             at the same 16px. -->
+        <a class="btn btn-ghost tier-btn" href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473&amp;variant=23747" target="_blank" rel="noopener noreferrer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Get Team
+        </a>
+      </div>
+
+      <!-- Commercial Studio — row 2, column 1 — tier accent: teal -->
+      <div class="price-card reveal tier-studio">
+        <span class="plan">Commercial</span>
+        <h3>🏘️ Studio</h3>
+        <div class="price"><sup>$</sup>999</div>
+        <ul class="plan-list">
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Full Addon For Commercial Projects</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>12 Seats</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Priority Support &amp; Custom Feature Request</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>For Studio</li>
+        </ul>
+        <a class="btn btn-ghost tier-btn" href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473&amp;variant=23748" target="_blank" rel="noopener noreferrer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+          Get Studio
+        </a>
+      </div>
+
+      <!-- Commercial Bigger Studio — row 2, column 2 — tier accent: amber -->
+      <div class="price-card reveal tier-big">
+        <span class="plan">Commercial</span>
+        <h3>🏢 Bigger Studio</h3>
+        <div class="price"><sup>$</sup>1,699</div>
+        <ul class="plan-list">
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Full Addon For Commercial Projects</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>24 Seats</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Priority Support &amp; Custom Feature Request</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>For Studio</li>
+        </ul>
+        <a class="btn btn-ghost tier-btn" href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473&amp;variant=23749" target="_blank" rel="noopener noreferrer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+          Get Bigger Studio
+        </a>
+      </div>
+
+      <!-- Enterprise / Contact Us — moved here from row 1, column 3 -->
       <div class="price-card reveal">
         <span class="plan">Enterprise</span>
-        <h3>Seats (Above 5)</h3>
+        <h3>Seats (Above 24)</h3>
         <div class="price small">Contact Us</div>
         <ul class="plan-list">
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Auto Face MoCap Pro (FULL)</li>
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Seats (Above 5)</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Seats (Above 24)</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Can Request Custom Features</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Customer Support (12 Months)</li>
         </ul>
@@ -6591,16 +7046,18 @@ html.dark .hero-copy-card:hover {
 
       <div class="ob-mid">
         <div class="coupon-wrap">
-          <button class="coupon-btn" id="couponBtnPricing" type="button"
-                  data-href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473"
-                  aria-label="Copy the discount coupon code and open the store">
+          <a class="coupon-btn" id="couponBtnPricing"
+             href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473"
+             data-href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473"
+             target="_top" rel="noopener"
+             aria-label="Copy the discount coupon code and open the store">
             <span class="coupon-label">Coupon</span>
             <span class="coupon-code">afmp</span>
             <span class="coupon-copy">Copy</span>
-          </button>
+          </a>
           <p class="coupon-hint">Click to copy the code.</p>
         </div>
-        <div class="so-valid" data-text-src="offer-expiry">Valid until December 31st, 2026</div>
+        <div class="so-valid" data-text-src="offer-expiry">Valid until October 18th 2026</div>
       </div>
 
       <div class="ob-media">
@@ -6754,14 +7211,16 @@ html.dark .hero-copy-card:hover {
     }, { passive: true });
   }
 
-  /* ---------- 1. Theme toggle + localStorage ---------- */
-  var root = document.documentElement;
-  var themeBtn = document.getElementById('themeToggle');
-
-  themeBtn.addEventListener('click', function () {
-    var isDark = root.classList.toggle('dark');
-    localStorage.setItem('afmp-theme', isDark ? 'dark' : 'light');
-  });
+  /* ---------- 1. Theme toggle + localStorage — 🗑 DELETED ----------
+     Owner, 2026-10-11: *"remove light theme and topbar theme switch … remove theme-switch
+     JS/event bindings"*. The block that stood here read
+     `document.getElementById('themeToggle')` and called `addEventListener` on the result
+     with no null guard, and it was the ONLY such unguarded dereference in this script —
+     with the button gone it would have thrown on the first line and taken every handler
+     below it (the sticky-header shadow, the reveal observer, the accordions) down with it.
+     ⛔ Removing it therefore also removes that latent crash; nothing else in this file
+     reads `afmp-theme`, and `document.documentElement` is no longer aliased here.
+     ⛔ The numbering below is left as it was so the remaining comments keep their names. */
 
   /* ---------- 2. Sticky header shadow ---------- */
   var header = document.getElementById('header');
@@ -7360,23 +7819,87 @@ html.dark .hero-copy-card:hover {
            timer here either — the browser advances the Web Animation itself, and this
            script only writes to it when the video's own time moves under it. */
 
-        // loading spinner — same idea, one per clip
-        var spin = document.createElement('div');
-        spin.className = 'clip-load';
-        spin.setAttribute('aria-hidden', 'true');
-        host.appendChild(spin);
-        var setSpin = function (on) { spin.classList.toggle('on', !!on); };
+        /* ---- the loading mark — same idea, one per clip ----
+           ⛔ IT IS A `progressbar` NOW, WHERE THE RING WAS `aria-hidden`. The wordmark
+           and the numeral are the VISIBLE half; the role, the label and `aria-valuenow` /
+           `aria-valuetext` are the accessible half, so the same number a sighted
+           visitor reads off the clip is the one a screen reader is given. It is
+           deliberately NOT a live region: this page builds one of these per clip
+           (fourteen at the last count) and a polite region per clip would
+           interrupt whatever is being read with fourteen running totals.
+           ⛔ THE LABEL CARRIES THE CLIP'S OWN NAME when the clip has one — the
+           page's clips already set `aria-label`, so the mark inherits it rather
+           than every clip announcing the same word "Loading". */
+        var load = document.createElement('div');
+        load.className = 'clip-load';
+        load.setAttribute('role', 'progressbar');
+        load.setAttribute('aria-valuemin', '0');
+        load.setAttribute('aria-valuemax', '100');
+        load.setAttribute('aria-valuenow', '0');
+        var vLabel = v.getAttribute('aria-label');
+        load.setAttribute('aria-label', vLabel ? 'Loading ' + vLabel : 'Loading clip');
+        /* ⛔ THE MOTIF'S TWO PATHS CARRY `pathLength="100"`, which is what lets the
+           stylesheet dash them with 100/100 instead of two hand-measured lengths —
+           see `.clip-load-motif` in the CSS. Both are `aria-hidden` by being inside
+           the aria-hidden wordmark span; the numeral is announced through the
+           progressbar's own value instead. */
+        load.innerHTML =
+          '<span class="clip-load-word" aria-hidden="true">Loading' +
+            '<svg class="clip-load-motif" viewBox="0 0 40 40" focusable="false">' +
+              '<path pathLength="100" d="M30 4 L15 16 L22 36 L37 22 Z"></path>' +
+              '<path pathLength="100" d="M8 3 L34 37"></path>' +
+            '</svg>' +
+          '</span>' +
+          '<span class="clip-load-pct" aria-hidden="true">0%</span>';
+        host.appendChild(load);
+        var lPct = load.querySelector('.clip-load-pct');
+        var lQ = -1;
+        var setLoad = function (on) { load.classList.toggle('on', !!on); };
+        /* ⛔ THE NUMBER IS READ OFF THE ELEMENT, NEVER TICKED BY A TIMER. It is the
+           share of the clip the browser has actually buffered — `buffered.end()` of
+           the last range over the clip's own duration — so it can only move when
+           bytes arrive. Two honest limits, both deliberate:
+             · it is held below 100 while the element still cannot play through
+               (`readyState < 4`), because "100%" over a clip that stalls is a lie;
+             · before the duration is known (metadata not in yet, or a live source)
+               there is no fraction to show, so the element's `readyState` supplies
+               the milestone instead of a fabricated number.
+           Quantised to 1% and skipped when unchanged, the same way the bar is. */
+        var readLoad = function () {
+          var d = v.duration, end = 0;
+          try { if (v.buffered && v.buffered.length) end = v.buffered.end(v.buffered.length - 1); } catch (e) {}
+          if (d > 0 && isFinite(d)) {
+            var q = Math.round((end / d) * 100);
+            if (v.readyState < 4) q = Math.min(q, 99);
+            return Math.max(0, Math.min(100, q));
+          }
+          return [0, 4, 24, 62, 88, 100][v.readyState] || 0;
+        };
+        var drawLoad = function () {
+          var q = readLoad();
+          if (q === lQ) return;
+          lQ = q;
+          lPct.textContent = q + '%';
+          load.setAttribute('aria-valuenow', String(q));
+          load.setAttribute('aria-valuetext', q + '% loaded');
+        };
         ['loadstart', 'waiting', 'stalled'].forEach(function (ev) {
-          v.addEventListener(ev, function () { setSpin(true); barSync(entry); });
+          v.addEventListener(ev, function () { setLoad(true); drawLoad(); barSync(entry); });
         });
         // ⛔ 'error' belongs in this list, not just as an afterthought: without it a
         // clip that can never load (missing file, or HEVC with no hardware decode)
-        // leaves a spinner turning for ever over a frozen frame.
+        // leaves the mark turning for ever over a frozen frame.
         ['canplay', 'playing', 'canplaythrough', 'loadeddata', 'error', 'emptied']
           .forEach(function (ev) {
-            v.addEventListener(ev, function () { setSpin(false); });
+            v.addEventListener(ev, function () { setLoad(false); drawLoad(); });
           });
-        setSpin(v.readyState < 3 && !!v.getAttribute('src'));
+        /* ⛔ THE EVENTS THAT MEAN "BYTES ARRIVED". `progress` is the one that matters
+           and it is not in either list above: it must move the number WITHOUT
+           showing or hiding the mark. */
+        ['progress', 'loadedmetadata', 'durationchange', 'suspend', 'canplaythrough']
+          .forEach(function (ev) { v.addEventListener(ev, drawLoad); });
+        setLoad(v.readyState < 3 && !!v.getAttribute('src'));
+        drawLoad();
 
         /* ---- click / drag the bar to skim the clip ----
            ⛔ stopPropagation on every one of these: the hero box toggles play/pause
@@ -7849,28 +8372,78 @@ html.dark .hero-copy-card:hover {
 <script>
 /* Coupon codes — robust copy that works even in sandboxed panels */
 (function () {
+  /* ⛔⛔ ONE CONTROL, ONE CLICK — NO SECOND BUTTON (owner, 2026-10-11: *"I want it in
+     copy button no extra buttons"*). The `Open store` anchor this replaced is gone, and
+     so is its result block; the control that already exists does the whole job.
+     ⛔ WHAT WAS WRONG BEFORE THAT, AND STILL DRIVES THE DESIGN: every path ended in
+     `window.open(target, '_blank')` — a NEW TAB, which inside the Superhive iframe is
+     not the tab the buyer is looking at, and which no page can turn into a top-level
+     same-tab navigation.
+     ⛔ SO THE CONTROL IS AN `<a target="_top" href=…>` NOW, NOT A `<button>`. That is
+     the whole trick, and it is why there is no second control:
+       · `target="_top"` navigates the TOPMOST browsing context — inside an iframe the
+         whole tab goes to the store instead of just the frame, which is what "same
+         browser tab" means when embedded;
+       · the browser performs that navigation from a REAL click, so it carries fresh
+         transient activation. Nothing here has to ask `window.top` for anything, and
+         no `postMessage` protocol is invented.
+     ⛔ THE ORDER IS CHOSEN SO THE COMMON CASE IS ONE CLICK WITH NO DELAY.
+       `document.execCommand('copy')` is SYNCHRONOUS, so it is tried FIRST — inside the
+       live gesture. When it succeeds, the handler simply RETURNS WITHOUT CALLING
+       `preventDefault()`, the anchor's own default runs, and the same click both copies
+       and navigates. That is the fast path and it needs no activation bookkeeping.
+       Only when the synchronous copy is refused does the handler `preventDefault()` and
+       fall through to the async Clipboard API — because navigating first and copying
+       later would be worse than useless.
+     ⛔ AND THE ASYNC PATH DOES NOT PRETEND. Once the clipboard promise settles, the
+       activation from the click is spent, so an automatic `window.top.location` write
+       is either refused or lands too late. It is attempted once, guarded, as a
+       best-effort — and when it does not take, the control is ARMED: the next click on
+       the SAME button skips the copy and lets the anchor navigate for real. No second
+       control, no new window, and no claim that a delayed navigation is reliable.
+     ⛔ NOTHING SAYS "COPIED" THAT WAS NOT COPIED. `ok` comes from the copy result and
+       from nowhere else; the manual path names the code and asks for Ctrl+C. */
   function copyCoupon(text, btn, feedbackEl, openBottom) {
-    // Where the buyer lands after a successful copy. The button names its own
-    // destination with data-href; with none, the old fallback stays, though note
-    // 'index.html#bottom' is an anchor that does not exist on this page.
-    var target = (btn && btn.getAttribute('data-href')) || 'index.html#bottom';
-    function done(ok) {
+    // The control names its own destination with data-href — the contract the alpha
+    // caller uses too. Its `href` is set from the same value at wiring time, so the
+    // anchor is a real link; there is no invented fallback destination.
+    var href = btn ? (btn.getAttribute('data-href') || btn.getAttribute('href')) : null;
+    var wrap = btn ? (btn.closest('.coupon-wrap') || btn.parentNode) : null;
+    /* ⛔ THE STATUS GOES IN THE HINT THAT IS ALREADY THERE. It is the line that already
+       reads "Click to copy the code.", directly under the control — so the feedback is
+       part of the coupon the buyer is already looking at, and no element is added. */
+    var hint = wrap ? wrap.querySelector('.coupon-hint') : null;
+    var hintDefault = hint ? hint.textContent : '';
+    if (hint) { hint.setAttribute('role', 'status'); hint.setAttribute('aria-live', 'polite'); }
+
+    /* ⛔ `ok` IS THE ONLY THING THAT MAY SAY "COPIED". It is set from the copy result
+       and from nothing else, so the manual path can never claim a copy that did not
+       happen — it names the code and tells the buyer to select it. */
+    /* ⛔ THE WORDING IS WRITTEN FOR THE CASE WHERE IT IS ACTUALLY READ. On the
+       synchronous path the navigation rides the same click, so a successful one
+       unloads the page and this line is never seen — it is only visible when the move
+       did NOT happen, which is why it says what to do if the tab did not move instead
+       of promising that it did. `navigable` records whether a navigation was actually
+       launched, never whether it will be allowed: a sandbox without
+       `allow-top-navigation-by-user-activation` refuses it silently and no page-side
+       event reports that. */
+    function report(ok, navigable) {
+      if (!hint) return;
+      hint.classList.add('is-status');
+      hint.textContent = ok
+        ? (navigable ? 'Copied “' + text + '” — taking this tab to the store. If nothing moves, click once more.'
+                     : 'Copied “' + text + '”. Click once more to open the store in this tab.')
+        : 'Copy was blocked — select “' + text + '” above and press Ctrl+C. Click once more to open the store in this tab.';
+    }
+    function done(ok, navigable) {
       if (feedbackEl) {
         feedbackEl.textContent = ok ? 'Copied!' : 'Press Ctrl+C';
         setTimeout(function () { feedbackEl.textContent = 'Copy'; }, 2500);
       }
+      report(ok, navigable);
     }
-    // 1) Clipboard API
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(function () {
-        done(true);
-        if (openBottom && target) window.open(target, '_blank');
-      }).catch(function () { execFallback(); });
-      return;
-    }
-    execFallback();
-
-    function execFallback() {
+    /* The synchronous attempt. Returns true only when the browser confirms it copied. */
+    function syncCopy() {
       var ta = document.createElement('textarea');
       ta.value = text;
       ta.setAttribute('readonly', '');
@@ -7881,30 +8454,46 @@ html.dark .hero-copy-card:hover {
       var worked = false;
       try { worked = document.execCommand('copy'); } catch (e) {}
       document.body.removeChild(ta);
-      if (worked) {
-        done(true);
-        if (openBottom && target) window.open(target, '_blank');
-      } else {
-        manualReveal();
-      }
+      return worked;
     }
-
-    // 2) Manual fallback: reveal a selectable field so Ctrl+C works in the sandbox
-    function manualReveal() {
-      var wrap = btn ? btn.parentNode : document.body;
+    /* Best-effort top navigation for the async path. It may throw (cross-origin
+       ancestor) or be refused (no `allow-top-navigation-by-user-activation`); the
+       caller arms the control when it does not take. */
+    function tryTop() {
+      try {
+        var url = href || btn.href;
+        if (window.top && window.top !== window.self) { window.top.location.href = url; }
+        else { window.location.href = url; }
+        return true;
+      } catch (e) { return false; }
+    }
+    /* Manual fallback: a selectable field so Ctrl+C works where the clipboard is
+       walled off. It is NOT a second control — no button, no link — just the code in
+       a field the buyer can copy by hand, and the status says exactly that. */
+    function manualReveal(navigable) {
+      var host = wrap || document.body;
       var inp = document.createElement('input');
       inp.value = text;
       inp.setAttribute('readonly', '');
+      inp.setAttribute('aria-label', 'Coupon code ' + text + ' — select and copy');
       inp.style.cssText = 'margin:.8rem auto 0;display:block;font:inherit;text-align:center;padding:.6rem 1rem;border:1px dashed var(--border-strong);border-radius:10px;background:var(--card-bg);color:var(--color-tertiary);font-family:monospace;font-weight:800;letter-spacing:.1em;width:min(260px,82%);';
-      wrap.appendChild(inp);
+      host.appendChild(inp);
       inp.focus();
       inp.select();
       if (feedbackEl) feedbackEl.textContent = 'Selected, press Ctrl+C';
+      /* ⛔ THE STATUS NEVER READS AS SUCCESS HERE. Nothing was copied, so it names the
+         code and asks for the manual step. */
+      report(false, navigable);
       setTimeout(function () {
         if (inp.parentNode) inp.parentNode.removeChild(inp);
         if (feedbackEl) feedbackEl.textContent = 'Copy';
       }, 8000);
     }
+
+    return {
+      text: text, href: href, syncCopy: syncCopy, done: done, tryTop: tryTop,
+      manual: manualReveal, hintDefault: hintDefault
+    };
   }
 
   /* ---------- 11. Linked prices — ONE place to edit each number ----------
@@ -7945,20 +8534,57 @@ html.dark .hero-copy-card:hover {
     }
   })();
 
-  /* Every coupon button on the page — the offer card and the top band each have
-     one, so they are wired by CLASS. (Wiring the old #couponBtn by id would have
-     left the second button dead.) Each button carries its own code and href. */
+  /* ⛔⛔ EVERY COUPON CONTROL ON THE PAGE — the offer card and the top band each have
+     one, wired by CLASS (wiring the old #couponBtn by id would have left the second
+     dead). Each carries its own code and its own destination.
+     ⛔ THE ORDER INSIDE THIS HANDLER IS THE WHOLE FLOW, so it is spelled out:
+       1. reveal the code, on every path, before anything can navigate away;
+       2. SYNCHRONOUS copy (`execCommand`) while the click's activation is still live;
+       3. if it worked — RETURN WITHOUT `preventDefault()`. The control is an
+          `<a target="_top">`, so its own default runs and this SAME click copies and
+          navigates the top tab. No timers, no activation bookkeeping, one click.
+       4. only if the synchronous copy was refused: `preventDefault()`, try the async
+          Clipboard API, then attempt one guarded top-level navigation. When that does
+          not take (spent activation, cross-origin ancestor, sandbox without
+          `allow-top-navigation-by-user-activation`) the control is ARMED, and the next
+          click on this same control skips the copy and lets the anchor navigate.
+     ⛔ THE `armed` CHECK IS FIRST, so the retry click cannot re-copy or re-preventDefault
+     — it behaves as the link it already is. That is what keeps the fallback on the SAME
+     control instead of growing a second button. */
   var couponBtns = document.querySelectorAll('.coupon-btn');
   for (var cbi = 0; cbi < couponBtns.length; cbi++) {
     (function (btn) {
       var codeEl = btn.querySelector('.coupon-code');
       if (!codeEl) return;
       var code = codeEl.textContent.trim();
-      btn.addEventListener('click', function () {
-        // Reveal the code the moment it is asked for — it starts hidden, and this
-        // fires on every path (clipboard, execCommand fallback, manual select).
+      /* the anchor needs a real `href`; `data-href` stays the declared source */
+      var dest = btn.getAttribute('data-href');
+      if (dest) { btn.setAttribute('href', dest); btn.setAttribute('target', '_top'); btn.setAttribute('rel', 'noopener'); }
+      var armed = false;
+      btn.addEventListener('click', function (e) {
         btn.classList.add('copied');
-        copyCoupon(code, btn, btn.querySelector('.coupon-copy'), true);
+        if (armed) return;                       // retry click: let the anchor navigate
+        var job = copyCoupon(code, btn, btn.querySelector('.coupon-copy'), true);
+        if (job.syncCopy()) {                    // copied inside the gesture
+          job.done(true, true);                  // no preventDefault: same click navigates
+          armed = true;
+          return;
+        }
+        e.preventDefault();                      // the copy must finish first
+        var finish = function (ok) {
+          var nav = false;
+          if (ok) nav = job.tryTop();
+          job.done(ok, nav);
+          if (!nav) job.manual(ok);              // same control, next click navigates
+          armed = true;
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(code).then(function () { finish(true); },
+                                                   function () { job.manual(false); armed = true; });
+        } else {
+          job.manual(false);
+          armed = true;
+        }
       });
     })(couponBtns[cbi]);
   }
@@ -9900,18 +10526,45 @@ header.site-header > .container { width: 100%; padding-inline: clamp(.25rem, 1.5
 .sub-divider.seam-open::before {animation:seamOut 5s ease-in-out infinite,seamOpen .9s cubic-bezier(.22,.61,.36,1) both;}
 .seam-label {color:#d6efff!important;background:rgba(0,0,0,.3)!important;border:1px solid rgba(89,180,222,.45);box-shadow:0 0 0 3px rgba(38,98,147,.08)!important;text-shadow:none!important;}
 .seam-label:hover {color:#f1fbff!important;border-color:rgba(111,208,243,.65);}
-html:not(.dark) .seam-label {color:#123f65!important;background:#eaf5fc!important;border-color:#6caccf;}
-html:not(.dark) .seam-label:hover {color:#082c49!important;}
 @media(prefers-reduced-motion:reduce){.section::before,.gallery-section::before,.catalog-section::before,.site-footer::before,.sub-divider::before,.seam-open::before,.sub-divider.seam-open::before{animation:none;background-size:100% 100%,100% 100%;}}
 
 /* Divider labels use one attached border; shared card rings must not duplicate it. */
 .seam-label,.sub-divider .seam-label {position:absolute!important;top:0!important;left:50%;--seam-tx:translate(-50%,-50%);transform:var(--seam-tx)!important;border-radius:999px;background:#071421!important;outline:none!important;outline-offset:0!important;box-shadow:none!important;animation:none!important;z-index:3;}
 .seam-label > .fx-ring {display:none!important;}
 .seam-label:hover,.seam-label:focus,.seam-label:focus-visible {transform:var(--seam-tx)!important;outline:none!important;outline-offset:0!important;box-shadow:none!important;}
-html:not(.dark) .seam-label {background:#eaf5fc!important;}
 
-.compare-grid.compact .compare-steps li {font-size:clamp(1rem,1.25vw,1.125rem);line-height:1.5;align-items:flex-start;}
+.compare-grid.compact .compare-steps li {font-size:clamp(1.05rem,1.66vw,1.33rem);line-height:1.5;align-items:flex-start;}
 .compare-grid.compact .compare-steps .step-num {flex-shrink:0;}
+
+/* ============================================================================
+   THE COMPARE PAIR'S TYPE, UP ~18% (owner, 2026-10-10)
+   *"Increase the heading/list typography noticeably (~15-20% desktop) ... and keep
+   labels/timing chips balanced."*
+
+   ⛔ EVERY NUMBER HERE IS THE OLD ONE × 1.18, MEASURED RATHER THAN GUESSED. Read
+   back at a 1440px viewport before this block existed: h3 15.2px, list item 18px,
+   `.step-num` 17x17 at 8.96px, `.vs-badge` 8.8px, `.time-chip` 11.84px, list gap
+   6.72px. After: 17.9 / 21.3 / 20x20 at 10.7 / 10.4 / 14 / 8. The two chips and the
+   badge are scaled WITH the text on purpose — leaving them at their old size was the
+   alternative and it reads as the label shrinking, not the copy growing.
+   ⛔ THE LIST KEEPS ITS `clamp`, THE REST ARE CLAMPED TOO, AND THE MOBILE END IS
+   DELIBERATELY BARELY MOVED. This is a "desktop +18%" request: the middle `vw` term
+   is what grows, and the `min` stays within ~5% of the old floor so a 390px screen
+   does not get 21px copy. At 390px the list item lands at 16.8px against 16px
+   before, and the longest line ("Multiple characters and captures in one file")
+   wraps to two lines there — wrapping, not overflow; measured, the panel does not
+   scroll sideways at any width.
+   ⛔ THE HEADING STAYS SMALLER THAN ITS LIST, and that is inherited, not chosen: the
+   compact scale has always set h3 below the list (15.2 against 18). Both move by the
+   same 1.18, so the relationship the owner has been looking at is unchanged.
+   ⛔ `.step-num` IS A BOX, NOT JUST TYPE: its 17px square and 6px radius are scaled
+   with the font or the digit would sit in a box too small for it. `margin-top: 0`
+   still comes from the compact block — do not re-add one here. */
+.compare-grid.compact .compare-card h3 { font-size: clamp(.95rem, 1.4vw, 1.12rem); }
+.compare-grid.compact .compare-steps { gap: .5rem; }
+.compare-grid.compact .step-num { width: 20px; height: 20px; border-radius: 7px; font-size: .66rem; }
+.compare-grid.compact .compare-card .vs-badge { font-size: .65rem; padding: .28rem .72rem; }
+.compare-grid.compact .time-chip { font-size: .875rem; padding: .4rem .74rem; }
 
 #workflow .afmp-intro-card p {font-size:clamp(1rem,1.25vw,1.125rem);line-height:1.75;margin-bottom:1rem;}
 #workflow .afmp-intro-card p:last-child {margin-bottom:0;}
@@ -9922,7 +10575,6 @@ html:not(.dark) .seam-label {background:#eaf5fc!important;}
 header.site-header .brand-stroke-header {white-space:nowrap;}
 header.site-header .brand-stroke-header .brand-title-text {font-size:inherit;font-weight:800;line-height:1;letter-spacing:inherit;filter:none;color:#f2f7fd;}
 header.site-header .brand-stroke-header .brand-title-grad {background-image:var(--brand-grad);-webkit-text-fill-color:transparent;background-clip:text;-webkit-background-clip:text;}
-html:not(.dark) header.site-header .brand-stroke-header .brand-title-text {color:#0b1a2b;}
 
 .quick-nav a[href="#workflow"] {--nav-accent:#62b9ff;}
 .quick-nav a[href="#features"] {--nav-accent:#54d5df;}
@@ -9935,8 +10587,6 @@ html:not(.dark) header.site-header .brand-stroke-header .brand-title-text {color
 .quick-nav a:hover,.quick-nav a.active,.quick-nav a[aria-current] {border-color:var(--nav-accent)!important;background:color-mix(in srgb,var(--nav-accent) 20%,#071421)!important;color:#f5faff!important;}
 .quick-nav a:focus-visible {outline:2px solid var(--nav-accent)!important;outline-offset:3px;animation:none;}
 .quick-nav a > .fx-ring {--ring:var(--nav-accent);background:var(--nav-accent)!important;}
-html:not(.dark) .quick-nav a {color:color-mix(in srgb,var(--nav-accent) 42%,#142636)!important;background:color-mix(in srgb,var(--nav-accent) 13%,#fff)!important;}
-html:not(.dark) .quick-nav a:hover,html:not(.dark) .quick-nav a.active {color:#102638!important;background:color-mix(in srgb,var(--nav-accent) 30%,#fff)!important;}
 
 .hero-media .hm-nav,.hero-media .hm-nav:hover {border-color:transparent!important;outline:none!important;box-shadow:none!important;}
 .hero-media .hm-nav::before,.hero-media .hm-nav::after,.hero-media .hm-nav > .fx-ring {display:none!important;}
@@ -10105,15 +10755,12 @@ content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z
    image ends and writes these two, so the fade sits in the empty band instead.
    ⛔ Both fall back to the text-only anchor, so a card with no image is unchanged. */
 .card-fx > .fx-dots {
-  /* ⛔⛔ ONE ALPHA, THREE PLACES — CHANGE ALL OF THEM TOGETHER.
-     Owner: *"make the patern brighter"*. The dot colour lives here for the dark theme, in
-     the `html:not(.dark)` override just below for the light one, and again as a string in
-     `#fxParticles` (`colourFor()`) where the hover field draws the SAME dots to canvas.
-     ⛔ Move one and not the others and the pattern changes brightness the moment the pointer
-     arrives — the cross-fade is only invisible while both layers are the same colour.
-     ⛔ `.38` -> `.58` dark and `.30` -> `.48` light, both raised by the same proportion rather
-     than set to one shared value: white and the dark navy sit on opposite sides of their
-     backgrounds, so equalising them would make one of the two themes lighter than asked for.
+  /* ⛔⛔ ONE ALPHA, ONE PLACE. The dot colour lives in this rule and nowhere else: the
+     `html:not(.dark)` light-theme override that used to sit just below it went with the
+     light theme, and the `#fxParticles` canvas that drew the SAME dots is deleted.
+     Owner: *"make the patern brighter"*.
+     ⛔ `.38` -> `.58` — raised rather than set to an absolute, so the dots keep whatever
+     headroom they had over the card surface behind them.
      ⛔ This is a SHARED layer — the Creating Shapekeys cards and the top bar carry the same
      `.fx-dots`, so all of them brighten together. That is the "linking" the owner asked for
      (*"use linking bcz if i ask you to update later it will update on the entire page"*). If
@@ -10129,10 +10776,6 @@ content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z
   -webkit-mask-composite: source-in;
           mask-composite: intersect;
   animation: dotWave 3.6s linear infinite;
-}
-html:not(.dark) .card-fx > .fx-dots {
-  /* ⛔ the light theme's brand azure — see the note on `.card-fx > .fx-dots` above */
-  background-image: radial-gradient(circle, rgba(11, 79, 143, .85) 1.1px, transparent 1.5px);
 }
 
 /* ------------------------------------------------------------ the cursor pool
@@ -10275,11 +10918,183 @@ html.dark .card-fx > .fx-pool {
 .hero-cards > .hero-side:first-child {margin-left:calc(-1 * var(--portrait-edge));border-radius:0 18px 18px 0;--portrait-fade:linear-gradient(90deg,transparent,#000 48px);}
 .hero-cards > .hero-side:last-child {border-radius:18px 0 0 18px;--portrait-fade:linear-gradient(270deg,transparent,#000 48px);}
 .hero-cards > .hero-side video {transform:scale(1.06);-webkit-mask-image:var(--portrait-fade);mask-image:var(--portrait-fade);}
-.hero-cards > .hero-side {-webkit-mask-image:var(--portrait-fade);mask-image:var(--portrait-fade);}
+/* ⛔ THE PORTRAIT FADE MOVED FROM THE CARD TO THE CARD'S VIDEO (owner, 2026-10-10).
+   It has to: a mask applies to the element AND ITS WHOLE SUBTREE, so while it sat on
+   `.hero-side` it would have faded the perimeter outline below in the outer 48px and
+   the sweep would have died as it reached the left clip's outer edge — the exact trap
+   "ensure edge masks do not accidentally hide the whole effect" is warning about.
+   ⛔ THIS IS NOT A VISUAL CHANGE, AND THAT IS MEASURED RATHER THAN ASSUMED: the card
+   is `aspect-ratio: 1 / 5` with `padding: 0`, and its video is `1 / 5` with
+   `object-fit: contain`, so the video's box IS the card's box — read back at 1440px,
+   both `398 x 1989`. Masking the video therefore fades the footage over exactly the
+   same pixels the card used to, and nothing else on the card is masked any more.
+   ⛔ The mask therefore lands on the VIDEO's own rule further down ("Preserve the
+   character strips' original proportions") rather than here, because that later rule
+   ends in `mask-image: none` and would otherwise cancel it. One declaration, one
+   place. */
+.hero-cards > .hero-side {-webkit-mask-image:none;mask-image:none;}
 
-/* Preserve the character strips' original three-high by one-wide proportions. */
-.hero-cards > .hero-side {aspect-ratio:1 / 3;align-self:center;height:auto;}
-.hero-cards > .hero-side video {width:100%;height:100%;aspect-ratio:1 / 3;object-fit:contain;transform:none;-webkit-mask-image:none;mask-image:none;}
+/* Preserve the character strips' original proportions — restated as FIVE-high by
+   one-wide (owner, 2026-10-10: "update both left and right side clips from 1:3 to
+   1:5"). Both numbers move together or the pair desynchronises: the CARD's ratio is
+   what sets the row's height (measured 397.86 x 1193.6 = exactly 1:3 before this,
+   against a `.hero-center` whose own content is 799.2px), and the VIDEO's ratio is
+   what `object-fit:contain` letterboxes into it. Change one and the strip either
+   crops or grows bars. */
+.hero-cards > .hero-side {aspect-ratio:1 / 5;align-self:center;height:auto;}
+/* ⛔ the fade lives HERE, on the video, not on the card — see "THE PORTRAIT FADE
+   MOVED FROM THE CARD TO THE CARD'S VIDEO" above. `transform: none` and the mask
+   are both deliberate: the video fills the card exactly, so this is the same pixels
+   as masking the card, minus the masking of everything else the card draws.
+   ⛔⛔ ALL FOUR EDGES NOW, ON THE PAGE'S EXISTING STACK (owner, 2026-10-10: *"as well
+   as add the edge fading effect too"*). `--portrait-fade` alone only ramps the strip's
+   OUTER side; the other three edges ended on a hard cut. The fix is not a new effect
+   — it is the three-layer stack `#workflow .feature-row.side-row .feature-media >
+   video` (~:10257) already runs, the one the other faded showcase clips wear:
+     · `--portrait-fade` FIRST, at its own 48px and its own direction, so the outward
+       fade stays the STRONGER one it already was on each side;
+     · a 16px horizontal ramp and a 16px vertical ramp on top of it;
+     · `source-in, source-in` / `intersect, intersect` across the three, which is that
+       rule's composite pair verbatim.
+   ⛔ `--portrait-fade` IS UNCHANGED and still comes from the card (`:first-child` is
+   `90deg`, `:last-child` is `270deg`), so the mirrored outer fade direction is
+   untouched; this only intersects two extra layers under it.
+   ⛔ THE MASKS STAY ON THE VIDEO. The card's own `mask-image` is `none` (see the
+   block above), which is what keeps the topbar-style `fxOrbit` ring on
+   `.hero-side::before` fully visible — masking the card would have swallowed it in
+   the outer band. Nothing else is masked: the ring, the 1:5 box and the card's own
+   radius are all outside this rule. */
+.hero-cards > .hero-side video {
+  width:100%;height:100%;aspect-ratio:1 / 5;object-fit:contain;transform:none;
+  -webkit-mask-image:var(--portrait-fade),linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent),linear-gradient(180deg,transparent,#000 16px,#000 calc(100% - 16px),transparent);
+          mask-image:var(--portrait-fade),linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent),linear-gradient(180deg,transparent,#000 16px,#000 calc(100% - 16px),transparent);
+  -webkit-mask-composite:source-in,source-in;
+          mask-composite:intersect,intersect;
+}
+
+/* ============================================================================
+   THE TWO RAIL CLIPS WEAR THE TOPBAR'S OWN TRAVELLING OUTLINE (owner, 2026-10-10)
+   *"it does NOT match the exact topbar outline animation ... Replace the recent
+   sideSweepIn/sideSweepOut implementation with the exact same topbar animation
+   primitive and appearance."*
+
+   ⛔⛔ THIS IS `.card-fx > .fx-ring` (~:4148) — THE TOPBAR'S RING — DECLARATION FOR
+   DECLARATION, AND THERE IS NO NEW EFFECT LEFT IN THIS FILE. The two `sideSweep*`
+   keyframes and the 200%-wide `background-position` band they drove are GONE. What
+   the topbar actually runs is a CONIC ARC ORBITING A 1px RING:
+     · one registered custom property, `--fxA`, declared as an `<angle>` by the
+       `@property` rule in the `#cardFx` block — that registration is the whole
+       reason the angle can tween at all;
+     · one keyframe set, `@keyframes fxOrbit { to { --fxA: 360deg } }`, which is
+       reused here UNCHANGED — not copied, not re-declared;
+     · the same `conic-gradient(from var(--fxA), ...)` with the same FIVE stops at
+       the same angles (transparent to 298deg, `#7dd3ff` at 62% at 318, `#0096ff`
+       at 338, back through the 62% stop at 352, transparent by 360);
+     · the same `padding: 1px` + two stacked `linear-gradient(#000 0 0)` masks and
+       the `xor`/`exclude` composite that leave only the padding band painted;
+     · the same three `drop-shadow` glow layers, at the topbar's own radii and
+       alphas — the tight bright rim, the medium halo and the wide one pushed
+       upward. `filter`, not `box-shadow`, for the reason the topbar gives: the mask
+       would clip a box-shadow away, and drop-shadow runs after it.
+   ⛔ `::before`, NOT `::after`: `.hero-side::after { content: none !important }`
+   (~:2892) is already spent keeping the glass gloss off these cards. The topbar can
+   use a real span (both its pseudos are taken); this card has `::before` free, so
+   the same ring is drawn by a pseudo instead of an injected node.
+   ⛔ IT CANNOT WASH ACROSS THE FOOTAGE, BY CONSTRUCTION: the exclude composite
+   leaves only the 1px band painting, so the arc is a stroke on the perimeter and
+   nothing else. `z-index: 3` matches the topbar's ring, and `pointer-events: none`
+   means the decorative layer can never eat a click meant for the clip.
+
+   ⛔⛔ THE ONLY TWO THINGS THAT DIFFER FROM THE TOPBAR ARE THE SHAPE AND THE
+   DIRECTION, WHICH IS WHAT WAS ASKED FOR.
+   · SHAPE: nothing is adapted, because a conic ring does not need adapting — the
+     gradient is defined in ANGLE, so the same declaration draws correctly on the
+     topbar's wide bar and on a 1:5 strip alike. What changes on a tall shape is
+     only how the angles land on the perimeter: the corners of a 398x1989 strip sit
+     ~11deg off vertical, so the long edges take most of the circle and the arc
+     reads as a light running up one side, across the top, down the other and back.
+     That is the topbar primitive on this shape, not a substitute for it.
+   · DIRECTION — AND THIS IS THE PART THAT WAS WRONG UNTIL NOW. Negating the conic's
+     `from` angle (`from calc(-1 * var(--fxA))`) reverses the ROTATION but leaves the
+     arc's own place inside the gradient alone: the stops still read 298→360deg
+     measured CLOCKWISE FROM TWELVE O'CLOCK. Reversing the sweep therefore does not
+     reflect the arc, it only runs the same arc the other way round the circle, so at
+     any instant the two clips lit up at DIFFERENT heights — which is what the owner
+     saw. `startTime` matched and always had; the highlight did not.
+     ⛔ THE FIX IS A REAL SPATIAL MIRROR, NOT A SECOND GRADIENT. The right clip's ring
+     is the LEFT CLIP'S OWN RULE — same conic, same `from var(--fxA)`, same stops,
+     same glow, same clock — passed through `transform: scaleX(-1)`. That reflects the
+     whole painted ring about its own vertical centre line: gradient, arc phase, glow
+     and radius all mirror together, because they are the same paint. No second stop
+     list exists to fall out of step with the first, which is exactly the failure the
+     negation had.
+     ⛔ `border-radius` HAS TO BE MIRRORED BY HAND, and it is the one declaration that
+     cannot come along for the ride. The card's radius is `18px 0 0 18px` (rounded on
+     the inner edge) and the shared rule inherits it; after `scaleX(-1)` those rounded
+     corners would render on the OUTER edge and the ring would stop following the
+     card. So the mirrored element declares the mirror of that radius, `0 18px 18px 0`,
+     and the transform puts it back where the card's corners actually are.
+     ⛔ `transform-origin` is the default 50% 50%, so the mirror is about the element's
+     own centre — the same axis the left clip's ring is symmetric about.
+   ⛔ SYNCHRONISED, AND BY CONSTRUCTION RATHER THAN BY MATCHING NUMBERS. Both clips
+   run the SAME `fxOrbit`, so duration (`4.2s`), timing (`linear`), iteration
+   (`infinite`), direction (`normal`), fill and delay (`0s`, written out rather than
+   left to the default) are the same declaration, not two that happen to agree. Both
+   start on the same document timeline when the cards are laid out.
+   ⛔ NOTE THE ONE DELIBERATE DIFFERENCE FROM THE TOPBAR'S PHASE-OFFSET RULE. The
+   page staggers `.card-fx:nth-of-type(2n/3n) > .fx-ring` so a row of cards does not
+   pulse in lockstep. That is the opposite of what is wanted here — the two clips are
+   a mirrored pair and must stay in phase — so no delay is applied to either.
+   ⛔ REDUCED MOTION KEEPS A STATIC OUTLINE rather than the topbar's parked arc
+   (`animation: none; --fxA: 40deg`): the animation stops and the same azure pair is
+   laid round the whole perimeter, so the clip is still visibly outlined. The glow
+   layers stay — they are not motion. */
+.hero-cards > .hero-side::before {
+  content: ''; position: absolute; inset: 0; z-index: 3;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(from var(--fxA),
+    transparent 0deg,
+    transparent 298deg,
+    color-mix(in srgb, #7dd3ff 62%, transparent) 318deg,
+    #0096ff 338deg,
+    color-mix(in srgb, #7dd3ff 62%, transparent) 352deg,
+    transparent 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  filter:
+    drop-shadow(0 0 5px color-mix(in srgb, #0096ff 60%, transparent))
+    drop-shadow(0 0 14px color-mix(in srgb, #0096ff 30%, transparent))
+    drop-shadow(0 -4px 18px color-mix(in srgb, #0096ff 15%, transparent));
+  animation: fxOrbit 4.2s linear 0s infinite normal none;
+  pointer-events: none;
+}
+/* ⛔ THE RIGHT CLIP IS THE LEFT CLIP'S RING, REFLECTED — nothing else. No background,
+   no animation and no filter is restated here, so there is no second copy of the
+   gradient that could drift out of phase with the first. `border-radius` is the one
+   value that must be pre-mirrored (see the note above): the card's own corners are
+   `18px 0 0 18px` on this side, so the element declares the opposite and the scale
+   puts it back. */
+.hero-cards > .hero-side:last-child::before {
+  border-radius: 0 18px 18px 0;
+  transform: scaleX(-1);
+}
+/* ⛔ ONE SELECTOR IS ENOUGH NOW, AND THAT IS A CONSEQUENCE OF THE MIRROR. This block
+   used to have to name `:last-child::before` as well, because that rule set its own
+   `background` at (0,2,1) and specificity beats source order — leaving the right clip
+   parked on its arc instead of showing the full ring. The mirror deleted that
+   per-side background (the right clip now only declares a radius and a transform),
+   so there is nothing left to out-rank the shared rule and the static ring lands on
+   both clips from one declaration. `transform` and `border-radius` are untouched
+   here, so the mirrored side stays mirrored. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-cards > .hero-side::before {
+    animation: none;
+    background: conic-gradient(#7dd3ff, #0096ff, #7dd3ff, #0096ff, #7dd3ff);
+  }
+}
 
 /* Slim visual progress tracks; retain the existing scrub hit area. */
 .clip-bar {height:2px!important;}
@@ -10330,6 +11145,445 @@ mask-image:linear-gradient(90deg,rgba(0,0,0,.6),#000 12%,#000 88%,rgba(0,0,0,.6)
 
 /* Inset only the introduction copy, preserving its full-edge decorative card. */
 #workflow .afmp-intro-card > h3,#workflow .afmp-intro-card > p {box-sizing:border-box;padding-left:clamp(16px,3vw,40px);padding-right:clamp(16px,3vw,40px);}
+
+/* ============================================================================
+   THE HERO HEADLINE CARD DISSOLVES AT ITS SIDES (owner, 2026-10-10)
+   *"Add edge fading to the hero headline card ... Use the page's existing fading
+   system, blend the card's outer decorative edges into the surrounding page."*
+   The card is `.hero-copy-card` — "Facial Motion Capture Made Super Easy!".
+
+   ⛔ THE SYSTEM IS THE INTRO CARD'S, COPIED DECLARATION FOR DECLARATION (see the
+   block directly above), because that is what "the page's existing fading system"
+   means here: the same `rgba(0,0,0,.3)` surface ramped down through a 90deg
+   gradient, under the same 24px `mask-image` cut at each end.
+   ⛔ THE TWO NUMBERS THAT WERE *NOT* COPIED ARE THE GEOMETRY ONES. The intro card
+   is a full-bleed band, so it also carries `width: calc(100% + 2 * --intro-edge)`,
+   `margin-inline: calc(-1 * --intro-edge)` and `border-radius: 0`. None of that
+   belongs on a 612px card sitting between the two rail clips: this is an EDGE FADE,
+   not a re-layout. The card keeps its own width and its 22px radius.
+   ⛔ THE BORDER DOES GO, and that is the point of the request — measured before
+   this, the card carried `border: 1px solid rgba(255,255,255,.10)` (from
+   `html.dark .hero-copy-card`, ~:4577, which is why the screenshot shows a hard
+   rounded box). A 1px perimeter is the one thing a fade cannot soften: the mask
+   would take the last 24px of it to nothing and leave a line that stops in mid-air.
+   The card is identified by its fill and its dot field instead, exactly as the
+   intro card is. The `box-shadow` ring from that same rule STAYS — the intro card
+   keeps it too, and it fades with everything else under the mask.
+   ⛔ ONLY THE HORIZONTAL AXIS FADES, and that is deliberate rather than overlooked.
+   The heading's box is 211px tall with `padding: 19.2px` top and bottom, so a 24px
+   VERTICAL cut would eat the first row of the heading — which is exactly the
+   "retain readable text" this request also asks for. Left and right, the copy is
+   centred and nowhere near the fade, so the cut costs nothing there.
+   ⛔ IT DOES NOT BREAK THE CARD'S OWN EFFECTS. `overflow: hidden` (the sheen needs
+   it), the `::before` sheen, and the injected `.fx-dots` / `.fx-pool` / `.fx-ring`
+   are all untouched: a mask fades paint, it does not clip layout, and every one of
+   those layers is `inset: 0` inside the card, so they fade at the sides like the
+   fill does and are untouched everywhere else. */
+.hero-copy-card {
+  border: 0 !important;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, .3) 8%, rgba(0, 0, 0, .3) 92%, transparent) !important;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+}
+
+/* ============================================================================
+   THE COMPARE PAIR IS ONE FRAME, SPLIT BY ONE DIVIDER
+   Owner (2026-10-10): *"Make the two comparison halves edge-to-edge inside their
+   shared frame, no inset gap, with one center divider."*
+
+   ⛔ WHAT THE TWO HALVES WERE BEFORE THIS: two separate rounded panels — measured
+   575.6px each, a 9.6px grid gap between them, 14px of their own radius on every
+   corner, and the `.quickfog-outer` wrapper around them holding another 9.6px of
+   padding. The frame existed but was invisible: `border: 0 !important` from this
+   file's own "card chrome removed" block (~:3309). So the pair read as two boxes
+   floating near each other, never as one panel with a split down it.
+
+   ⛔ THE NUMBERS THAT MAKE IT ONE PANEL, and all of them are needed:
+     · the WRAPPER's padding goes to 0, so the halves reach the frame's inner edge;
+     · the GRID's gap goes to 0, so the halves meet, with no seam to show through;
+     · the WRAPPER carries the surface and the halves are transparent (below), so
+       there is ONE background across the join instead of two that could disagree;
+     · nothing on the panel has a radius any more — see the fade, which is what
+       took the corners away.
+   ⛔ NOT `overflow: hidden`. Clipping the wrapper would also clip what the cards
+   paint outside their own box — `.fx-ring` is `inset: 0` inside each card, but the
+   cards' own hover glow and the dots layer are not something to gamble on.
+   `mask-image` fades paint without clipping layout, which is the other reason it is
+   the tool used here rather than an overflow or a fixed width.
+   ⛔ THE DIVIDER IS DRAWN ON THE GRID, not on either card: one 1px line at 50%
+   (the columns are equal, so 50% IS the join), spanning the frame top to bottom.
+   `pointer-events: none` so it can never eat a click, `z-index: 2` so it sits over
+   the surface it separates. The `-.5px` margin centres the line ON the join rather
+   than to its right.
+   ⛔ THE DIVIDER IS NOT FADED, AND NEITHER HALF IS FADED AT THE JOIN. The mask is
+   on the WRAPPER, so it only ever reaches the panel's own two outer edges; the
+   middle of the panel is at full mask strength (the gradient's two `#000` stops
+   cover everything between 24px and `100% - 24px`). Fading the halves instead would
+   have put a soft gap down the middle of a divider the owner asked to keep.
+
+   ⛔ RESPONSIVE STACKING IS PRESERVED, at the SAME breakpoint the rest of the page
+   stacks at (`max-width: 700px`, ~:1303). Stacked, a vertical centre line would
+   fall BETWEEN two full-width cards and read as a stray rule, so it is dropped and
+   the join becomes a top border on the lower half — one divider either way, just
+   turned through 90°. The 24px edge mask is horizontal and is NOT switched off when
+   stacked: it still fades the panel's outer left and right edges, which is what it
+   is for at every width.
+
+   ⛔⛔ AND THE FRAME ITSELF NOW REACHES THE PAGE EDGES (owner, 2026-10-10), because
+   it was the only block in this section that did not. Owner: *"they want these
+   edge-to-edge JUST LIKE the main card containing the heading 'What is Auto Face
+   MoCap Pro?'"*. Measured at a 1440px viewport before this: the intro card spanned
+   x 0 → 1440 and this frame spanned x 130 → 1310, 260px narrower — the frame sat
+   on `.container`'s 1180px while the card above it had already been taken
+   full-bleed by the rule at ~:10509.
+   ⛔ THE FORMULA IS THE INTRO CARD'S OWN, COPIED VERBATIM, AND THAT IS THE WHOLE
+   POINT: `--cmp-edge` and the card's `--intro-edge` are the same
+   `calc((100vw - min(1180px, 92vw)) / 2)`, so the two boxes cannot drift apart at
+   ANY viewport — not just the one this was measured at. The width is the
+   container's own width plus one edge per side, and the two negative margins pull
+   those edges out to the viewport. A hard-coded width or a `100vw` on its own would
+   have matched at 1440 and gone wrong the moment the container stopped being
+   1180px wide (below ~1282px, where 92vw takes over).
+   ⛔⛔ *"with the fading system too"* (owner, 2026-10-10). The geometry above made
+   the frame reach the page edges; it still ENDED there, as a hard 1px box with two
+   rounded corners sitting on the viewport. The intro card does not end at its edge,
+   it DISSOLVES into the page, and the owner wants the same treatment here. All
+   three parts of that system are the card's own declarations, copied verbatim:
+     · `border: 0` + `border-radius: 0` — there is no box edge left to see, so the
+       corners have nothing to round (this is why the halves' outer radii are gone);
+     · the SURFACE fades as it approaches each edge — the card's own 90deg gradient,
+       transparent at 0%, full `rgba(0,0,0,.3)` by 8%, held to 92%, transparent at
+       100%. The card paints this itself; here the halves used to, so they are made
+       transparent and the WRAPPER paints it instead. That is what keeps the fade
+       continuous across the join — one gradient across the whole panel, not two
+       half-fades meeting in the middle;
+     · the 24px `mask-image` cut at each end, which takes the last 24px of the panel
+       — surface, divider, dot field and all — down to nothing.
+   ⛔ THE SURFACE IS A PERCENTAGE GRADIENT, THE MASK IS IN PX, AND BOTH ARE THE
+   CARD'S OWN VALUES RATHER THAN VALUES CHOSEN FOR THIS VIEWPORT: the gradient's
+   stops scale with the panel, the mask does not, exactly as they behave on the card
+   above. At 1440px that is a 115px surface ramp under a 24px cut; at 390px, 31px
+   under the same 24px cut.
+   ⛔ `box-shadow: none` is the wrapper's, and the halves keep theirs: their faint
+   `0 0 0 1px` azure ring and hover glow are inside the mask, so they fade at the
+   outer edges with everything else and are untouched at the join.
+   ⛔ ALSO NOT CHANGED: the halves' own `padding: 1rem .9rem`. Edge-to-edge is about
+   the panel against the page, not the copy against the panel's edge — the copy sits
+   ~150px inside the fade at 1440px and is never touched by it. */
+#workflow .quickfog-outer:has(.compare-grid) {
+  --cmp-edge: calc((100vw - min(1180px, 92vw)) / 2);
+  width: calc(100% + 2 * var(--cmp-edge));
+  max-width: none;
+  margin-left: calc(-1 * var(--cmp-edge));
+  margin-right: calc(-1 * var(--cmp-edge));
+  box-sizing: border-box;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  /* the intro card's surface, verbatim — and now the ONLY surface on this panel */
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,.3) 8%, rgba(0,0,0,.3) 92%, transparent) !important;
+  /* the intro card's 24px edge cut, verbatim */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  box-shadow: none !important;
+}
+.compare-grid.compact { gap: 0 !important; position: relative; }
+.compare-grid.compact::before {
+  content: ''; position: absolute; z-index: 2;
+  top: 0; bottom: 0; left: 50%; width: 1px; margin-left: -.5px;
+  background: var(--border-strong);
+  pointer-events: none;
+}
+/* ⛔ THE HALVES GIVE UP THEIR SURFACE TO THE WRAPPER and keep only their copy. A
+   radius of 0 on both, because the panel has no corners left to round — the fade is
+   what ends it now. `!important` and this specificity to beat the `background:
+   rgba(0,0,0,.3) !important` each card carries from the "card chrome removed" block
+   (~:3345), which is the surface the wrapper's gradient replaces. */
+.compare-grid.compact > .compare-card {
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+@media (max-width: 700px) {
+  .compare-grid.compact::before { display: none; }
+  .compare-grid.compact > .compare-card.new { border-top: 1px solid var(--border-strong) !important; }
+}
+
+/* ============================================================================
+   THE SHOWCASE PAIR REACHES THE PAGE EDGES (owner, 2026-10-10)
+   *"match the paired showcase clips with the page's other edge-to-edge clips with
+   fading effects."*
+
+   ⛔ THE PAIR IS THE ONE ROW WHOSE CELLS ARE BOTH CLIPS. In the `#features` card,
+   under the "Video to Character" row, there is a plain inline-styled flex div
+   holding two `.feature-media` cells: `video37` (70%, the wide Blender tuning demo)
+   on the LEFT and `video42` (30%, `aspect-ratio: 464/832`, carrying the `.media-tag`
+   "Final Take") on the RIGHT. That row is not a `.feature-row`, so none of the
+   side-row full-bleed machinery above reaches it: measured at 1440px, the row ran
+   x 130 → 1310 while the row ABOVE it reached x 1440 and the section's other faded
+   clips reach both edges. Hence `#features > div:not(.feature-row):has(> .feature-media)`
+   — `:not(.feature-row)` is load-bearing, because the side-row above ALSO has a
+   direct `.feature-media` child and already carries this treatment; without it the
+   two rules would fight over the same cell.
+
+   ⛔ THE GEOMETRY IS THE INTRO/COMPARISON ONE, DECLARATION FOR DECLARATION — the
+   same `calc((100vw - min(1180px,92vw)) / 2)` edge, the same
+   `width: calc(100% + 2 * edge)` and the same two negative margins. That is the
+   whole edit: one rule widening the row, and the two cells ride along, so the 70/30
+   split is untouched (1001.8 / 429.4 at 1440px) and the portrait cell keeps its
+   `464/832`. The row gets ~22% wider AND ~22% taller, because the portrait cell's
+   `aspect-ratio` is what sets the row height — a proportional scale, not a crop.
+   ⛔ THE GAP IS NOT TOUCHED. It is the inline `gap:.55rem` on the row and stays
+   8.8px; the widening happens at the two OUTER edges only.
+
+   ⛔ THE FOOTAGE FADE IS THE SIDE-ROW ONE, REUSED RATHER THAN REINVENTED: the same
+   `--clip-outer-fade`-style 32px ramp pinned to each cell's OUTER edge (left ramp on
+   the left cell, right ramp on the right cell), intersected with the same 16px
+   all-round fades, on the SAME three-layer `mask-composite: intersect` stack that
+   `#workflow .feature-row.side-row .feature-media > video` (~:10257) uses.
+   ⛔ ONLY THE VIDEO IS MASKED, NEVER THE CELL — which is what keeps the "Final Take"
+   label at full strength: it is a `<span class="media-tag">`, a sibling of the video,
+   positioned `top:14px; left:14px` of the RIGHT cell, i.e. on the INNER side, facing
+   the gap rather than the page edge. The clip bar and the loading mark are siblings
+   of the video too, so the progress UI is unmasked for the same reason.
+   ⛔ THE HARD PERIMETER GOES, the way it does on every other faded clip here:
+   measured before, each cell carried `background: rgba(0,0,0,.3)` and
+   `border: 1px solid rgba(255,255,255,.16)` at `border-radius: 18px`, which against
+   a page edge is the same hard box the comparison frame had. Both go transparent,
+   and each cell keeps its radius only on the INNER corners so the outer ones square
+   off into the edge. `overflow: hidden` stays — it is what clips the cell's own
+   children to that radius, and the footage behind it is transparent-backed now, so
+   the fade reveals the page rather than a panel. */
+#features > div:not(.feature-row):has(> .feature-media) {
+  --pair-edge: calc((100vw - min(1180px, 92vw)) / 2);
+  width: calc(100% + 2 * var(--pair-edge));
+  max-width: none;
+  margin-left: calc(-1 * var(--pair-edge));
+  margin-right: calc(-1 * var(--pair-edge));
+}
+#features > div:not(.feature-row):has(> .feature-media) > .feature-media {
+  background: transparent !important;
+  border-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+#features > div:not(.feature-row):has(> .feature-media) > .feature-media::before,
+#features > div:not(.feature-row):has(> .feature-media) > .feature-media::after,
+#features > div:not(.feature-row):has(> .feature-media) > .feature-media > .fx-ring,
+#features > div:not(.feature-row):has(> .feature-media) > .feature-media > .fx-dots,
+#features > div:not(.feature-row):has(> .feature-media) > .feature-media > .fx-pool { display: none !important; }
+#features > div:not(.feature-row):has(> .feature-media) > .feature-media:first-child {
+  border-radius: 0 18px 18px 0;
+  --pair-fade: linear-gradient(90deg, transparent, #000 32px);
+}
+#features > div:not(.feature-row):has(> .feature-media) > .feature-media:last-child {
+  border-radius: 18px 0 0 18px;
+  --pair-fade: linear-gradient(270deg, transparent, #000 32px);
+}
+#features > div:not(.feature-row):has(> .feature-media) > .feature-media > video {
+  -webkit-mask-image: var(--pair-fade),
+    linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 16px), transparent),
+    linear-gradient(180deg, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+          mask-image: var(--pair-fade),
+    linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 16px), transparent),
+    linear-gradient(180deg, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+  -webkit-mask-composite: source-in, source-in;
+          mask-composite: intersect, intersect;
+}
+
+/* ============================================================================
+   PRICING TIER ACCENTS — ONE VARIABLE, THE PAGE'S OWN PRIMITIVES (owner, 2026-10-10)
+   *"give each increasing pricing tier starting at $599 its own appealing distinct
+   accent color ... integrated with existing dark theme and card dot/glow/outline/
+   button primitives. Keep first two plan accents as existing."*
+
+   ⛔ ONE CUSTOM PROPERTY, `--tier`, AND NOTHING ELSE IS TIER-AWARE. The three new
+   cards set it; every existing price-card primitive reads it through
+   `var(--tier, #0096ff)` — the cursor glow, the outer halo, the hairline ring, the
+   hover border, and BOTH dot fields (`::before` halftone and `::after` cursor pool,
+   which those rules themselves require to stay identical). Because the fallback IS
+   the azure the page already used, the Personal and Commercial cards compute to the
+   exact colours they had before this block existed.
+   ⛔ THE THREE COLOURS ARE NOT INVENTED. They are the page's own quick-nav accents —
+   `#b5a0ff` (Shapekeys), `#54d5df` (Features), `#f3c477` (Pricing) — reused rather
+   than picked, so the tiers land in a palette that already exists on the page.
+   ⛔ THE ANIMATIONS ARE UNTOUCHED. `dotWave` still animates `mask-position` on
+   `::before` and the pool still rides `--mx`/`--my`; this changes the COLOUR those
+   layers paint, not when or how they move. There is no `!important` in this block,
+   so nothing here outranks the rules it refines.
+   ⛔ THE LIGHT THEME GETS ITS OWN, DARKER SET. The dark-theme accents are pastels
+   built to glow on near-black; on the light theme's `hsl(213,45%,97%)` card they
+   would land near 2:1. These three are the same hues taken down until they clear
+   4.5:1 on that surface (measured 5.5, 5.5 and 5.2 to 1 against #f4f8fc). */
+.price-card { --tier: #0096ff; }
+.price-card.tier-team   { --tier: #b5a0ff; --tier-cta: #a184ff; }   /* violet */
+.price-card.tier-studio { --tier: #54d5df; --tier-cta: #2bb9c9; }   /* teal   */
+.price-card.tier-big    { --tier: #f3c477; --tier-cta: #e8a13a; }   /* amber  */
+
+/* ⛔⛔ THE CTA WEARS `--tier-cta`, NOT `--tier` (owner, 2026-10-10: *"new tier button
+   colors should NOT exactly match their card accents, but be slightly different"*).
+   The card keeps `--tier`; the button reads its own, deeper tone — same family, one
+   step richer — so the CTA reads as part of the tier without being a spot-colour
+   repeat of the halo around it. Every value below moves together: foreground, the
+   subtle background tint, the border and the focus ring all resolve `--tier-cta`,
+   with `var(--tier-cta, var(--tier))` as the fallback so any card that sets only
+   `--tier` still behaves. The Personal, Commercial and Enterprise CTAs declare
+   neither, so they are byte-identical to before. */
+
+/* ⛔ NO LIGHT-THEME ACCENT HOOK IS NEEDED HERE ANY MORE. `.price-card:hover` sets
+   `border-color: var(--color-tertiary)` and knows nothing about tiers, but the dark
+   theme's hover border is ALREADY tiered by the `var(--tier, …)` swap inside
+   `html.dark .price-card:hover`, which is now the only hover border in play. */
+
+/* ⛔ THE TIER CTA rides `.btn.btn-ghost` and adds ONLY its colour: border at 55%,
+   the label in the tier itself, a coloured halo on hover. Padding, radius, weight,
+   the `margin-top: auto` pin to the card bottom and the `translateY(-3px)` hover
+   lift all stay the shared rules' — the transform is deliberately NOT restated, so
+   the motion is not a copy that can drift. `:focus-visible` follows the quick-nav
+   idiom exactly (`outline: 2px solid <accent>; outline-offset: 3px`). */
+/* ⛔ THE BACKGROUND IS AN OVERLAY, NOT A `background` REPLACEMENT. The first pass
+   mixed the tone into `var(--card-bg)` and came out at 14% alpha — measured on the
+   live button — because in this theme `--card-bg` is `rgba(255,255,255,.07)`, not a
+   solid surface. `background-image` lays a 12% wash of the tone OVER the button's own
+   `rgba(0,0,0,.3)` instead, so it composites the way it reads: the ghost button keeps
+   its existing surface and simply picks up a hint of the tier. */
+.price-card .btn.tier-btn {
+  color: var(--tier-cta, var(--tier));
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--tier-cta, var(--tier)) 12%, transparent),
+    color-mix(in srgb, var(--tier-cta, var(--tier)) 12%, transparent));
+  border-color: color-mix(in srgb, var(--tier-cta, var(--tier)) 55%, transparent);
+}
+.price-card .btn.tier-btn:hover {
+  border-color: var(--tier-cta, var(--tier));
+  box-shadow: 0 14px 30px -14px color-mix(in srgb, var(--tier-cta, var(--tier)) 70%, transparent);
+}
+.price-card .btn.tier-btn:focus-visible { outline: 2px solid var(--tier-cta, var(--tier)); outline-offset: 3px; }
+/* ⛔ THE TIER CTAS KEEP THE 12% WASH OVER THE DARK SURFACE the ghost button already
+   has, measured at 5.9 / 7.0 / 7.6:1 for Team / Studio / Bigger Studio. The
+   `html:not(.dark)` near-white variant that used to sit here existed only to rescue
+   the tier label from the light theme's mid-grey ghost slab; it went with the light
+   theme, so the wash above is the single surface treatment for these three CTAs. */
+.price-card .btn.tier-btn svg { flex: none; }
+
+/* ⛔ THE WAVE STAGGER NOW COVERS THE WHOLE GRID. `.pricing-grid .price-card
+   :nth-child(2/3)::before` offsets the halftone so a row does not pulse in lockstep —
+   that rule's own comment says cards waving together "reads as the whole SECTION
+   pumping". The grid holds six cards now, so the same step continues through 4, 5
+   and 6; without this the three new tiers would all wave with card 1 at once. */
+.pricing-grid .price-card:nth-child(4)::before { animation-delay: -1.05s; }
+.pricing-grid .price-card:nth-child(5)::before { animation-delay: -1.4s; }
+.pricing-grid .price-card:nth-child(6)::before { animation-delay: -1.75s; }
+
+/* ============================================================ THE TOP BAR'S PATTERN
+   RIDES ON TOP OF THE BAR, AND ONLY THE LOGO RIDES ABOVE THE PATTERN.
+   Owner, 2026-10-11: *"topbar pattern stacking: user wants its PATTERN ON TOP OF
+   EVERYTHING EXCEPT LOGO … raise dot/pattern layer above header text/buttons/other
+   topbar surface layers, while logo stays above it and unpatterned."*
+   ------------------------------------------------------------
+   THE HEADER'S ACTUAL LAYERS, read off the live DOM rather than assumed.
+   The `<header class="site-header">` element — its `id` attribute reads `header` — is one of
+   the `#cardFxLayers` `TARGETS`
+   (~:5213), so that script appends three real spans to it and adds `.card-fx`. Its
+   children, in DOM order, are therefore:
+       1  div.container.header-inner      the bar's whole visible content
+       2  span.fx-dots                    the dot pattern
+       3  span.fx-pool                    the cursor pool (same dots, masked to the pointer)
+       4  span.fx-ring                    the outline animation
+   The resting z-indexes come from the `#cardFx` block: dots 0, pool 0, ring 3, and —
+   this is the one that matters — **every non-injected child is forced to
+   `position: relative; z-index: 1`** by `.card-fx > *:not(.fx-dots):not(.fx-ring):
+   :not(.fx-pool):not(.fx-abs)` (~:4098). So `.header-inner` was a STACKING CONTEXT at
+   level 1, and nothing inside it — logo included — could ever paint above a sibling at
+   level 2 or higher, whatever z-index it was given. That is why the fix is two moves,
+   not one.
+
+   ⛔ MOVE 1 — `.header-inner` GIVES UP ITS STACKING CONTEXT (`z-index: auto`). It keeps
+   `position: relative` from the rule above, but a positioned box with `z-index: auto`
+   does not open a stacking context, so the bar's descendants now stack in the HEADER's
+   context and a high z-index inside them means something again.
+   ⛔ MOVE 2 — THE DOTS AND THE POOL GO TO 4, THE LOGO TO 5. 4 is above the content band
+   (1), above the bar's own surface — which paints at the very bottom of the header's
+   context — and above the outline ring (3), so the pattern really does sit over
+   everything but the logo; 5 is above the pattern. The logo is `.brand` — the `<a>` that
+   carries `aria-label="Auto Face MoCap Pro home"` and holds BOTH halves of the lockup:
+   `span.brand-mark` (which wraps `<img … alt="Auto Face MoCap Pro logo">`) and the
+   `span.brand-stroke-stage` wordmark. Raising the anchor rather than the bare
+   `img` keeps the mark and the wordmark together, which is what "the logo" means on
+   this bar; `.brand-mark` alone would leave the wordmark under the dots.
+   ⛔ `.brand-group` and `.brand` are plain flex boxes with no z-index of their own, so
+   neither opens a context and `.brand`'s 5 really does compete in the header's.
+
+   ⛔ THE PATTERN IS AT 4 — ABOVE THE RING AT 3, NOT BELOW IT. The first pass put the
+   dots at 2 so the 1px `fxOrbit` outline stayed crisp, reading "keep existing header
+   outline animation" as a stacking instruction as well as a keep-it-alive one. The
+   owner corrected that (2026-10-11): *"user specifically asked topbar PATTERN ABOVE
+   EVERYTHING EXCEPT LOGO. Your dots/pool level 2 under outline 3 does not fully match."*
+   "Everything" means everything but the logo, so the order is now
+   content 1 → outline 3 → pattern 4 → logo 5, and the outline reads THROUGH the
+   sparse 1.1px-on-a-10px-grid dots beneath it.
+   ⛔ WHAT "KEEP THE OUTLINE ANIMATION" STILL MEANS: `fxOrbit` keeps running untouched —
+   only its z-index neighbours moved. No `animation`, `keyframes`, colour or timing
+   declaration is restated anywhere in this block, so the ring's own rule is byte-identical
+   to what it was; it is simply no longer the topmost layer of the four.
+   ⛔ NOTHING HERE TOUCHES THE ANIMATION. The ring keeps its `animation: fxOrbit …`, the
+   dots keep `dotWave`, and no `animation`, `opacity` or colour declaration is restated.
+   The dot alpha is left exactly where `.card-fx > .fx-dots` put it — this block only
+   reorders layers, it does not brighten or dim the pattern.
+   ⛔ CLICKS PASS STRAIGHT THROUGH. `.fx-dots`, `.fx-pool` and `.fx-ring` already carry
+   `pointer-events: none` from the `#cardFx` block, so the FAQ / Must Read anchor and the
+   version badge stay clickable with the pattern over them. `.header-inner` is never
+   `pointer-events: none`, so the logo is clickable too.
+   ⛔ THE SPECIFICITY IS AN ID ON PURPOSE. The rule the content band comes from is
+   `.card-fx > *:not(.fx-dots):not(.fx-ring):not(.fx-pool):not(.fx-abs)` — five classes,
+   (0,5,0) — so a three-class `header.site-header.card-fx` selector would LOSE to it and
+   `z-index: auto` would never land. `header#header` takes it to (1,3,1), which wins on
+   the id whatever order the two rules are in.
+   ⛔ `#header` IS THE ELEMENT'S REAL ID (the markup is `id="header"`), not a guess, and
+   it is already depended on by the sticky-header script (`getElementById('header')`). */
+header#header.site-header.card-fx > .header-inner { z-index: auto; }
+header#header.site-header.card-fx > .fx-dots,
+header#header.site-header.card-fx > .fx-pool { z-index: 4; }
+header#header.site-header.card-fx .brand { position: relative; z-index: 5; }
+
+/* ============================================================ THREE FEATURE ROWS HIDDEN
+   Owner, 2026-10-11: hide the last three clips in `#workflow` — "Real time viewport
+   feedback while you record", "Export motion to any pipeline" and "Expression presets for
+   every shot".
+   ⛔ THEY READ AS EMPTY CARDS BECAUSE THEY ARE. Those three are the ONLY `feature-row`s on
+   the page whose clip is a LOCAL path (`assets/videos/live-preview.mp4`, `export.mp4`,
+   `presets.mp4`) — every other row loads from the Carrd host. There is no `assets/videos`
+   directory in this project, so all three `data-autoplay` sources 404 and the cells render
+   as blank bordered boxes. This is the same fault that was already fixed once by hand on
+   the "Powerfull Multi MoCap System" row, whose note records it was "one of the five local"
+   clips.
+   ⛔ `display: none` ON THE ROW WRAPPER, NOT ON THE PIECES. The wrapper is the outer
+   `.quickfog-outer` that holds the entire row: its text card, its clip cell, the
+   `.fx-dots` / `.fx-pool` / `.fx-ring` spans `#cardFxLayers` injects into the inner text
+   card, its hairline border and its own `margin-bottom: 1rem`. One declaration therefore
+   removes the row AND the spacing it occupied, with nothing left over. Hiding only the
+   `<video>` would leave the empty bordered card and its gap exactly where they are now.
+   ⛔ RECOVERABLE, NOT DELETED. All three rows are still in the document, byte for byte —
+   only a class was added to each wrapper, and nothing was commented out. To restore one
+   row, delete `feat-off` from its wrapper; to restore all three, delete this rule.
+   ⛔ A CLASS ON THE WRAPPER, NOT A POSITIONAL SELECTOR. `display: none` leaves the element
+   in the DOM and in `:nth-child` counting, so a rule like
+   `#workflow .quickfog-outer:nth-last-child(-n+3)` would work today — and would silently
+   hide the WRONG rows the moment a feature row is added or removed below them, which this
+   page does regularly (this very change added one). A named class cannot drift.
+   ⛔ THE OTHER CLIPS ARE UNTOUCHED. Every remaining `feature-row` keeps its video, its
+   pattern layers, its edge fade and its reveal animation — including the new video56
+   "Character Type popup" row added above Multi-Character Support, which loads from the
+   Carrd host and is not hidden. No other selector in this file reads `.feat-off`. */
+.feat-off { display: none !important; }
+
+/* ⛔ `color-scheme: dark` ON THE ROOT, WITH THE LIGHT THEME REMOVED. It is the UA's own
+   switch for the furniture the page does not draw itself — scrollbars, the `<canvas>`
+   backdrop behind `#interactiveBg`, form controls, the default focus ring and the
+   overscroll gutter. Without it those stay light on a dark page and flash white before
+   the first frame. Declared here rather than on the `:root` token blocks at the top so
+   it cannot be mistaken for a theme token, and `dark` only: there is no second value to
+   switch to now. */
+html { color-scheme: dark; }
 </style>
 <script id="brandStrokeSync">
 (function(){
@@ -10354,6 +11608,398 @@ mask-image:linear-gradient(90deg,rgba(0,0,0,.6),#000 12%,#000 88%,rgba(0,0,0,.6)
  if(!reduced&&window.AFMP&&window.AFMP.watch){window.AFMP.watch(stage,function(on){visible=on;gate();},false);}
 }
  document.querySelectorAll('.brand-stroke-stage').forEach(initBrandStroke);
+})();
+</script>
+
+<!-- ============================================================================
+     GLEAM EDGE — the ShinyButton effect, ported to native CSS/JS (owner, 2026-10-10)
+     *"replace ALL the buttons effects with this one"*
+
+     ⛔⛔ ONE STYLE BLOCK FOR EVERY BUTTON, NOT ONE PER BUTTON. The React original
+     mints a `useId()` per instance, suffixes every custom property, keyframe and
+     class with it, and renders its own `<style>` element — correct for a component
+     library, ruinous here: this page has ~60 qualifying controls, and sixty style
+     blocks would be sixty recalc roots and sixty duplicated keyframe sets. The two
+     facts that make ONE block sufficient are (a) `@property` registrations are
+     GLOBAL, and (b) every registered property below is declared `inherits: false`,
+     so each element carries its own value and its own animation of it. The
+     per-instance suffix buys nothing that `inherits: false` does not already give.
+     ⚠ This is the one material difference from the reference, and it is scoping
+     only — every declaration, keyframe, duration and curve is the reference's.
+     ⛔⛔ THE THREE DECORATIVE LAYERS ARE REAL `<i>` CHILDREN, NOT PSEUDO-ELEMENTS.
+     The reference uses `::before`, `::after` and `span::before`; on this page both
+     pseudos are already spoken for on the controls that matter — `.btn-primary
+     ::after` is the btnShine sheen (~:2668), `.quick-nav a::before` and the `g-arrow`
+     /`play-btn` rings are others — and overwriting one silently deletes an effect
+     rather than replacing it. Three injected `aria-hidden` spans collide with
+     nothing, cost one node each, and leave every existing pseudo alone.
+     ⛔ THE LABEL IS NEVER WRAPPED. The reference puts the breathing glow on
+     `span::before`, which forces a wrapper span around the label. Real children make
+     that unnecessary, so the labels, the nested `<svg>` glyphs and every event
+     handler on them are untouched — the only DOM edit is appending three inert
+     spans at the end of the control.
+     ⛔ `--gleam-base` IS READ OFF EACH CONTROL, NOT INVENTED. The script writes the
+     control's own computed `background-color` into the fill layer, so `Get Now`
+     keeps the azure fill, `Get Commercial` keeps its dark translucent one, the nav
+     pills keep their accents and the tier CTAs keep whatever the tier rules gave
+     them. The label colour is never set at all — each control keeps its own — so
+     every contrast pair on the page is preserved exactly. `--gleam-accent` prefers
+     the control's own accent (`--tier-cta`, then `--nav-accent`, then
+     `--color-tertiary`), which is what keeps the pricing tiers tier-coloured
+     instead of forcing the reference's orange on them.
+     ⛔ THE OLD BUTTON EFFECTS ARE SWITCHED OFF ON GLEAM CONTROLS ONLY — the ringOut
+     expanding outline, the `.btn-ghost:hover` inset glow and the `btnShine` band.
+     Card, topbar, seam and side-clip outlines are NOT in these selectors and are
+     untouched, as is every transform/lift the buttons already had.
+     ⛔ AN HTML COMMENT ENDS WITH `--` `>` — NOT WITH A CSS TERMINATOR. Writing the
+     CSS closer here instead leaves the comment open and the parser swallows the
+     rest of the document: no style block, no script, no buttons dressed. -->
+     <!-- ⛔ THE COMMENT ABOVE ALSO MAY NOT CONTAIN `--` ANYWHERE ELSE, which is why
+     no custom-property name appears in it — see the same warning at ~:3460. -->
+<style id="gleamButtons">
+/* the four registered properties — global, shared names, `inherits: false` */
+@property --gleam-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+@property --gleam-angle-offset { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+@property --gleam-percent { syntax: "<percentage>"; initial-value: 5%; inherits: false; }
+@property --gleam-shine { syntax: "<color>"; initial-value: white; inherits: false; }
+
+@keyframes gleamAngle { to { --gleam-angle: 360deg; } }
+@keyframes gleamShimmer { to { rotate: 360deg; } }
+@keyframes gleamBreathe { from, to { scale: 1; } 50% { scale: 1.2; } }
+
+/* ⛔⛔ THE HOST KEEPS ITS OWN FILL, ITS OWN BORDER AND ITS OWN TEXT COLOUR. The
+   reference paints the fill itself, as `linear-gradient(base, base) padding-box`
+   over a `transparent` border, and drives the ring from `conic-gradient(...)
+   border-box`. That is not portable here for a measured reason: on this page most
+   controls carry their fill in `background-IMAGE`, not `background-color` —
+   `Get Now` computes to `linear-gradient(135deg, #0096ff, #0065e2)` with a
+   TRANSPARENT background-color, and the tier CTAs carry a tier wash the same way.
+   Reading `background-color` alone therefore produced a transparent fill and the
+   button lost its colour entirely. So the ring moves to its own child layer and
+   the control's `background`, `border`, `box-shadow` and `color` are never touched
+   — which also means no 1px border is added, no control is resized, and every
+   resting shadow and label contrast on the page is preserved to the byte.
+   ⛔ ALL FOUR REGISTERED PROPERTIES LIVE ON THE RING CHILD, NOT HERE, and that is
+   forced by `inherits: false`: a registered property does NOT inherit, so a value
+   set on the host would never reach the child that paints it. The reference keeps
+   each property on the element that consumes it for the same reason. Only the
+   UNREGISTERED variables below (accent, duration, transition) inherit, and those
+   are exactly the ones the children need to read from the host. */
+html [data-gleam] {
+  /* the accent defaults to the page azure and is overridden per control by the
+     script from the control's own `--tier-cta` / `--nav-accent` */
+  --gleam-accent: #0096ff;
+  --gleam-accent-soft: color-mix(in srgb, var(--gleam-accent) 55%, #fff);
+  --duration: 3s;
+  --shadow-size: 2px;
+  --transition: .8s cubic-bezier(.25, 1, .5, 1);
+  /* the resting shadow, captured by the script so hover can put it back */
+  --gleam-rest-shadow: none;
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+html [data-gleam]:active { translate: 0 1px; }
+
+/* ⛔⛔ TWO HOSTS HAD THE ACCENT AS THEIR OWN FILL, WHICH IS WHY THE EFFECT READ AS
+   INVISIBLE (owner, 2026-10-10 — the screenshot of `Get Personal`).
+   Diagnosis, measured rather than assumed: `.btn-primary` computes to
+   `linear-gradient(135deg, rgb(0,150,255), rgb(0,101,226))` and `.faq-cta` to
+   `rgb(0,114,214)`, while BOTH take `--gleam-accent: #0096ff`. An azure arc, an
+   azure sheen and white speckle dots on a fill that is already that same azure have
+   nothing to read against — ~1.0:1 between arc and fill. It is a CONTRAST fault,
+   not a layering one: verified before changing anything, every gleam host's
+   `::before`/`::after` computes `content: none` and no opaque layer paints above
+   the injected children, so the arc, speckle and sheen were all painting correctly
+   and simply had no ground to show on.
+   ⛔⛔ THE FILL BECOMES THE PAGE'S OWN GHOST SURFACE — NOT A DARKER ONE (owner's
+   correction: *"DO NOT DARKEN buttons ... use the same existing transparent surface
+   treatment/alpha as those other controls"*). `rgba(0,0,0,.3)` is exactly what
+   `.btn, .btn-ghost, .theme-toggle, .g-arrow, .menu-btn, .action-btn, .faq-btn`
+   already compute to (~:2605), so these two now sit on the SAME surface as every
+   other control on the page rather than on a new solid or tinted base. The shorthand
+   is doing the important half: it sets `background-image: none`, which is what
+   removes the opaque azure gradient that was painting over the decorative layers.
+   ⛔ AN EARLIER PASS AT THIS DARKENED THE FILL INSTEAD. That block is gone; nothing
+   here introduces a solid colour, a tint mix or a new alpha value.
+   ⛔ SCOPED TO THOSE TWO HOSTS AND NOTHING ELSE. The label colours are already
+   white on both and are not restated; borders, sizes, radii, handlers and the five
+   purchase `href`/`target`/`rel` triples are untouched by this block, and the
+   pricing tier CTAs keep their `--tier-cta` accents and 12% tier washes exactly as
+   they were. */
+html [data-gleam].btn-primary,
+html [data-gleam].faq-cta {
+  background: rgba(0, 0, 0, .3) !important;
+}
+
+html [data-gleam] > .gleam-edge,
+html [data-gleam] > .gleam-speckle,
+html [data-gleam] > .gleam-sheen,
+html [data-gleam] > .gleam-breath {
+  pointer-events: none;
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
+  translate: -50% -50%;
+  z-index: -1;
+  border-radius: inherit;
+}
+/* ---- the ring: the page's own exclude-mask ring primitive, rotating ----
+   ⛔ `padding: 1px` + the two stacked `linear-gradient(#000 0 0)` masks with
+   `mask-composite: exclude` is the same stroke the topbar's `.fx-ring`, the hero
+   badge and the compare divider already use — the reference's
+   `conic-gradient(… ) border-box` over a transparent border draws the identical
+   1px band, and this version cannot disturb the control's own border or size. */
+html [data-gleam] > .gleam-edge {
+  inset: 0;
+  translate: none;
+  padding: 1px;
+  /* the four registered properties, declared where they are consumed */
+  --gleam-angle-offset: 0deg;
+  --gleam-percent: 5%;
+  --gleam-shine: white;
+  background: conic-gradient(
+    from calc(var(--gleam-angle) - var(--gleam-angle-offset)),
+    transparent,
+    var(--gleam-accent) var(--gleam-percent),
+    var(--gleam-shine) calc(var(--gleam-percent) * 2),
+    var(--gleam-accent) calc(var(--gleam-percent) * 3),
+    transparent calc(var(--gleam-percent) * 4)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask-composite: exclude;
+  transition: var(--transition);
+  transition-property: --gleam-angle-offset, --gleam-percent, --gleam-shine;
+}
+/* the speckle field, masked to an arc that turns with the angle */
+html [data-gleam] > .gleam-speckle {
+  --size: calc(100% - var(--shadow-size) * 3);
+  --position: 2px;
+  --space: calc(var(--position) * 2);
+  width: var(--size);
+  height: var(--size);
+  background: radial-gradient(
+    circle at var(--position) var(--position),
+    white calc(var(--position) / 4),
+    transparent 0
+  ) padding-box;
+  background-size: var(--space) var(--space);
+  background-repeat: space;
+  mask-image: conic-gradient(from calc(var(--gleam-angle) + 45deg), black, transparent 10% 90%, black);
+  border-radius: inherit;
+  opacity: .4;
+}
+/* the rotating sheen */
+html [data-gleam] > .gleam-sheen {
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(-50deg, transparent, var(--gleam-accent), transparent);
+  mask-image: radial-gradient(circle at bottom, transparent 40%, black);
+  opacity: .6;
+}
+/* the breathing glow, revealed on hover/focus */
+html [data-gleam] > .gleam-breath {
+  --size: calc(100% + 1rem);
+  width: var(--size);
+  height: var(--size);
+  box-shadow: inset 0 -1ex 2rem 4px var(--gleam-accent);
+  opacity: 0;
+  transition: opacity var(--transition);
+  animation: calc(var(--duration) * 1.5) gleamBreathe linear infinite;
+}
+/* ⛔ THE TWO-TRACK COMPOSITION. Each of the three layers runs the SAME animation
+   twice: the first playing, the second paused — and `reverse`, so when hover starts
+   it the two ADD (that is what `animation-composition: add` buys, and it is why the
+   second track is a separate animation rather than a faster duration). The ring and
+   the speckle turn the conic angle; the sheen rotates instead, exactly as the
+   reference swaps `--animation` to its shimmer on `::after`.
+   ⛔ NOTHING HERE IS ON THE HOST — the host carries no animation of its own, so
+   `ringOut` has nothing to collide with and the old hover lift still works. */
+html [data-gleam] > .gleam-edge,
+html [data-gleam] > .gleam-speckle {
+  animation:
+    gleamAngle var(--duration) linear infinite,
+    gleamAngle calc(var(--duration) / .4) linear infinite reverse paused;
+  animation-composition: add;
+}
+html [data-gleam] > .gleam-sheen {
+  animation:
+    gleamShimmer var(--duration) linear infinite,
+    gleamShimmer calc(var(--duration) / .4) linear infinite reverse paused;
+  animation-composition: add;
+}
+/* the hover/focus state: broader arc, 95deg of offset, softer shine — all three
+   transitioned over the reference's .8s curve */
+html [data-gleam]:is(:hover, :focus-visible) > .gleam-edge {
+  --gleam-percent: 20%;
+  --gleam-angle-offset: 95deg;
+  --gleam-shine: var(--gleam-accent-soft);
+}
+html [data-gleam]:is(:hover, :focus-visible) > .gleam-edge,
+html [data-gleam]:is(:hover, :focus-visible) > .gleam-speckle,
+html [data-gleam]:is(:hover, :focus-visible) > .gleam-sheen { animation-play-state: running, running; }
+html [data-gleam]:is(:hover, :focus-visible) > .gleam-breath { opacity: 1; }
+
+/* ⛔ OLD BUTTON EFFECTS OFF, AND ONLY ON GLEAM CONTROLS. `ringOut` (the expanding
+   outline) and the `.btn:hover` inset glow are switched off here; the card /
+   `.quickfog-outer` rules that share the same keyframes are a different selector
+   list and keep running, and the resting box-shadow is put back from the value the
+   script captured, so nothing pops when the pointer arrives. `btnShine` is killed
+   by the `::after` line — that pseudo is the sheen band on `.btn-primary` and is
+   dead on every gleam control, replaced by `.gleam-sheen`. */
+html [data-gleam]:hover {
+  animation: none !important;
+  box-shadow: var(--gleam-rest-shadow, none) !important;
+  outline-color: transparent !important;
+  outline-offset: 0 !important;
+}
+/* ⛔ FOCUS IS NOT HOVER, AND THIS IS SPLIT OUT FOR A REASON. The line above clears
+   the outline because that is what the page's own hover rule did; applying the same
+   to `:focus-visible` would have removed the ONLY focus indication these controls
+   have — `.btn { outline: 1px solid transparent }` (~:2620) already overrides the
+   browser's own ring. So keyboard focus keeps its animation suppressed and the
+   resting shadow restored, and gets a real accented ring back, in the page's own
+   quick-nav idiom. Controles that already declare a focus ring outrank this one on
+   specificity and keep theirs: `.quick-nav a` stays `--nav-accent` and the pricing
+   tier CTAs stay `--tier-cta`. */
+html [data-gleam]:focus-visible {
+  animation: none !important;
+  box-shadow: var(--gleam-rest-shadow, none) !important;
+  outline: 2px solid var(--gleam-accent);
+  outline-offset: 3px;
+}
+html [data-gleam]::after { content: none !important; }
+
+/* ⛔ REDUCED MOTION, AND IT GOES FURTHER THAN "SLOWER". Every gleam animation stops
+   — sweep, shimmer and breathe alike — the hover state cannot restart any of them,
+   the breathing glow is dropped rather than parked, and the .8s property transition
+   is removed so a hover does not ease into a different-looking ring. What is left
+   is the resting ring at its 5% arc: the control still has an edge, it simply does
+   not travel. */
+@media (prefers-reduced-motion: reduce) {
+  html [data-gleam] > .gleam-edge,
+  html [data-gleam] > .gleam-speckle,
+  html [data-gleam] > .gleam-sheen,
+  html [data-gleam] > .gleam-breath { animation: none !important; }
+  html [data-gleam]:is(:hover, :focus-visible) > .gleam-edge,
+  html [data-gleam]:is(:hover, :focus-visible) > .gleam-speckle,
+  html [data-gleam]:is(:hover, :focus-visible) > .gleam-sheen { animation-play-state: paused !important; }
+  html [data-gleam]:is(:hover, :focus-visible) > .gleam-breath { opacity: 0; }
+  html [data-gleam] > .gleam-edge { transition: none; }
+}
+</style>
+
+<script id="gleamButtons">
+/* ⛔ ONE PASS, THEN A MUTATION OBSERVER — the whole point of the shared block above.
+   `dress()` marks the element with `data-gleam` first, so re-running it is a no-op
+   and a control that is created later (the hero clip switcher, the gallery dots,
+   anything the page scripts build) is dressed exactly once, with no wrapper, no
+   clone and no repeated style rule. */
+(function () {
+  /* ⛔⛔ THE DRESSING LIST, AND THE SIX CONTROLS THAT ARE NOT ON IT.
+     Owner (2026-10-10): *"REMOVE the supplied gleam effect from controls in these
+     screenshots"* — the v1.0.0 changelog pill, the "Valid until …" expiry badge, the
+     specifications accordion headers, the quick-nav section pills, and the FAQ/MUST
+     READ + theme-toggle pair. Each is dropped here by its STABLE CLASS rather than by
+     anything about its text, so a copy change can never re-enrol one:
+       `.version-badge`  the v1.0.0 changelog pill — it never matched this list, and is
+                         named in EXCL anyway so nothing can re-enrol it later
+       `.so-valid`       both "Valid until October 18th 2026" pills
+       `.acc-head`       all five accordion headers, plus/minus icons and all
+       `.quick-nav a`    all seven section pills
+       `.faq-btn`        the FAQ / MUST READ control
+       🗑 `.theme-toggle` named the light-dark switch. The switch itself is DELETED with
+                         the light theme (owner, 2026-10-11), so the class no longer
+                         exists anywhere in the document. The token is left in EXCL
+                         rather than edited out: an exclusion is a guard, it costs one
+                         string comparison, and it cannot un-exclude anything by being
+                         stale.
+     ⛔ WHAT STAYS: the main CTAs and the pricing buttons (`.btn`, which carries the
+     five purchase links and the tier CTAs), `.menu-btn`, `.g-arrow`, `.play-btn`,
+     `.coupon-btn` and `.faq-cta` — all the controls the owner did NOT point at. */
+  var SEL = '.btn,.menu-btn,.g-arrow,.play-btn,.coupon-btn,.faq-cta';
+  /* ⛔ THE EXCLUSION LIST IS ALSO AN UNDRESS LIST. Removing a selector from SEL stops
+     anything NEW being dressed, but it would leave any node that was dressed by an
+     earlier pass still carrying `data-gleam` and its four injected children — and
+     `data-gleam` is not decorative, it is what switches `ringOut`, the hover glow and
+     the `::after` sheen back OFF. So every reload actively strips the excluded
+     controls: attribute, layers and the two inline properties `dress()` wrote. */
+  var EXCL = '.version-badge,.so-valid,.acc-head,.quick-nav a,.faq-btn,.theme-toggle';
+
+  function dress(el) {
+    if (!el || el.nodeType !== 1 || el.hasAttribute('data-gleam')) return;
+    /* never dress a control inside another one — `.coupon-copy` lives inside
+       `.coupon-btn`, and two stacked gleam layers on one pill is a mess */
+    if (el.parentNode && el.parentNode.closest && el.parentNode.closest('[data-gleam]')) return;
+    var cs = getComputedStyle(el);
+    /* ⛔ THE CONTROL'S OWN ACCENT, IN PRIORITY ORDER, AND ONLY THE FIRST HIT.
+       `--tier-cta` is what the pricing tiers set, `--nav-accent` is what the seven
+       quick-nav pills set, and the azure in the stylesheet is the fallback — so the
+       tiers come out violet/teal/amber and the nav pills come out their own colour
+       instead of everything being forced to one accent.
+       ⛔ NOT `||`-CHAINED, WHICH IS THE BUG THIS REPLACES: `getPropertyValue` returns
+       an empty string for an unset property, and `'' || '#62b9ff'` is `'#62b9ff'` —
+       but stringing them with `+` concatenated all three into `#a184ffhsl(0,0%,98%)`,
+       an invalid colour. `var()` then made the whole ring declaration invalid at
+       computed-value time and the ring silently vanished on exactly those controls. */
+    var pick = function (n) { return cs.getPropertyValue(n).trim(); };
+    var accent = pick('--tier-cta') || pick('--nav-accent') || '';
+    if (accent) el.style.setProperty('--gleam-accent', accent);
+    /* the resting shadow, so hover can restore it when the old hover glow is
+       stripped — measured per control rather than guessed */
+    var rest = cs.boxShadow;
+    if (rest && rest !== 'none') el.style.setProperty('--gleam-rest-shadow', rest);
+    el.setAttribute('data-gleam', '');
+    var layers = ['gleam-edge', 'gleam-speckle', 'gleam-sheen', 'gleam-breath'];
+    for (var i = 0; i < layers.length; i++) {
+      var s = document.createElement('i');
+      s.className = layers[i];
+      s.setAttribute('aria-hidden', 'true');
+      el.appendChild(s);
+    }
+  }
+
+  /* ⛔ THE UNDRESS, AND IT RUNS BEFORE ANYTHING IS DRESSED. It strips the attribute,
+     the four injected layers and the two inline custom properties, which is exactly
+     the set `dress()` adds — so an excluded control goes back to being the page's own
+     button: `ringOut` on hover, the `::after` sheen on `.btn-primary`, the resting
+     hover glow, the accordion's plus/minus icons, the nav pills' accent borders and
+     the expiry copy are all whatever the stylesheet says they are, with nothing of
+     the gleam left behind. */
+  function undress(el) {
+    if (!el || el.nodeType !== 1 || !el.hasAttribute('data-gleam')) return;
+    el.removeAttribute('data-gleam');
+    el.style.removeProperty('--gleam-accent');
+    el.style.removeProperty('--gleam-rest-shadow');
+    var kids = el.querySelectorAll(':scope > .gleam-edge,:scope > .gleam-speckle,' +
+                                   ':scope > .gleam-sheen,:scope > .gleam-breath');
+    for (var i = 0; i < kids.length; i++) kids[i].parentNode.removeChild(kids[i]);
+  }
+
+  function scan(root) {
+    var list, bad;
+    try { list = root.querySelectorAll(SEL); } catch (e) { return; }
+    for (var i = 0; i < list.length; i++) dress(list[i]);
+    if (root.matches && root.matches(SEL)) dress(root);
+    /* ⛔ THE SAME PASS ALSO CLEANS, so a node the observer hands back can never carry
+       a stale dressing even if it was built already-wearing one. */
+    try { bad = root.querySelectorAll(EXCL); } catch (e) { bad = []; }
+    for (var k = 0; k < bad.length; k++) undress(bad[k]);
+    if (root.matches && root.matches(EXCL)) undress(root);
+  }
+
+  scan(document);
+  if (window.MutationObserver) {
+    new MutationObserver(function (records) {
+      for (var i = 0; i < records.length; i++) {
+        var added = records[i].addedNodes;
+        for (var j = 0; j < added.length; j++) if (added[j].nodeType === 1) scan(added[j]);
+      }
+    }).observe(document.documentElement, { childList: true, subtree: true });
+  }
 })();
 </script>
 </body>
