@@ -5520,7 +5520,26 @@ html.dark .hero-copy-card:hover {
 <header class="site-header" id="header">
   <div class="container header-inner">
     <div class="brand-group">
-      <a class="brand" href="#top" aria-label="Auto Face MoCap Pro home">
+      <!-- ⛔ THE BRAND LOCKUP IS A LINK TO THE STORE (owner, 2026-10-11). ONE anchor
+           covers BOTH halves — `span.brand-mark` (the logo image) and the
+           `span.brand-stroke-stage.brand-stroke-header` wordmark — so the logo and the
+           "Auto Face MoCap Pro" text are clickable together, which is what the shared
+           anchor was already for. Only the three link attributes changed; the class, the
+           `brand-group` wrapper, the inline image sizing, the wordmark's split spans and
+           every rule that styles them are untouched.
+           ⛔ `target`/`rel` MATCH THE OTHER OUTBOUND CTAs on this page: `_blank` with
+           `noopener noreferrer`, not the bare `noopener` the in-page changelog uses.
+           ⛔ `href="#top"` WAS A DEAD LINK — `#top` is referenced exactly once in this
+           file, on this line, and no element carries that id and no script reads it, so
+           nothing is orphaned by the swap.
+           ⛔ THE HEADER STACKING IS NOT AFFECTED: the logo still rides at `z-index: 5`
+           above the pattern layer at 4 and the outline at 3, set by the
+           `header#header.site-header.card-fx .brand` rule in `#afmpFinalOverrides`. That
+           rule targets the CLASS, so it keeps applying whatever the href is.
+           ⚠ `aria-label="Auto Face MoCap Pro home"` still says "home" and is left
+           exactly as it was — the owner scoped this to the link. It now announces a
+           destination the link no longer has; dropping " home" is a one-word edit. -->
+      <a class="brand" href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473" target="_blank" rel="noopener noreferrer" aria-label="Auto Face MoCap Pro home">
         <span class="brand-mark">
           <img src="https://mr3dpageclips.carrd.co/assets/images/image11.png?v=9efd0633" alt="Auto Face MoCap Pro logo" style="width:auto;height:auto;max-width:44px;max-height:44px;object-fit:contain;display:block;" />
         </span>
@@ -5530,7 +5549,7 @@ html.dark .hero-copy-card:hover {
              Color"); it was `--color-tertiary`, which resolves to WHITE in this page's second
              token block, so the two tones were indistinguishable. #0096ff is a literal on
              purpose: 6.42:1 on the dark header, 3.07:1 on the light one. -->
-        <span class="brand-stroke-stage brand-stroke-header"><video class="brand-stroke-video" muted playsinline preload="none" data-no-clip-bar aria-hidden="true" src="https://mr3dpageclips.carrd.co/assets/videos/video55.mp4?v=b4d60b51"></video><span class="brand-title-text" aria-hidden="true"><span class="stroke-letter" data-finish="0.625">A</span><span class="stroke-letter" data-finish="1.1667">u</span><span class="stroke-letter" data-finish="1.6667">t</span><span class="stroke-letter" data-finish="1.9167">o</span> <span class="brand-title-grad"><span class="stroke-letter" data-finish="2.5417">F</span><span class="stroke-letter" data-finish="3.125">a</span><span class="stroke-letter" data-finish="3.8333">c</span><span class="stroke-letter" data-finish="4.5417">e</span> <span class="stroke-letter" data-finish="5.7917">M</span><span class="stroke-letter" data-finish="6.0417">o</span><span class="stroke-letter" data-finish="6.625">C</span><span class="stroke-letter" data-finish="6.9583">a</span><span class="stroke-letter" data-finish="7.75">p</span></span> <span class="stroke-letter" data-finish="8.6667">P</span><span class="stroke-letter" data-finish="8.9583">r</span><span class="stroke-letter" data-finish="9.875">o</span></span></span>
+        <span class="brand-stroke-stage brand-stroke-header"><video class="brand-stroke-video" muted playsinline preload="none" data-no-clip-bar aria-hidden="true" src="https://mr3dpageclips.carrd.co/assets/videos/video55.mp4?v=3bc7b1f5"></video><span class="brand-title-text" aria-hidden="true"><span class="stroke-letter" data-finish="0.625">A</span><span class="stroke-letter" data-finish="1.1667">u</span><span class="stroke-letter" data-finish="1.6667">t</span><span class="stroke-letter" data-finish="1.9167">o</span> <span class="brand-title-grad"><span class="stroke-letter" data-finish="2.5417">F</span><span class="stroke-letter" data-finish="3.125">a</span><span class="stroke-letter" data-finish="3.8333">c</span><span class="stroke-letter" data-finish="4.5417">e</span> <span class="stroke-letter" data-finish="5.7917">M</span><span class="stroke-letter" data-finish="6.0417">o</span><span class="stroke-letter" data-finish="6.625">C</span><span class="stroke-letter" data-finish="6.9583">a</span><span class="stroke-letter" data-finish="7.75">p</span></span> <span class="stroke-letter" data-finish="8.6667">P</span><span class="stroke-letter" data-finish="8.9583">r</span><span class="stroke-letter" data-finish="9.875">o</span></span></span>
       </a>
     </div>
 
@@ -5560,7 +5579,18 @@ html.dark .hero-copy-card:hover {
            anchor, and `.header-inner`'s `1fr auto 1fr` grid still has all three tracks
            filled — brand, version badge, actions — so the bar's layout is unchanged.
            ⛔ Nothing else in this group was touched. -->
-      <a class="faq-btn" href="#specs" title="FAQ">FAQ <span class="must-read">Must Read</span></a>
+      <!-- ⛔ THE FAQ PILL NOW OPENS THE PRODUCT'S STORE FAQ IN A NEW TAB (owner,
+           2026-10-11). Was `href="#specs"`, an in-page jump to the `#specs` section —
+           the ONLY such link in the file, so that jump now has no trigger anywhere; the
+           section itself is untouched and still ships with its id, its accordions and
+           every rule that styles them. `_blank` + `noopener noreferrer` matches the
+           other outbound CTAs on this page rather than the bare `noopener` the
+           changelog link uses.
+           ⛔ CLASS, LABEL AND ICON UNCHANGED: `.faq-btn` keeps its pill styling, and
+           the `FAQ` + `<span class="must-read">Must Read</span>` markup is byte for
+           byte what it was, so the gleam exclusion that names `.faq-btn` still matches
+           it and the pill stays out of the button effect as before. -->
+      <a class="faq-btn" href="https://superhivemarket.com/products/auto-face-mocap-pro/faq?ref=473" target="_blank" rel="noopener noreferrer" title="FAQ">FAQ <span class="must-read">Must Read</span></a>
     </div>
   </div>
 </header>
@@ -5605,7 +5635,7 @@ html.dark .hero-copy-card:hover {
       <div class="gallery-viewport" id="gViewport">
         <ul class="gallery-track" id="gTrack">
           <li class="g-card">
-            <a class="g-thumb" href="#" title="Replace with your next add on link">
+            <a class="g-thumb" href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473" target="_blank" rel="noopener noreferrer">
               <span class="g-frame">
                 <span class="g-ph gp-5" role="img" aria-label="Add on 05">
                   <!-- ⚠ the .gp-5 gradient stays behind this image: it is the fallback
@@ -5613,9 +5643,11 @@ html.dark .hero-copy-card:hover {
                        Replace the caption name/alt when this slot gets a real product. -->
                   <img src="https://mr3dpageclips.carrd.co/assets/images/image16.jpg?v=a689dffb" alt="Add on 05" style="width:100%;height:100%;object-fit:cover;display:block;" />
                 </span>
-                <!-- badge renamed NEW → Star on the owner's word (2026-09-30); the .hot
-                     styling is kept as-is, it is the same class the other two badges use. -->
-                <span class="g-ph-tag hot">Star</span>
+                <!-- badge renamed NEW → Star (owner, 2026-09-30) and then Star → Flagship
+                     (owner, 2026-10-11). TEXT ONLY: the `.hot` class is untouched, and it
+                     is the same class all three badges on this track use, so the styling is
+                     identical to before the rename. -->
+                <span class="g-ph-tag hot">Flagship</span>
               </span>
               <span class="g-caption"><span class="g-name">Add on 05</span><span class="g-cta">View &rarr;</span></span>
             </a>
@@ -5743,7 +5775,7 @@ html.dark .hero-copy-card:hover {
            ⛔ GIF alpha is 1-BIT — the cut-out edges are hard, not feathered.
            The ?v= token is what keeps a replaced file from being pinned by carrd's 7-day
            cache — it is the FILE's ETag, refreshed by /updateclips (see _updateclips.py). -->
-      <img src="https://mr3dpageclips.carrd.co/assets/images/image18.gif?v=74427475"
+      <img src="https://mr3dpageclips.carrd.co/assets/images/image18.gif?v=110e3b49"
            alt="Auto Face MoCap Pro demo clip" width="453" height="391" />
     </div>
   </div>
@@ -5813,7 +5845,7 @@ html.dark .hero-copy-card:hover {
            not two fragments. The RENDERED text is still the full wordmark.
            ⚠ Do not "tidy" this into one span: `background-clip: text` paints inside the
            span it is set on, so a single span would gradient the whole title again. -->
-      <span class="brand-stroke-stage"><video class="brand-stroke-video" muted playsinline preload="none" data-no-clip-bar aria-hidden="true" src="https://mr3dpageclips.carrd.co/assets/videos/video55.mp4?v=b4d60b51"></video><span class="brand-title-text" aria-hidden="true"><span class="stroke-letter" data-finish="0.625">A</span><span class="stroke-letter" data-finish="1.1667">u</span><span class="stroke-letter" data-finish="1.6667">t</span><span class="stroke-letter" data-finish="1.9167">o</span> <span class="brand-title-grad"><span class="stroke-letter" data-finish="2.5417">F</span><span class="stroke-letter" data-finish="3.125">a</span><span class="stroke-letter" data-finish="3.8333">c</span><span class="stroke-letter" data-finish="4.5417">e</span> <span class="stroke-letter" data-finish="5.7917">M</span><span class="stroke-letter" data-finish="6.0417">o</span><span class="stroke-letter" data-finish="6.625">C</span><span class="stroke-letter" data-finish="6.9583">a</span><span class="stroke-letter" data-finish="7.75">p</span></span> <span class="stroke-letter" data-finish="8.6667">P</span><span class="stroke-letter" data-finish="8.9583">r</span><span class="stroke-letter" data-finish="9.875">o</span></span></span>
+      <span class="brand-stroke-stage"><video class="brand-stroke-video" muted playsinline preload="none" data-no-clip-bar aria-hidden="true" src="https://mr3dpageclips.carrd.co/assets/videos/video55.mp4?v=3bc7b1f5"></video><span class="brand-title-text" aria-hidden="true"><span class="stroke-letter" data-finish="0.625">A</span><span class="stroke-letter" data-finish="1.1667">u</span><span class="stroke-letter" data-finish="1.6667">t</span><span class="stroke-letter" data-finish="1.9167">o</span> <span class="brand-title-grad"><span class="stroke-letter" data-finish="2.5417">F</span><span class="stroke-letter" data-finish="3.125">a</span><span class="stroke-letter" data-finish="3.8333">c</span><span class="stroke-letter" data-finish="4.5417">e</span> <span class="stroke-letter" data-finish="5.7917">M</span><span class="stroke-letter" data-finish="6.0417">o</span><span class="stroke-letter" data-finish="6.625">C</span><span class="stroke-letter" data-finish="6.9583">a</span><span class="stroke-letter" data-finish="7.75">p</span></span> <span class="stroke-letter" data-finish="8.6667">P</span><span class="stroke-letter" data-finish="8.9583">r</span><span class="stroke-letter" data-finish="9.875">o</span></span></span>
     </div>
 
     <div class="hero-cards">
@@ -5840,7 +5872,7 @@ html.dark .hero-copy-card:hover {
            ⛔ The CARD is the invariant, the clip is not — it was pulled and swapped twice
            in one afternoon; never delete this .hero-side div, only its src changes. -->
       <div class="quickfog-outer hero-side reveal">
-        <video muted loop playsinline data-autoplay data-no-clip-bar src="https://mr3dpageclips.carrd.co/assets/videos/video52.mp4?v=0dc1b103" aria-label="Demo clip (left)"></video>
+        <video muted loop playsinline data-autoplay data-no-clip-bar src="https://mr3dpageclips.carrd.co/assets/videos/video52.mp4?v=60f93278" aria-label="Demo clip (left)"></video>
       </div>
       <div class="hero-center">
         <div class="quickfog-outer hero-copy-card">
@@ -5888,7 +5920,7 @@ html.dark .hero-copy-card:hover {
            data-no-clip-bar: decorative loop, nothing to scrub.
            ⛔ The CARD is the invariant, the clip is not — do not delete this .hero-side. -->
       <div class="quickfog-outer hero-side reveal">
-        <video muted loop playsinline data-autoplay data-no-clip-bar src="https://mr3dpageclips.carrd.co/assets/videos/video51.mp4?v=0dc1b103" aria-label="Demo clip (right)"></video>
+        <video muted loop playsinline data-autoplay data-no-clip-bar src="https://mr3dpageclips.carrd.co/assets/videos/video51.mp4?v=48c2e3cf" aria-label="Demo clip (right)"></video>
       </div>
     </div>
 
@@ -5948,7 +5980,7 @@ html.dark .hero-copy-card:hover {
       <!-- Hero clip — hosted on the Mr3D carrd CDN (was a placeholder pointing at
            assets/videos/hero-demo.mp4, which was never added). Swap the src to use
            a local file instead. -->
-      <video muted loop playsinline data-autoplay aria-label="Auto Face MoCap Pro demo preview" src="https://mr3dpageclips.carrd.co/assets/videos/video44.mp4?v=f823f065" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+      <video muted loop playsinline data-autoplay aria-label="Auto Face MoCap Pro demo preview" src="https://mr3dpageclips.carrd.co/assets/videos/video44.mp4?v=b6fce8a5" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
       <div class="grid-lines"></div>
       <!-- the progress bar is injected by the page script, for this clip and every
            other <video> on the page (see "Clip progress bars" in the CSS) -->
@@ -6306,10 +6338,17 @@ html.dark .hero-copy-card:hover {
          PURPOSE (choose the type before registering), its POSITION in the workflow (between
          the preset picker and the register button), and ONE value it displays ("Stylized").
          ⛔ WHAT IS NOT VERIFIED, AND IS THEREFORE NOT CLAIMED ANYWHERE BELOW: the full list
-         of types the popup offers. The copy names "Stylized" only as the value this clip
-         shows, never as a member of an enumerated set, and no other type name appears. If
-         the popup's options are meant to be listed exhaustively, the clip has to be readable
-         first — that is a one-line addition once it is.
+         of types the popup offers. No type name appears in the copy at all. If the popup's
+         options are meant to be listed exhaustively, the clip has to be readable first —
+         that is a one-line addition once it is.
+         ⛔⛔ THE HEADING AND COPY WERE THEN SET BY THE OWNER (2026-10-11), who supplied both
+         verbatim — heading `Character Type`, and the paragraph below it word for word as
+         given. **They supersede the first pass, which was written from the poster frame
+         alone.** The owner's second sentence — "The Reference images give you an idea of
+         what category your character falls into" — is his own statement about the popup and
+         is the one part of this row not sourced from the poster; it is reproduced exactly
+         rather than paraphrased. The paragraph ends without a full stop because that is how
+         it was supplied; do not "tidy" one in.
          ⛔ `rev` — THE ALTERNATING CONVENTION. The row above ("Compare side by side") is
          plain, so this one reverses and the zig-zag continues across the seam that matters.
          ⚠ Multi-Character Support below is ALSO `rev`, so this insertion leaves exactly one
@@ -6322,17 +6361,16 @@ html.dark .hero-copy-card:hover {
       <div class="feature-row side-row reveal rev" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
-            <h3 class="feature-title">Character Type popup</h3>
+            <h3 class="feature-title">Character Type</h3>
             <p class="feature-copy">
               Choose the character type in the popup before registration, so the add-on can use the
-              appropriate setup for that character. It sits in the Character step between the preset
-              picker and the Register Character button, and the panel shows the type it is currently
-              set to — Stylized in this clip.
+              appropriate setup for that character. The Reference images give you an idea of what
+              category your character falls into
             </p>
           </div>
         </div>
         <div class="feature-media" role="img" aria-label="Character type popup preview" style="margin:0;">
-          <video muted loop playsinline data-autoplay src="https://mr3dpageclips.carrd.co/assets/videos/video56.mp4?v=923c06c5" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
+          <video muted loop playsinline data-autoplay src="https://mr3dpageclips.carrd.co/assets/videos/video56.mp4?v=ddcb36f9" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1"></video>
           <span class="media-tag">Character Type</span>
         </div>
       </div>
@@ -6340,7 +6378,7 @@ html.dark .hero-copy-card:hover {
 
     <!-- Row 5: Register Character -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row reveal rev" style="padding:0;">
+      <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Multi-Character Support</h3>
@@ -6360,7 +6398,7 @@ html.dark .hero-copy-card:hover {
 
     <!-- Row 6: Mocap live controls -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal rev" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Mocap Live Controls</h3>
@@ -6379,7 +6417,7 @@ html.dark .hero-copy-card:hover {
 
     <!-- Row 7: Text + clip inside one main card -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row reveal rev" style="padding:0;">
+      <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <h3 class="feature-title">Record Clips Easily</h3>
@@ -6399,7 +6437,7 @@ html.dark .hero-copy-card:hover {
 
     <!-- Row 12 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row reveal" style="padding:0;">
+      <div class="feature-row side-row reveal rev" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <!-- Copy and clip rewritten together on the owner's word (2026-09-30: "add this clip
@@ -6430,7 +6468,7 @@ html.dark .hero-copy-card:hover {
 
     <!-- Row 12 -->
     <div class="quickfog-outer" style="margin-bottom:1rem;padding:.6rem;">
-      <div class="feature-row side-row reveal rev" style="padding:0;">
+      <div class="feature-row side-row reveal" style="padding:0;">
         <div class="feature-text">
           <div class="quickfog-outer" style="padding:.7rem;height:100%;text-align:center;">
             <!-- Copy rewritten to match the new clip (owner, 2026-10-01: "also match the text with
@@ -7063,7 +7101,7 @@ html.dark .hero-copy-card:hover {
       <div class="ob-media">
         <!-- Same file, same URL, replaced in place — the ?v= token carries the version
              (see _updateclips.py / the /updateclips command). -->
-        <img src="https://mr3dpageclips.carrd.co/assets/images/image18.gif?v=74427475"
+        <img src="https://mr3dpageclips.carrd.co/assets/images/image18.gif?v=110e3b49"
              alt="Auto Face MoCap Pro demo clip" width="453" height="391" />
       </div>
     </div>
@@ -8005,7 +8043,7 @@ html.dark .hero-copy-card:hover {
      With a single row the arrows stay disabled (dimmed), which is this page's own
      convention (.g-arrow:disabled). Add a second row and they come alive. */
   var HERO_SLIDES = [
-    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video44.mp4?v=f823f065',
+    { src: 'https://mr3dpageclips.carrd.co/assets/videos/video44.mp4?v=b6fce8a5',
       tag: 'Anime', name: 'Chan',
       href: 'https://kanafuyuko.booth.pm/items/5419110?registration=1' },
     { src: 'https://mr3dpageclips.carrd.co/assets/videos/video45.mp4?v=14259bb1',
@@ -11572,7 +11610,7 @@ header#header.site-header.card-fx .brand { position: relative; z-index: 5; }
    page does regularly (this very change added one). A named class cannot drift.
    ⛔ THE OTHER CLIPS ARE UNTOUCHED. Every remaining `feature-row` keeps its video, its
    pattern layers, its edge fade and its reveal animation — including the new video56
-   "Character Type popup" row added above Multi-Character Support, which loads from the
+   "Character Type" row added above Multi-Character Support, which loads from the
    Carrd host and is not hidden. No other selector in this file reads `.feat-off`. */
 .feat-off { display: none !important; }
 
