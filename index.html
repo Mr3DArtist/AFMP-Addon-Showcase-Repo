@@ -811,35 +811,40 @@ header.site-header {
   background: inherit;
   clip-path: polygon(var(--b0, 35%) 0, var(--b1, 65%) 0, var(--ax, 50%) 100%);
 }
-/* THE ACTIVE CLIP — the bubble fills with the brand gradient and the gradient
-   travels along it (and through its tail).
-   ⛔ The sweep is px-based — 240px is exactly one tile of `background-size`, so the
-     loop is seamless — and NOT the page's %-based `glowing`. The tail inherits this
-     background, and a percentage resolves against the TAIL's own 15px box: the two
-     would be showing different slices of the gradient and the join would break
-     visibly. In px the tail only has to add its own offset (--tip-x, set by
-     aimTips) to line up to the pixel. */
+/* THE ACTIVE CHIP — FLAT AZURE (owner, 2026-10-11: *"remove chip gradients and use flat
+   colors for active/inactive/hover states"*).
+   ⛔ WHAT WAS HERE: `background-image: linear-gradient(90deg,#0096ff,#22d3ee,#3b82f6,
+   #22d3ee,#0096ff)` at `background-size:240px` with `animation: tipFlow 6s linear infinite`
+   — a gradient that TRAVELLED along the chip and, through `background: inherit` on the
+   beak, through its pointer as well. That pair of declarations (image + size + repeat +
+   the animation, and the tail's copy of it below) is what is removed. The fill is now the
+   gradient's own brand stop, so the chip reads the same colour it averaged before.
+   ⛔ THE SHORTHAND IS DELIBERATE: the resting `.hm-tip` sets its fill with `background:`,
+   and `background-image` alone would leave that light-grey ink mix showing underneath.
+   `background: #0096ff` replaces the whole background in one declaration.
+   ⛔ KEPT, because none of it is a gradient: the dark `--bg`-family text (contrast on flat
+   azure is higher than it was on the lightest stop of the sweep), the two drop-shadows —
+   including the azure glow that wraps the chip and its pointer as one object — the chip's
+   size, padding, radius, pointer beak, click behaviour and the `active` selection state.
+   ⛔ THE INACTIVE AND HOVER STATES ALREADY CARRIED NO GRADIENT: the resting chip is a flat
+   `color-mix(in srgb, var(--ink) 85%, var(--bg))` and hover is the flat 2px `#0096ff` ring
+   (`tipRing`, which expands and fades — a transform/opacity animation, not a gradient).
+   Both are untouched, so all three states are now flat by construction. */
 .hero-media .hm-tip.active {
   color: #041430;
-  background-image: linear-gradient(90deg, #0096ff, #22d3ee, #3b82f6, #22d3ee, #0096ff);
-  background-size: 240px 100%;
-  background-repeat: repeat;
-  animation: tipFlow 6s linear infinite;
+  background: #65d4ff;
   /* the glow is a SECOND drop-shadow, not a box-shadow, so the halo wraps the tail
      too — one object, lit as one object */
   filter: drop-shadow(0 6px 14px color-mix(in srgb, #000 45%, transparent))
           drop-shadow(0 0 16px color-mix(in srgb, #0096ff 65%, transparent));
 }
-.hero-media .hm-tip.active::after {
-  --flow-x: var(--tip-x, 0px);
-  /* the same offset as a STATIC value as well: the animation overrides it while
-     it runs, but with prefers-reduced-motion (animation:none) this is what keeps
-     the tail's slice of the gradient lined up with the body above it. Without it
-     both elements read background-position:0 and the join is off by the tail's
-     own offset — 44px of the wrong colour. */
-  background-position: var(--flow-x, 0px) 0;
-  animation: tipFlow 6s linear infinite;
-}
+/* ⛔ THE TAIL NEEDS NO RULE OF ITS OWN ANY MORE. It carried a second copy of `tipFlow`
+   plus a `--flow-x` offset whose only job was to keep the travelling gradient's phase
+   lined up between the 15px tail box and the body above it (a percentage or an unoffset
+   px value resolves against the tail's own box, so the two showed different slices of the
+   same gradient). A flat fill has no phase to line up — `background: inherit` on
+   `.hm-tip::after` now simply hands the tail the same solid azure as the body, at any
+   width, with nothing to drift. */
 @keyframes tipFlow {
   from { background-position: var(--flow-x, 0px) 0; }
   to   { background-position: calc(var(--flow-x, 0px) - 240px) 0; }
@@ -1678,20 +1683,12 @@ header.site-header {
 /* ============================================================
    HERO + SECTION PARTICLE PATTERN BACKGROUNDS
    ============================================================ */
-/* Interactive mouse-follow background glow */
-.mouse-glow {
-  position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none;
-  width: 520px; height: 520px; margin: -260px 0 0 -260px;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle, var(--glow-tertiary), transparent 62%),
-    radial-gradient(circle, var(--glow-accent), transparent 45%);
-  opacity: .55;
-  mix-blend-mode: normal;
-  transition: opacity .3s ease;
-  will-change: transform;
-}
-@media (prefers-reduced-motion: reduce) { .mouse-glow { display: none; } }
+/* Interactive mouse-follow background glow — 🗑 REMOVED (owner, 2026-10-11: *"remove
+   mouse-hover/mouse-follow glow from BACKGROUND only"*). This was the fixed 520×520
+   disc that followed the cursor behind the whole page; the element, its second copy of
+   this rule (further down) and the rAF/mousemove pair that drove it are all gone. The
+   static `body::before` ambient glows and the particle field are NOT this element and
+   are untouched. */
 
 .hero .container,
 .section > .container,
@@ -2689,15 +2686,8 @@ h1,h2,h3,h4,.site-header .brand,.section-title,.g-title,.g-name,.acc-head,.vb-ve
 /* ============================================================
    GOBOS MASTER EFFECTS PORT
    ============================================================ */
-/* Mouse glow */
-.mouse-glow{
-  position:fixed;top:0;left:0;z-index:-1;pointer-events:none;
-  width:520px;height:520px;margin:-260px 0 0 -260px;border-radius:50%;
-  background:radial-gradient(circle,var(--glow-tertiary),transparent 62%),
-             radial-gradient(circle,var(--glow-accent),transparent 45%);
-  opacity:.5;will-change:transform;transition:opacity .3s ease;
-}
-@media (prefers-reduced-motion:reduce){.mouse-glow{display:none}}
+/* Mouse glow — 🗑 REMOVED, see the note on the first copy of this rule. The gobos block
+   it sat in is otherwise intact (the reveal rules below are untouched). */
 /* Reveal on scroll */
 .reveal{opacity:0;transform:translateY(30px);transition:opacity .8s ease,transform .8s ease}
 .reveal.visible{opacity:1;transform:none}
@@ -2731,11 +2721,24 @@ h1,h2,h3,h4,.site-header .brand,.section-title,.g-title,.g-name,.acc-head,.vb-ve
    background-size:400% only a quarter of the gradient is on screen at a time, so
    a gradient that merely STARTED and ENDED azure showed cyan/blue almost always
    and the brand azure was off-screen for most of the sweep.
-   First and last stop are the same, so the sweep still loops seamlessly. */
+   ⛔⛔ THE SWEEP IS GONE (owner, 2026-10-11: *"remove animation of HERO CLIPS background
+   glow gradient and keep the glow static"*). This `::before` is the halo BEHIND the hero
+   clip — the blurred 18px gradient wash that sits at z-index:-1. It carried
+   `animation: glowing 20s linear infinite`, which swept the gradient's background-position
+   across it. That declaration is the only thing removed: the gradient, the 400% size, the
+   blur, the inset and the opacity are untouched, and a gradient animation's resting frame
+   IS `background-position: 0 0` — so the halo now shows exactly the frame it used to start
+   on, held still.
+   ⛔ NOT THE SAME LAYER AS THE OUTLINES, which is why this is a one-declaration change:
+   the moving rings on the hero's two side clips are `.hero-cards > .hero-side::before`
+   (a mask-composite conic ring driven by `fxOrbit`), the nav pills' and badges' rings are
+   `.hm-nav::before` / `.hm-badge::before` (mask-composite, `glowing`), and none of those
+   are this selector. `glowing` itself stays in the stylesheet and still runs on
+   `.btn-glow::before`, the rainbow halo on the primary CTAs. */
 .hero-media::before{
   content:'';position:absolute;top:-10px;left:-10px;width:calc(100% + 20px);height:calc(100% + 20px);border-radius:inherit;
   background:linear-gradient(45deg,#0096ff,#22d3ee,#0096ff,#3b82f6,#0096ff);
-  background-size:400%;filter:blur(18px);z-index:-1;opacity:.4;animation:glowing 20s linear infinite;pointer-events:none;
+  background-size:400%;filter:blur(18px);z-index:-1;opacity:.4;pointer-events:none;
 }
 .dark .hero-media::before{opacity:.6}
 .hero-media{position:relative}
@@ -4684,6 +4687,32 @@ html.dark #workflow .feature-text > .quickfog-outer::before {
   background-position: 120% 0, 0 0, 0 0 !important;
 }
 
+/* ------------------------------------- 5b. the compare pair's MOVING OUTLINE, held still
+   Owner, 2026-10-11: *"remove moving outline animation ONLY from Old Way versus With Auto
+   Face MoCap Pro comparison section … Keep static center divider, patterns, fading,
+   content, static edges. Do not disable other outline animations especially
+   hero/topbar."*
+   ⛔ THE LAYER THIS TARGETS IS THE INJECTED `.fx-ring`, identified by reading the source
+   rather than by guessing at the screenshot: `#cardFxLayers` lists `.compare-card` in its
+   TARGETS, so each half is a `card-fx` and gets three real spans — `.fx-dots` (the dot
+   tile), `.fx-pool` (the cursor pool) and `.fx-ring` (the ring). Only the ring orbits: it
+   is the shared `fxOrbit` conic arc, `@keyframes fxOrbit { to { --fxA: 360deg } }`, the
+   same primitive the topbar, the Shapekeys cards and the two hero side clips run.
+   ⛔ SO THE RULE IS A FREEZE, NOT A DELETION. `animation: none` stops `--fxA` at its
+   registered initial value of `0deg`; the conic gradient, the 1px padding band, the two
+   `linear-gradient(#000 0 0)` masks with their `xor`/`exclude` composite and the three
+   drop-shadow glow layers are all untouched, so the outline is still painted on the
+   perimeter — it is a STATIC edge now instead of a travelling arc.
+   ⛔ SCOPED BY `#workflow .compare-card > .fx-ring` AND NOTHING ELSE. The topbar's ring
+   (`.card-fx > .fx-ring` on `.site-header`), the hero clip's ring, the hero side clips'
+   mirrored rings (`.hero-cards > .hero-side::before`) and the feature text cards keep
+   their `fxOrbit` untouched — and they keep it at the 24Hz the authored cap samples them
+   at, not at the display's rate.
+   ⛔ WHAT IS DELIBERATELY LEFT ALONE ON THESE TWO HALVES: the `.fx-dots` pattern (it keeps
+   `dotWave`/`patternTileLoop`), the `.fx-pool` cursor pool, the quickfog `--edge-fade`
+   masks, the centre divider and every word of the content. */
+#workflow .compare-card > .fx-ring { animation: none !important; }
+
 /* ------------------------------------- 7. the two TIME CHIPS, onto the page theme
    Owner: *"also update these two to match the page theme"*, and on being asked which two:
    **the two time chips** — "~ 6 hours" and "~ 2 minutes".
@@ -5492,8 +5521,10 @@ html.dark .hero-copy-card:hover {
 <!-- ============================================================ -->
 <canvas id="interactiveBg" aria-hidden="true"></canvas>
 
-<!-- Interactive mouse-follow background glow -->
-<div class="mouse-glow" aria-hidden="true"></div>
+<!-- 🗑 REMOVED: `<div class="mouse-glow" aria-hidden="true"></div>` — the page-wide
+     cursor spotlight that sat here, between the particle canvas and the noscript block.
+     Owner, 2026-10-11: *"remove mouse-hover/mouse-follow glow from BACKGROUND only"*.
+     The canvas above it is the particle field and is NOT part of that removal. -->
 <noscript><style>.g-card{opacity:1;transform:none}.reveal{opacity:1;transform:none}</style></noscript>
 <!-- ⛔ DARK IS THE ONLY THEME (owner, 2026-10-11: *"remove light theme and topbar theme
      switch … make dark mode the sole supported active theme"*). The `<html>` tag carries
@@ -5551,7 +5582,7 @@ html.dark .hero-copy-card:hover {
              Color"); it was `--color-tertiary`, which resolves to WHITE in this page's second
              token block, so the two tones were indistinguishable. #0096ff is a literal on
              purpose: 6.42:1 on the dark header, 3.07:1 on the light one. -->
-        <span class="brand-stroke-stage brand-stroke-header"><video class="brand-stroke-video" muted playsinline preload="none" data-no-clip-bar aria-hidden="true" src="https://mr3dpageclips.carrd.co/assets/videos/video55.mp4?v=3bc7b1f5"></video><span class="brand-title-text" aria-hidden="true"><span class="stroke-letter" data-finish="0.625">A</span><span class="stroke-letter" data-finish="1.1667">u</span><span class="stroke-letter" data-finish="1.6667">t</span><span class="stroke-letter" data-finish="1.9167">o</span> <span class="brand-title-grad"><span class="stroke-letter" data-finish="2.5417">F</span><span class="stroke-letter" data-finish="3.125">a</span><span class="stroke-letter" data-finish="3.8333">c</span><span class="stroke-letter" data-finish="4.5417">e</span> <span class="stroke-letter" data-finish="5.7917">M</span><span class="stroke-letter" data-finish="6.0417">o</span><span class="stroke-letter" data-finish="6.625">C</span><span class="stroke-letter" data-finish="6.9583">a</span><span class="stroke-letter" data-finish="7.75">p</span></span> <span class="stroke-letter" data-finish="8.6667">P</span><span class="stroke-letter" data-finish="8.9583">r</span><span class="stroke-letter" data-finish="9.875">o</span></span></span>
+        <span class="brand-stroke-stage brand-stroke-header"><span class="stroke-anim-wrap" aria-hidden="true"><svg class="stroke-anim" viewBox="159.6 305.7 5623.5 515.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><path d=""/></svg></span><span class="brand-title-text" aria-hidden="true" data-ink="Auto Face MoCap Pro"><span class="stroke-letter" data-finish="0.625">A</span><span class="stroke-letter" data-finish="1.1667">u</span><span class="stroke-letter" data-finish="1.6667">t</span><span class="stroke-letter" data-finish="1.9167">o</span> <span class="brand-title-grad"><span class="stroke-letter" data-finish="2.5417">F</span><span class="stroke-letter" data-finish="3.125">a</span><span class="stroke-letter" data-finish="3.8333">c</span><span class="stroke-letter" data-finish="4.5417">e</span> <span class="stroke-letter" data-finish="5.7917">M</span><span class="stroke-letter" data-finish="6.0417">o</span><span class="stroke-letter" data-finish="6.625">C</span><span class="stroke-letter" data-finish="6.9583">a</span><span class="stroke-letter" data-finish="7.75">p</span></span> <span class="stroke-letter" data-finish="8.6667">P</span><span class="stroke-letter" data-finish="8.9583">r</span><span class="stroke-letter" data-finish="9.875">o</span></span></span>
       </a>
     </div>
 
@@ -5847,7 +5878,7 @@ html.dark .hero-copy-card:hover {
            not two fragments. The RENDERED text is still the full wordmark.
            ⚠ Do not "tidy" this into one span: `background-clip: text` paints inside the
            span it is set on, so a single span would gradient the whole title again. -->
-      <span class="brand-stroke-stage"><video class="brand-stroke-video" muted playsinline preload="none" data-no-clip-bar aria-hidden="true" src="https://mr3dpageclips.carrd.co/assets/videos/video55.mp4?v=3bc7b1f5"></video><span class="brand-title-text" aria-hidden="true"><span class="stroke-letter" data-finish="0.625">A</span><span class="stroke-letter" data-finish="1.1667">u</span><span class="stroke-letter" data-finish="1.6667">t</span><span class="stroke-letter" data-finish="1.9167">o</span> <span class="brand-title-grad"><span class="stroke-letter" data-finish="2.5417">F</span><span class="stroke-letter" data-finish="3.125">a</span><span class="stroke-letter" data-finish="3.8333">c</span><span class="stroke-letter" data-finish="4.5417">e</span> <span class="stroke-letter" data-finish="5.7917">M</span><span class="stroke-letter" data-finish="6.0417">o</span><span class="stroke-letter" data-finish="6.625">C</span><span class="stroke-letter" data-finish="6.9583">a</span><span class="stroke-letter" data-finish="7.75">p</span></span> <span class="stroke-letter" data-finish="8.6667">P</span><span class="stroke-letter" data-finish="8.9583">r</span><span class="stroke-letter" data-finish="9.875">o</span></span></span>
+      <span class="brand-stroke-stage"><span class="stroke-anim-wrap" aria-hidden="true"><svg class="stroke-anim" viewBox="159.6 305.7 5623.5 515.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><path d=""/></svg></span><span class="brand-title-text" aria-hidden="true" data-ink="Auto Face MoCap Pro"><span class="stroke-letter" data-finish="0.625">A</span><span class="stroke-letter" data-finish="1.1667">u</span><span class="stroke-letter" data-finish="1.6667">t</span><span class="stroke-letter" data-finish="1.9167">o</span> <span class="brand-title-grad"><span class="stroke-letter" data-finish="2.5417">F</span><span class="stroke-letter" data-finish="3.125">a</span><span class="stroke-letter" data-finish="3.8333">c</span><span class="stroke-letter" data-finish="4.5417">e</span> <span class="stroke-letter" data-finish="5.7917">M</span><span class="stroke-letter" data-finish="6.0417">o</span><span class="stroke-letter" data-finish="6.625">C</span><span class="stroke-letter" data-finish="6.9583">a</span><span class="stroke-letter" data-finish="7.75">p</span></span> <span class="stroke-letter" data-finish="8.6667">P</span><span class="stroke-letter" data-finish="8.9583">r</span><span class="stroke-letter" data-finish="9.875">o</span></span></span>
     </div>
 
     <div class="hero-cards">
@@ -7231,26 +7262,75 @@ html.dark .hero-copy-card:hover {
 (function () {
   'use strict';
 
-  /* ---------- 0. Mouse-follow background glow ---------- */
-  var glow = document.querySelector('.mouse-glow');
-  /* ⛔ the CSS already hides .mouse-glow under prefers-reduced-motion, but the rAF
-     chain still woke on every mousemove and animated an element nobody could see */
-  var calmMotion = false;
-  try { calmMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
-  if (glow && !calmMotion) {
-    var gX = 0, gY = 0, tX = 0, tY = 0, gRaf = null;
-    function glowTick() {
-      gX += (tX - gX) * 0.95;
-      gY += (tY - gY) * 0.95;
-      glow.style.transform = 'translate(' + gX + 'px,' + gY + 'px)';
-      if (Math.abs(gX - tX) < 0.4 && Math.abs(gY - tY) < 0.4) { gRaf = null; return; } // idle → stop
-      gRaf = requestAnimationFrame(glowTick);
+  /* ---------- 0a. BELOW-FOLD MEDIA IS GIVEN NO `src` UNTIL THE VISITOR GETS NEAR ----
+     ⛔⛔ MEASURED IN THE STORE EMBED BEFORE THIS PASS (headless Chrome, a 14000px frame
+     whose visitor is looking at the top of the page): 11 of 11 images fully downloaded
+     (4.3MB) and 14 of 19 clips had their metadata fetched — none of it on screen. The
+     frame's own `innerHeight` is the whole document, so no markup-side test and no
+     `getBoundingClientRect()` against the window can tell "below the fold" from "in
+     front of the buyer" inside a store page. So the elements are handed NO url at all
+     and the URL is parked in `data-afmp-src`; the AFMP gate further down this file gives
+     it back through an IntersectionObserver, which is the one instrument that clips
+     against the PARENT's viewport (see the note on that module).
+     ⛔ IT RUNS HERE, BEFORE THE CLIP-BAR BUILDER (section 7): that builder reads
+     `getAttribute('src')` to decide whether a clip is loading, so stripping first leaves
+     its "Loading" mark off over a clip that is loading nothing — which is the truth. The
+     other order put a spinner over every below-fold clip until its first media event.
+     ⛔ NOTHING IS PRELOADED INTO A HIDDEN ELEMENT and no `<link rel=preload>` is added:
+     the url lives on the element that will use it, so media the visitor never reaches is
+     never fetched by anything, at any priority.
+     ⛔ WHAT STAYS EAGER: everything within `EAGER_PX` of the top of the document (the
+     masthead, the hero, the hero's side clips), anything at or above where the page is
+     already scrolled to, the hero's own media boxes, and anything marked `data-eager`.
+     ⛔ `.brand-stroke-stage` IS STILL IN THE GUARD AND NOW HAS NO MEDIA IN IT AT ALL — the
+     wordmark's stroke video was removed on the owner's word (see the `#brandInk` module),
+     so the clause is inert rather than load-bearing. It is left in place because the rule
+     it states is still the right one for that element if a clip is ever put back inside it.
+     ⛔ LAYOUT IS UNTOUCHED. Every deferred image and clip sits in a box that is already
+     sized by its own frame (`.g-ph`/`.c-ph`/`.feature-media` backgrounds, `inset:0`
+     absolute clips), so an element with no source occupies exactly the box it occupied
+     with one — there is no reflow when the url is handed back. */
+  (function deferBelowFoldMedia() {
+    var EAGER_PX = 2200;                 // the document's first screenful and a bit
+    var y = window.scrollY || 0;
+    var eager = Math.max(EAGER_PX, y + 1200);
+    var els;
+    try { els = document.querySelectorAll('img[src], video[src]'); } catch (e) { return; }
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (el.hasAttribute('data-eager')) continue;
+      if (el.closest && el.closest('.brand-stroke-stage, .hero-media, .hero-video-card, header.site-header')) continue;
+      var s = el.getAttribute('src');
+      if (!s || s.slice(0, 5) === 'data:') continue;   // no url, or an inline one
+      var r;
+      try { r = el.getBoundingClientRect(); } catch (e) { continue; }
+      if ((r.top + y) < eager) continue;               // at or above the fold: leave it
+      el.setAttribute('data-afmp-src', s);
+      el.removeAttribute('src');
     }
-    window.addEventListener('mousemove', function (e) {
-      tX = e.clientX; tY = e.clientY;
-      if (!gRaf) gRaf = requestAnimationFrame(glowTick);
-    }, { passive: true });
-  }
+  })();
+
+  /* ---------- 0. Mouse-follow background glow — 🗑 REMOVED ----------
+     Owner, 2026-10-11: *"remove mouse-hover/mouse-follow glow from BACKGROUND only"*.
+     This block was the page-wide cursor spotlight: it selected `.mouse-glow` (the fixed
+     520×520 radial-gradient disc pinned to the viewport at z-index:-1), ran a rAF chain
+     with a 0.95-per-frame easing, and wrote `transform` on every frame of every mousemove.
+     ⛔ REMOVED WITH IT, and this is the part that is easy to leave behind: the
+     `mousemove` listener itself. The element was pointer-transparent, so the only thing
+     that listener ever did was feed this loop — with the disc gone it would have been an
+     event handler and a per-move wake-up animating nothing.
+     ⛔ NOT REMOVED, deliberately — the owner named the BACKGROUND spotlight only:
+       · `body::before` (the two static ambient brand glows behind everything),
+       · the particle field (`#interactiveBg`) AND its cursor repulsion — the field's own
+         `mousemove`/`mouseout` handlers further down this file are still the only thing
+         that makes a node flee the pointer,
+       · every per-card and per-control hover glow: the `.fx-pool` cursor pools on the
+         cards, `html.dark .price-card::after`, `.offer-band::after`, the `ringOut` hover
+         rings, the `btnShine` sheen and the three gleam layers on the buttons. Those are
+         hover effects on individual controls, not a background follow.
+     ⛔ `calmMotion` (the reduced-motion probe that existed only to skip this loop) is gone
+     with it — nothing else in this script read it. The quick nav and the carousel each
+     test the preference inline, and the clip-bar block keeps its own copy as `CALM`. */
 
   /* ---------- 1. Theme toggle + localStorage — 🗑 DELETED ----------
      Owner, 2026-10-11: *"remove light theme and topbar theme switch … remove theme-switch
@@ -9146,7 +9226,12 @@ html.dark .hero-copy-card:hover {
     for (var i = 0; i < imgs.length; i++) {
       var im = imgs[i];
       if (im.__afmpGif) continue;
-      var s = im.getAttribute('src') || '';
+      /* ⛔ THE URL IS READ FROM EITHER PLACE. A below-fold GIF has had its `src` taken
+         away and parked in `data-afmp-src` (see "BELOW-FOLD MEDIA" in the page script),
+         and this test has to still recognise it — the poster AND the clip rectangle it
+         registers both hang off this branch. A GIF that is not recognised here would be
+         one the field could paint over. */
+      var s = im.getAttribute('src') || im.getAttribute('data-afmp-src') || '';
       if (!/\.gif(\?|#|$)/i.test(s)) continue;
       im.__afmpGif = true;
       im.classList.add('gif-clip');          // ⛔ also a clip rectangle for the field
@@ -9172,6 +9257,369 @@ html.dark .hero-copy-card:hover {
       })(im, cv, host);
     }
   }
+
+  /* ------------------------------------------------------------ 4b. LAZY MEDIA */
+  /* ⛔⛔ THE URLS THE PAGE SCRIPT TOOK AWAY ARE GIVEN BACK HERE, ON THE ONE OBSERVER THAT
+     ANSWERS THE QUESTION THE STORE EMBED ACTUALLY ASKS. A `root: null` observer clips
+     against the TOP-LEVEL viewport — measured, in this document, in a cross-origin frame:
+     a document-sized probe reported `intersectionRatio = 800/14000`, i.e. exactly the
+     part of the frame the parent was showing, and the value tracked the parent's scroll.
+     That is what makes a preload margin possible in an embed at all: `rootMargin` grows
+     that intersection rectangle, so "within 1200px of what the buyer can see" is a real
+     measurement here and an unknowable one to any arithmetic on `innerHeight`.
+     ⛔ IT IS A SECOND OBSERVER, NOT A SECOND CALLBACK ON THE GATE'S. The gate's observer
+     is the authority on "may this clip play" and carries no margin — a margin there would
+     start clips early. This one only ever hands a url back, and it unobserves the element
+     as it does, so it costs one observation per element for the life of the page.
+     ⛔ NO `.load()` CALL: assigning `src` runs the media load algorithm by itself (the
+     note in the page script about `<img>` needing no load() is the same fact).
+     ⛔ AND THE CLIP MAY ALREADY BE ON SCREEN. A restored clip is not started here unless
+     the GATE has already reported it visible — `tryPlay` is the same choke point every
+     other start goes through, and it re-checks both the autoplay flag and the gate. A
+     clip restored just off screen is started by the ordinary visibility callback the
+     moment it arrives, exactly as if it had carried its url from the start. */
+  var LAZY_ROOT_MARGIN = '1200px 0px 1200px 0px';
+  var lazyIo = null;
+
+  function lazyRestore(el) {
+    var s = el.getAttribute('data-afmp-src');
+    if (s === null) return;
+    el.removeAttribute('data-afmp-src');
+    el.setAttribute('src', s);
+    /* a restored clip that is already in front of the visitor starts now; one that is
+       not waits for the gate's own callback, so nothing is ever started off screen */
+    if (el.__afmpAutoplay) tryPlay(el);
+  }
+
+  function lazyScan() {
+    var els;
+    try { els = document.querySelectorAll('[data-afmp-src]'); } catch (e) { return; }
+    if (!els.length) return;
+    if (!hasIO) {                      // no observer: everything gets its url back
+      for (var j = 0; j < els.length; j++) lazyRestore(els[j]);
+      return;
+    }
+    if (!lazyIo) {
+      lazyIo = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          var en = entries[i];
+          if (!en.isIntersecting) continue;
+          lazyIo.unobserve(en.target);
+          lazyRestore(en.target);
+        }
+      }, { root: null, rootMargin: LAZY_ROOT_MARGIN, threshold: 0 });
+    }
+    for (var k = 0; k < els.length; k++) {
+      if (els[k].__afmpLazySeen) continue;
+      els[k].__afmpLazySeen = true;
+      lazyIo.observe(els[k]);
+    }
+  }
+
+  /* ------------------------------------------------------------ 4c. THE 24Hz AUTHORED CAP
+     ⛔⛔ WHAT THIS IS FOR. Every animation on this page that repaints on the MAIN THREAD
+     was being sampled by the browser once per display frame — 60, 120 or 144 times a
+     second — for effects whose design is a slow ambient loop. This takes those over and
+     samples them 24 times a second instead: the same picture, 2.5× less repainting on a
+     60Hz screen and 6× less on a 144Hz one.
+     ⛔⛔ HOW IT PRESERVES DURATION, EASING AND PHASE, WHICH IS THE WHOLE PROBLEM.
+     `Element.getAnimations()` returns the CSS animations themselves, as objects, and a
+     CSS animation can be PAUSED and then SEEKED by writing `currentTime`. So each
+     animation is paused once and, on every 24Hz tick, put at "the phase it was at when
+     this took it over, plus the time that has actually elapsed since". Consequences, all
+     of them deliberate:
+       · the keyframes are still the browser's, evaluated at a real time inside the
+         animation — so the easing curve, the multi-keyframe cadence and the iteration
+         count are the original ones, NOT a `steps()` approximation of them;
+       · duration is unchanged: phase advances 1ms per 1ms of wall clock (the elapsed time
+         is real, only the SAMPLING is at 24Hz);
+       · phase is unchanged at takeover, because the seed is the animation's OWN
+         `currentTime` — two elements that were in step (the mirrored `.side-row` outline
+         masks, the phase-offset card rings) stay in step, and the per-element
+         `animation-delay: -1.4s` offsets stay exactly as authored;
+       · nothing is restarted, so nothing flashes back to its first keyframe.
+     ⛔⛔ EVERY AUTHORED CSS KEYFRAME ANIMATION IS IN THE LIST (owner: *"cap EVERYTHING at
+     24fps, not selective costly animations"*). The earlier pass kept only the ones that
+     repaint on the main thread and left the composited ones native on the grounds that
+     they were free; that is not the instruction, and it is not the whole truth either —
+     a composited animation still costs the compositor a frame and still costs a style
+     update whenever anything else about the element changes. THE HONEST TRADE, stated
+     here rather than discovered later: taking a composited loop over moves its per-frame
+     cost OFF the compositor and ONTO the main thread as a JS seek at 24Hz. It is a
+     deliberate trade the owner asked for (fewer visual updates per second, on one clock,
+     page-wide) and it is NOT free — see the note at the bottom of this section.
+     ⛔ WHAT IS *NOT* IN THE LIST: CSS TRANSITIONS. They are a different object type
+     (`CSSTransition`, with `transitionProperty` and no `animationName`), they are
+     interaction feedback measured in tenths of a second, and pausing one defers the
+     `transitionend` that a stylesheet or a script may be waiting on. That boundary is
+     reported in the section note below rather than silently claimed.
+     ⛔ GATES. An animation is frozen (not seeked) while anything above it carries
+     `afx-off` — the page's existing off-screen gate, which pauses exactly those subtrees
+     through `animation-play-state`. That keeps the two mechanisms saying the same thing
+     instead of fighting, and keeps the cap's phase semantics identical to the gate's: the
+     phase advances only while the effect is actually being shown. `prefers-reduced-motion`
+     is left completely alone — the stylesheet has already removed most of these, and a
+     visitor who asked for less motion is not owed a different frame rate on what is left. */
+
+  /* ⛔ THE COMPLETE SET OF `@keyframes` THIS STYLESHEET AUTHORS — all 24 of them, read out
+     of the stylesheet rather than guessed, grouped by why they cost something:
+       · main-thread repaint — `seamOut` (background-size + box-shadow on every divider),
+         `patternTileLoop`/`dotWave`/`featureEdgeWave` (background-position and
+         mask-position on the dot tiles, including the two MIRRORED workflow side rows),
+         `fxOrbit`/`badgeSpin`/`gleamAngle` (registered custom properties: a style recalc
+         plus a gradient repaint per frame), `glowing` (background-position under a blur),
+         `cardSheen`, `pulse`, `latestBlink`, `clipMotifDraw`;
+       · composited transform/opacity — `btnShine`, `hmDriftNext`, `hmDriftPrev`,
+         `gleamShimmer`, `gleamBreathe`;
+       · interaction feedback — `ringOut`, `tipRing`, `tipFlow`;
+       · finite entrances — `fadeUp`, `horizonRise`, `seamOpen`, `seamOpenCentre`;
+       · the wordmark's one-time ink reveal — `brandInkIn`, which replaced the stroke video
+         (see the `#brandInk` module). It is `opacity` only, runs once per load, and is in
+         this list for the same reason everything else is: one clock for the whole page.
+     ⛔ NOTHING IS EXCLUDED FOR BEING COMPOSITED. The five in the second group are the
+     trade described above, taken knowingly. */
+  var CAP24_NAMES = {
+    seamOut: 1, patternTileLoop: 1, dotWave: 1, featureEdgeWave: 1,
+    fxOrbit: 1, badgeSpin: 1, glowing: 1, cardSheen: 1, pulse: 1, latestBlink: 1,
+    gleamAngle: 1, gleamShimmer: 1, gleamBreathe: 1,
+    btnShine: 1, hmDriftNext: 1, hmDriftPrev: 1,
+    clipMotifDraw: 1, ringOut: 1, tipRing: 1, tipFlow: 1,
+    fadeUp: 1, horizonRise: 1, seamOpen: 1, seamOpenCentre: 1,
+  };
+  /* ⛔ THE ONE COMPOSED PAIR, AND HOW ITS SECOND TRACK IS KEPT HONEST. Every gleam layer
+     declares its animation TWICE — `gleamAngle/…linear infinite` and the same name again
+     `…linear infinite reverse paused` — and the stylesheet starts the second track on
+     `:is(:hover, :focus-visible)` (`animation-play-state: running, running`). The marker
+     for that track is `direction: reverse`, which nothing else in this stylesheet uses.
+     A reversed record is therefore given a GATE instead of being advanced
+     unconditionally: it advances only while its host is actually hovered or focus-visible,
+     and freezes the moment the pointer leaves — which is exactly what the stylesheet does
+     to it, at exactly the phase it had reached. `animation-composition: add` composes the
+     two contributions as before, because both are still the same animations on the same
+     element, only sampled on one clock. */
+  var CAP24_REVERSED_ON_HOVER = 1;
+  var hoverNone = false;
+  try { hoverNone = window.matchMedia('(hover: none)').matches; } catch (e) {}
+  var CAP24_MS = 1000 / 24;
+  /* ⛔ the same one-nanosecond tolerance the particle field uses, for the same reason:
+     1000/24 divides into no display's frame period, and an exact comparison drops a tick
+     every few frames and quietly turns 24 into ~20. */
+  var CAP24_EPS = 1e-6;
+  /* ⛔ and the same bounded catch-up: a throttled tab, a long task or a breakpoint can
+     hand this a gap of hundreds of ms, and advancing an ambient loop by all of it at once
+     is a visible jump. Five ticks is the bound. */
+  var CAP24_MAX_DT = CAP24_MS * 5;
+  var capList = [], capRaf = 0, capLast = -1, capCalm = false;
+  var CAP24_OK = !!(window.Element && Element.prototype && Element.prototype.getAnimations) &&
+    typeof document.getAnimations === 'function';
+  try { capCalm = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+  /* ⛔ THE SHARED 24Hz SCHEDULER. One rAF for however many consumers, dispatching at most
+     once per 41.67ms and handing each callback the real elapsed time (bounded), so a
+     consumer never has to look at a clock of its own and two consumers cannot drift
+     apart. It runs only while the document is visible and at least one subscriber
+     remains; `visibilitychange` stops and restarts it. */
+  var tick24Cbs = [];
+  function tick24Frame(t) {
+    tick24Raf = requestAnimationFrame(tick24Frame);
+    if (typeof t !== 'number' || !isFinite(t)) t = nowMs24();
+    var dt;
+    if (tick24Last < 0) { tick24Last = t; dt = 0; }
+    else {
+      dt = t - tick24Last;
+      if (dt < CAP24_MS - CAP24_EPS) return;      // the cap: no work, no clock move
+      tick24Last = t;
+      if (dt > CAP24_MAX_DT) dt = CAP24_MAX_DT;
+    }
+    for (var i = 0; i < tick24Cbs.length; i++) {
+      try { tick24Cbs[i](dt, t); } catch (e) {}
+    }
+  }
+  var tick24Raf = 0, tick24Last = -1, capUnsub = null;
+  function nowMs24() {
+    return (window.performance && window.performance.now) ? window.performance.now() : Date.now();
+  }
+  function tick24Start() {
+    if (tick24Raf || !tick24Cbs.length || document.hidden) return;
+    tick24Last = -1;                              // a resume is a fresh start, not a debt
+    tick24Raf = requestAnimationFrame(tick24Frame);
+  }
+  function tick24Stop() {
+    if (tick24Raf) { cancelAnimationFrame(tick24Raf); tick24Raf = 0; }
+    tick24Last = -1;
+  }
+  function every24(fn) {
+    if (typeof fn !== 'function') return function () {};
+    tick24Cbs.push(fn);
+    tick24Start();
+    return function () {
+      for (var i = 0; i < tick24Cbs.length; i++) if (tick24Cbs[i] === fn) { tick24Cbs.splice(i, 1); return; }
+    };
+  }
+  AFMP.every24 = every24;
+
+  /* ⛔ AN ANIMATION IS FROZEN WHILE ANY ANCESTOR IS `afx-off` — the same condition the
+     stylesheet itself pauses on. `closest` is a class test up the tree, not a style
+     resolve, so it is safe to run per element per tick. */
+  function capFrozen(el) {
+    while (el) {
+      if (el.nodeType === 1 && el.classList && el.classList.contains('afx-off')) return true;
+      el = el.parentNode;
+    }
+    return false;
+  }
+
+  /* ⛔ ADOPTION. `document.getAnimations()` is one call for the whole document, pseudos
+     included, and it is run on the page's LAYOUT-CHANGE beats (the sentinel ladder's
+     coalesced rebuild: start, load, a settled resize, a tab or accordion changing the
+     document) rather than per frame — a panel that was `display:none` has no animations
+     to adopt until it opens, and that is exactly when the ladder rebuilds. */
+  function capAdopt() {
+    if (!CAP24_OK || capCalm) return;
+    var all;
+    try { all = document.getAnimations(); } catch (e) { return; }
+    for (var i = 0; i < all.length; i++) {
+      var a = all[i];
+      if (!a || a.__cap24) continue;
+      if (!a.animationName || !CAP24_NAMES[a.animationName]) continue;
+      /* ⛔⛔ NOTHING IS SKIPPED FOR BEING PAUSED, AND THAT IS THE WHOLE POINT OF THE
+         `capFrozen` TEST BELOW. An element that is off screen carries `afx-off`, whose
+         rule pauses its animations through `animation-play-state` — so at load, which is
+         when most of a 15000px page is off screen, the great majority of these are
+         PAUSED. Reading that as "not running, leave it alone" was a defect with a
+         measurable shape: 9 of the 9 `featureEdgeWave` outlines and 15 of the 19
+         `fxOrbit` rings were never adopted at all, and the first time the visitor
+         scrolled one into view the stylesheet set it running again and it ran at the
+         display's rate for the rest of the session. Adopting a paused animation is safe
+         and is what the gate semantics want: the seed is its frozen phase, and
+         `capAdvance` does not touch a record whose element is gated — so it stays exactly
+         where the gate left it, and starts advancing from there when the gate lifts.
+         ⛔ The adoption list is an explicit allowlist of always-on loops, so this cannot
+         pick up a track the stylesheet is deliberately holding paused for its own
+         reasons — those are different animation names (`gleamAngle`'s reversed second
+         track) and are not in it. */
+      var el = a.effect && a.effect.target;
+      if (!el) continue;
+      var ct = a.currentTime;
+      if (typeof ct !== 'number' || !isFinite(ct)) continue;
+      /* ⛔ A FINITE ANIMATION THAT HAS ALREADY FINISHED IS LEFT ALONE: there is no frame
+         left in it to sample, and pausing one at its end would pin a fill state that the
+         stylesheet may be expecting to release when the class that started it goes. One
+         that is still RUNNING is adopted normally — it finishes on the cap's clock instead
+         of the display's, and NOTHING LISTENS FOR ITS END: there is no `animationend`,
+         `animationiteration` or `.finished` handler anywhere in this document (checked in
+         the source, not assumed), so a late finish event reaches nobody. */
+      var timing = null;
+      try { timing = a.effect.getTiming(); } catch (e) { timing = null; }
+      if (timing && timing.iterations !== Infinity && a.playState === 'finished') continue;
+      /* the seed is the animation's OWN phase — this is what keeps a mirrored pair and a
+         phase-offset ring row exactly where they were */
+      var rec = { a: a, el: el, t: ct, gate: null };
+      /* ⛔ the composed pair's hover track — see CAP24_REVERSED_ON_HOVER above */
+      if (CAP24_REVERSED_ON_HOVER && timing && String(timing.direction) === 'reverse' && !hoverNone) {
+        (function (host) {
+          rec.gate = function () {
+            return !!(host && host.matches && host.matches(':hover, :focus-visible'));
+          };
+        })(el.parentNode);
+      }
+      a.__cap24 = true;
+      try { a.pause(); a.currentTime = ct; } catch (e) { a.__cap24 = false; continue; }
+      capList.push(rec);
+    }
+    /* ⛔ the scheduler is registered LAZILY, on the first animation that is actually
+       adopted: a page with nothing to advance should not be waking up 60 times a second
+       to iterate an empty list. */
+    if (capList.length && !capUnsub) capUnsub = every24(capAdvance);
+  }
+
+  /* ⛔ THE ONE FUNCTION THAT ADVANCES THEM. It only ever moves a record forward by the
+     real elapsed time this tick, and only while the record is neither hidden, gated, nor
+     waiting for a hover it is not getting.
+     `pause()` is re-asserted whenever the browser has started one of them again (the gate
+     lifting sets `animation-play-state: running` from the stylesheet), and because the
+     seek is absolute — `rec.t`, not a delta from wherever the element happens to be — a
+     frame of native advance between the two is corrected rather than accumulated.
+     ⛔ A RECORD WHOSE ANIMATION HAS GONE IS DROPPED. The page removes and re-creates
+     animations constantly — every hover ring, every tab switch, every `fadeUp` on a panel
+     that is re-shown — and a removed `CSSAnimation` reports `playState: 'idle'` with a null
+     `currentTime`. Writing to one would be a no-op at best; dropping it keeps the list
+     proportional to what is actually on the page instead of to everything ever seen. */
+  function capAdvance(dt) {
+    for (var i = 0; i < capList.length; i++) {
+      var rec = capList[i];
+      if (rec.a.playState === 'idle') { rec.a.__cap24 = false; capList.splice(i, 1); i--; continue; }
+      if (rec.gate && !rec.gate()) continue;      // the composed pair's hover track, un-hovered
+      if (capFrozen(rec.el)) continue;
+      rec.t += dt;
+      try {
+        if (rec.a.playState !== 'paused') rec.a.pause();
+        rec.a.currentTime = rec.t;
+      } catch (e) { rec.a.__cap24 = false; capList.splice(i, 1); i--; }
+    }
+  }
+
+  if (CAP24_OK && !capCalm) {
+    /* ⛔ HOVER CREATES ANIMATIONS, so hover is a second adoption trigger — coalesced to
+       one rAF per burst, exactly like the layout beat. `ringOut` on a card, `tipRing` on a
+       bubble and the gleam pair's second track do not exist until the pointer arrives, and
+       the layout-beat scan would never see them on a page that is not changing size. It is
+       a delegated listener on the document (one registration, capture) and it fires on
+       pointer ENTER only, not per move. */
+    var capPtrRaf = 0;
+    document.addEventListener('pointerover', function () {
+      if (capPtrRaf) return;
+      capPtrRaf = requestAnimationFrame(function () { capPtrRaf = 0; capAdopt(); });
+    }, { passive: true, capture: true });
+    /* ⛔ hidden → stopped, and coming back is a FRESH clock, not a debt: the phase these
+       hold is the time the effect was on screen, which is exactly what the `afx-off` gate
+       already does to the same animations. Restarting the frame instead of letting a
+       stale timestamp through is what stops a background tab from teleporting every
+       capped loop by a minute's worth of catch-up. */
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) tick24Stop();
+      else { tick24Stop(); tick24Start(); }
+    });
+  }
+
+  /* ⛔⛔ WHAT NO PAGE CAN CAP FROM HERE, stated plainly so nobody reads the list above as
+     "the page is now 24fps":
+       · `<video>` — the decoder paints at the media's own frame rate, and the compositor
+         presents it at the display's. Seeking per frame, retiming `playbackRate`, or
+         re-encoding the files would each change the clips themselves, which is the one
+         thing this pass may not do. The clip-bar fill is a Web Animation driven from the
+         video's own `currentTime` and is composited, so it is neither capped nor costly.
+       · ANIMATED GIFs — decoded by the image pipeline, with no API to seek or retime one.
+         The page's existing answer (a canvas poster while a GIF is off screen) is
+         unchanged and is not a rate cap either.
+       · the WORDMARK no longer has a frame callback at all — the clip that drove it, the
+         `requestVideoFrameCallback` chain, `alignClip()` and the replay loop are REMOVED
+         (see the `#brandInk` module and the CSS at `.brand-title-text::before`). What is
+         left is one static stroked-text layer and one one-time `brandInkIn` reveal, which
+         IS in `CAP24_NAMES` like everything else.
+       · the PARTICLE FIELD — already caps ITSELF at 24 (its own gate, untouched here).
+     ⛔⛔ AND THE ONE DELIBERATE BOUNDARY LEFT IN THE AUTHORED SET: CSS TRANSITIONS.
+     Not capped, and this is a decision rather than an omission. A transition is a different
+     object (`CSSTransition`: `transitionProperty`, no `animationName`), it is interaction
+     feedback measured in tenths of a second — `.3s` on a chip, `.45s` on a background,
+     `.8s` on the gleam — and the safe lifecycle for pausing and resuming one does not
+     exist from here: a transition is created on the style change that starts it and
+     destroyed when it ends, so a sampler would have to adopt, seek and release objects on
+     the same events that are driving the interaction, and pausing one DEFERS the
+     `transitionend` that ends it. A visitor moving the pointer across a control would be
+     the thing that pays for it. So every transition on the page keeps the display's rate,
+     and that is the boundary — claimed here, not glossed over.
+     ⛔⛔ THE TRADE THIS PASS MAKES, HONESTLY. Three of the groups above are composited
+     (`btnShine`, `hmDriftNext/Prev`, `gleamShimmer`, `gleamBreathe`): the browser used to
+     run them on the compositor with no main-thread work per frame at all, and this takes
+     them over, which moves a per-frame cost from the compositor ONTO the main thread as a
+     JS seek — 24 seeks per second per adopted animation, against the display-rate
+     compositor update they had before. For the AMBIENT, LONG-DURATION loops that is a
+     clear win in update count (2.5× fewer on a 60Hz screen, 6× on a 144Hz one) and it puts
+     every authored effect on ONE clock. For the two short composited loops on a screen
+     that is otherwise idle it may be a wash or slightly worse in raw CPU, and that is the
+     price of "cap everything" rather than "cap what is expensive" — taken on the owner's
+     explicit instruction, not discovered afterwards. */
 
   /* ------------------------------------------------------------ 5. THE VISIBLE BAND */
   /* ⛔⛔ WHAT THIS ANSWERS: which slice of THIS document the visitor can actually see —
@@ -9214,6 +9662,9 @@ html.dark .hero-copy-card:hover {
                                  // overhang the visible area, never fall short of it
   var SENT_MAX = 320;            // bound on the ladder: ~77,000px of document
   var sentIo = null, sentBox = null, sents = [], sentCount = 0, sentRaf = 0;
+  /* ⛔ THE LADDER'S LAST READING OF THE DOCUMENT BOX, published for the one other module
+     that needs it (the particle field's `measure()`). 0 = nothing measured yet. */
+  var docSizeW = 0, docSizeH = 0;
   /* ⛔⛔ "HAS THE OBSERVER ANSWERED AT ALL?" — NOT "has it ever seen something
      visible?". The two are different questions and the difference was a live defect: a
      frame that loads BELOW the parent's fold (or lazily, or in a background tab) gets
@@ -9315,8 +9766,23 @@ html.dark .hero-copy-card:hover {
        lengthen it — an absolutely positioned box does contribute to the scrollable
        overflow of the document. With the height taken from the document itself, the
        ladder can never make the page longer than it already was, and it still covers
-       every pixel that exists. */
+       every pixel that exists.
+       ⛔⛔ AND THE LADDER'S OWN BOX IS COLLAPSED WHILE THAT HEIGHT IS READ — a fix, not a
+       flourish. That box is itself an absolutely-positioned child of the document whose
+       containing block is the initial containing block, so it lands in
+       `documentElement.scrollHeight`. Measuring with the previous height applied makes
+       the number self-referential, and it RATCHETS: the ladder latches whatever height
+       the document had at its tallest moment (mid-parse, before the web font settled,
+       before a collapsed panel closed) and the document can then never report anything
+       shorter, because the box is holding it up. MEASURED before this line existed: the
+       last content ended at 15269px and the document reported 15416px — 147px of empty
+       page below the last section, in a fixed-height store frame where every pixel of
+       phantom height is a scrollbar. Collapsed, the reading is the content's own, and the
+       box is then given exactly that. */
+    var hasBox = !!sentBox, boxH = hasBox ? sentBox.style.height : '';
+    if (hasBox) sentBox.style.height = '0px';
     var dh = Math.max(document.documentElement.scrollHeight || 0, body.scrollHeight || 0);
+    if (hasBox) sentBox.style.height = boxH;
     if (!(dh > 0)) dh = window.innerHeight || 1;
     if (!(dh > 0)) return;
     if (!sentBox) {
@@ -9333,7 +9799,24 @@ html.dark .hero-copy-card:hover {
         'background:transparent;';
       body.appendChild(sentBox);
     }
-    sentBox.style.height = dh + 'px';
+    /* ⛔ written only when it changed: this runs on every burst that can move the
+       document, and an identical write is a style invalidation for nothing */
+    var wantH = dh + 'px';
+    if (sentBox.style.height !== wantH) sentBox.style.height = wantH;
+    /* ⛔ and the same two numbers the field's own `measure()` needs, read HERE — this
+       function already pays for a layout at a coalesced moment, where `measure()` runs
+       synchronously inside a band move, several times a second, while somebody else's
+       page is scrolling. See `AFMP.docSize`. */
+    docSizeH = dh;
+    docSizeW = Math.max(document.documentElement.scrollWidth || 0, body.scrollWidth || 0);
+    AFMP.docW = docSizeW;
+    AFMP.docH = docSizeH;
+    /* ⛔ AND THE 24Hz CAP ADOPTS NEW ANIMATIONS ON THE SAME BEAT. This is the page's one
+       "the layout changed" signal that fires on a coalesced frame — a tab panel opening,
+       an accordion, a carousel, a settled resize, the web font landing — and those are
+       exactly the moments a `display:none` subtree's animations come into existence. It
+       is NOT on the parent-scroll path, so a band move never pays for it. */
+    capAdopt();
     var need = Math.ceil(dh / SENT_STEP);
     if (need < 1) need = 1;
     if (need > SENT_MAX) need = SENT_MAX;
@@ -9418,6 +9901,7 @@ html.dark .hero-copy-card:hover {
     scanGifs();
     scanYt();
     gateAnimations();
+    lazyScan();
     /* ⛔ the ladder is built LAST, once the page has a layout to measure: its count and
        spacing come from the document's own height. The first callback arrives a frame
        or so later, and until it does the band is `null` = unknown, which every reader
@@ -9430,6 +9914,7 @@ html.dark .hero-copy-card:hover {
     scanGifs();
     scanYt();
     gateAnimations();
+    lazyScan();
     scheduleSentinels();
   }
   if (document.readyState === 'loading') {
@@ -9594,6 +10079,14 @@ html.dark .hero-copy-card:hover {
   var frameDt = STEP_MS;         // the elapsed time that paint is scaled by
 
   var W = 0, H = 0, DPR = 1, linkDist2 = 0;
+  /* ⛔⛔ THE ONE QUALITY KNOB FOR THIS CANVAS. 0.5 = the backing store is rasterised at half
+     the effective device ratio, in BOTH dimensions, so the pixel count is a QUARTER of what
+     it was — see the note in `measure()` where it is applied, after the device cap. It is a
+     constant rather than an expression on purpose: 1 restores the old full-resolution store
+     exactly, with nothing else to undo. ⛔ IT GOVERNS THE PARTICLE FIELD ONLY — `.gif-poster`
+     canvases, the clip bars and every other canvas on the page are sized elsewhere and are
+     untouched. */
+  var CANVAS_QUALITY = 0.5;
   var appliedDPR = 0;            // the ratio the live backing store was last sized for
   var docW = 0, docH = 0;        // the field's own extent — the whole DOCUMENT
   var parts = [];
@@ -9765,22 +10258,59 @@ html.dark .hero-copy-card:hover {
        re-allocating and blanking W×H×DPR² pixels for nothing, on the parent's scrolling
        thread. Nothing about the picture changes: the animated loop clears and repaints
        every frame either way, and the reduced-motion path repaints through paintOnce(). */
-    var pxW = Math.round(W * DPR), pxH = Math.round(H * DPR);
+    /* ⛔⛔ THE BACKING STORE IS RENDERED AT HALF THE EFFECTIVE RATIO (owner, 2026-10-11:
+       *"set particle CANVAS backing resolution to HALF current effective DPR in BOTH
+       dimensions (quality scale 0.5 applied after existing device DPR cap), keeping CSS
+       dimensions, nodecount, motion, 24fps, origin/clipping/cursor coordinates unchanged"*).
+       ⛔ `DPR` ITSELF IS NOT TOUCHED. It is still `min(2, devicePixelRatio)` from the top of
+       this function, and it is still what the rest of the module reasons about. What is new
+       is `back` — the scale the CANVAS is actually rasterised at — and it is `DPR * 0.5`,
+       i.e. the quality step is applied AFTER the device cap, so the backing ratio is 0.5 on
+       an ordinary screen and 1.0 on a 2x one (rather than 0.5 of an uncapped 3 or 4).
+       ⛔ THE PIXEL COUNT IS THEREFORE A QUARTER, AND THAT IS THE POINT: 1440x900 of CSS box
+       was 1.30M device pixels at ratio 1 and is 324k now. The picture is upscaled by the
+       browser from the smaller store, so the field is softer — the owner's call, taken on a
+       BACKGROUND of 1-3px dots behind a page whose foreground is video.
+       ⛔ WHAT DID NOT MOVE, and each one is a coordinate system that would have shifted the
+       field if it had: `W`/`H` are still CSS pixels and are still what `canvas.style.width`
+       and `.height` are set to; `originX`/`originY`, `railX0/railX1`, `linkDist2`, every
+       node's `x/y` and `vx/vy`, the clip rectangles and `cursorCanvas()` all stay in that
+       same CSS space. The ONLY change is the transform below, which maps CSS px to the
+       smaller store — so a node at CSS (x,y) still lands on the same screen pixel, and the
+       canvas box, the clip mask, the cursor repulsion and the band alignment are bit-for-bit
+       where they were. Nothing else in this module reads `DPR`.
+       ⛔ AND THE 0.5 CANNOT BE UNDONE BY A CLAMP: `back` has its own floor (a non-positive
+       ratio would make every coordinate collapse to the origin, and a silently-kept-old
+       transform would draw at the wrong scale), and `appliedDPR` — the value the live store
+       was last sized for — now tracks `back`, not `DPR`, so the "ratio changed but the pixel
+       box did not" branch re-sets the transform for a quality change exactly as it did for a
+       monitor change. */
+    var back = DPR * CANVAS_QUALITY;
+    if (!(back > 0.1)) back = 0.1;
+    var pxW = Math.round(W * back), pxH = Math.round(H * back);
     if (canvas.width !== pxW || canvas.height !== pxH) {
       canvas.width = pxW;
       canvas.height = pxH;
-      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      appliedDPR = DPR;
-    } else if (appliedDPR !== DPR) {
-      /* the pixel box is unchanged but the ratio behind it is not (a monitor change or
-         a zoom that left the element the same size): the transform still has to follow */
-      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      appliedDPR = DPR;
+      ctx.setTransform(back, 0, 0, back, 0, 0);
+      appliedDPR = back;
+    } else if (appliedDPR !== back) {
+      /* the pixel box is unchanged but the ratio behind it is not (a monitor change, a zoom
+         that left the element the same size, or a quality step): the transform still has to
+         follow */
+      ctx.setTransform(back, 0, 0, back, 0, 0);
+      appliedDPR = back;
     }
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
-    canvas.style.top = originY + 'px';
-    canvas.style.left = originX + 'px';
+    /* ⛔ ONLY WHAT MOVED IS WRITTEN. `top` is the one that genuinely changes per band
+       move (that is the box following the parent's window down the page); `width`,
+       `height` and `left` are almost always the value already there, and re-writing an
+       inline style with the value it already holds still dirties the element's style and
+       leaves the next layout read to pay for it — on the parent's scroll thread. The
+       read-back below is an inline-style lookup, not a layout read. */
+    var cw = W + 'px', chh = H + 'px', ctop = originY + 'px', cleft = originX + 'px';
+    if (canvas.style.width !== cw) canvas.style.width = cw;
+    if (canvas.style.height !== chh) canvas.style.height = chh;
+    if (canvas.style.top !== ctop) canvas.style.top = ctop;
+    if (canvas.style.left !== cleft) canvas.style.left = cleft;
     linkDist2 = (W / 7) * (H / 7);
     /* ⛔ the DOCUMENT's size, not the window's — this is what the field is seeded across.
        ⚠ IT IS NOT THE RAIL'S SIZE, AND THAT IS THE POINT: the baseline is
@@ -9789,8 +10319,17 @@ html.dark .hero-copy-card:hover {
        COUNT_DIVISOR, so 1024) live in a narrower column as in a wide one. Narrowing the
        rail moves the picture; it must never move the count. */
     var prevW = docW, prevH = docH;
-    docW = Math.max(W, document.documentElement.scrollWidth || 0);
-    docH = Math.max(H, document.documentElement.scrollHeight || 0);
+    /* ⛔ THE LADDER'S READING WHEN THERE IS ONE. Those two numbers are the same document
+       box this needs, and the ladder already pays for reading them on a coalesced frame;
+       `measure()` runs synchronously inside EVERY band move — several times a second
+       while the buyer scrolls the parent page — and a `scrollHeight` read there is a
+       forced layout on that frame, after this same function has just written four
+       properties to the canvas box. `AFMP.docH`/`docW` are 0 until the ladder has
+       measured once, and 0 falls back to reading layout exactly as before. */
+    var sh = (window.AFMP && window.AFMP.docH) || document.documentElement.scrollHeight || 0;
+    var sw = (window.AFMP && window.AFMP.docW) || document.documentElement.scrollWidth || 0;
+    docW = Math.max(W, sw);
+    docH = Math.max(H, sh);
     /* ⛔ the caller only has to RE-SEED when the document itself changed size. The band
        moves several times per parent scroll and re-seeding 1300 nodes every time would
        put a heap of garbage on the parent's scroll thread. */
@@ -10594,11 +11133,108 @@ header.site-header > .container { width: 100%; padding-inline: clamp(.25rem, 1.5
   .card-fx > .fx-pool, .price-card::after, .offer-band::after { opacity:0 !important; }
 }
 
+/* ⛔⛔ THE WORDMARK STROKE IS NOW CSS ON THE REAL TEXT — the video that drew it is GONE.
+   Owner, 2026-10-11: the stroke/reveal *"makes GPU3D jump 15 to 50-60%"* and *"stroke line
+   misaligned against MoCap"*, and the instruction was to *"remove expensive video-based
+   drawing, decoding/replay timers/filter/mixblend/masks/large composited wordmark surfaces
+   and obsolete callback/event work rather than move it to CPU canvas at highfps"*, with
+   *"plain actual text with accurately matching static CSS text stroke"* preferred.
+   ⛔ WHAT WAS HERE, and every part of it is gone:
+     · `<video class="brand-stroke-video" src="…/video55.mp4">` on EACH of the two stages —
+       a 5738×1080 clip (≈6.2M pixels a frame, ~8× the area of the hero clip it sat over)
+       that had to be fetched, decoded, and played;
+     · `mix-blend-mode: screen` on it, which forces the compositor to blend that entire
+       oversized surface against everything under it every time either side changes;
+     · `filter: brightness(2.2)` on it — a second full-size composited pass;
+     · `aspect-ratio`, `object-fit` and a `translateY` on a box 100% of the line's width, so
+       the blended, filtered layer was the largest composited thing on the page;
+     · the `#brandStrokeSync` module below — `playbackRate` retiming, a
+       `requestVideoFrameCallback` chain, a `ResizeObserver` + `fonts.ready` + `resize`
+       re-measure (`alignClip`), and the `ended → 2000ms → replay` loop that restarted the
+       whole thing for as long as the page was open.
+   ⛔ WHAT REPLACES IT, AND WHY THE ALIGNMENT IS NOW EXACT BY CONSTRUCTION. The stroke is a
+   `-webkit-text-stroke` on `.brand-title-text` — the SAME element, the SAME font, the SAME
+   weight, the SAME `letter-spacing`, the SAME baseline as the fill it outlines. There is no
+   second geometry to line up, so the failure the owner saw cannot occur: the old stroke was
+   a pre-rendered 5738×1080 film of the wordmark that `alignClip()` had to *guess* into place
+   from `measureText('A')`'s font-bounding-box ascent/descent and an `ink/402` scale factor
+   — an approximation of the glyph metrics, applied to a different rendering of the same
+   words, which is exactly how a hand-drawn line ends up a few pixels off "MoCap".
+   `paint-order: stroke fill` puts the stroke BEHIND the fill so the letterforms keep their
+   weight instead of being eaten into (a browser without `paint-order` centres the stroke on
+   the outline — a hair bolder, same shape, same alignment).
+   ⛔ NO BLEND, NO FILTER, NO MASK, NO BLUR, NO SEPARATE SURFACE, NO VIDEO: one inherited
+   stroke declaration on text that was already being painted. The `.brand-title-text`
+   drop-shadow glow and the `.brand-title-grad` gradient are untouched. */
 .brand-stroke-stage { position:relative; display:inline-block; }
-.brand-stroke-video { position:absolute; left:0; top:50%; width:100%; height:auto; aspect-ratio:5738 / 1080; transform:translateY(-50%); object-fit:contain; background:transparent; mix-blend-mode:screen!important; filter:brightness(2.2); pointer-events:none; opacity:0; }
-.brand-stroke-stage.is-drawing .brand-stroke-video { opacity:1; }
-.brand-stroke-stage.is-drawing .stroke-letter { visibility:hidden; }
-.brand-stroke-stage.is-drawing .stroke-letter.is-finished { visibility:visible; }
+
+.stroke-anim{position:absolute;display:block;max-width:none;overflow:visible;pointer-events:none}
+/* the box is set by the FIT in the driver, from the measured glyph ink box of this
+   stage, so no width/height belongs here */
+.stroke-anim path{fill:none;stroke:#fff;stroke-width:0.78px;stroke-linecap:round;stroke-linejoin:round;opacity:0;vector-effect:non-scaling-stroke}
+/* THICKNESS: 0.78px = 30% of the 2.6px this line was first drawn at, a 70% reduction
+   applied ONCE. non-scaling-stroke keeps it 0.78 CSS px in both stages, so the hero
+   wordmark and the small header logo carry the same hairline and the viewBox cannot
+   scale it a second time. */
+@media (prefers-reduced-motion: reduce){.stroke-anim path{opacity:1}   /* reduced motion: the finished state */}
+
+.stroke-anim-wrap{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:0}
+/* THE STROKE IS BEHIND THE TEXT. z-index 0 on the wrap and 1 on the wordmark put the
+   drawn line under the letterforms in every engine: both are positioned, so without an
+   explicit z-index the later DOM node wins, and the wrap is the FIRST child of the
+   stage. The front-of-text look was this rule saying z-index:1. The gradient words
+   still occlude it because their glyphs are painted — background-clip:text paints the
+   ramp inside the letterforms, and the solid words are filled — so nothing needs a
+   backing rectangle, which is what would have wrecked the transparent look. */
+.brand-stroke-stage .brand-title-text{z-index:1}
+.stroke-anim-wrap 
+
+/* ⛔⛔ THE OUTLINE IS A SECOND COPY OF THE SAME TEXT, PAINTED BEHIND — and that is the
+   correction that made the gradient safe. Written first as a plain `-webkit-text-stroke`
+   on `.brand-title-text` with `paint-order: stroke fill`, the solid words ("Auto", "Pro")
+   came out exactly right and the GRADIENT ones did not: `.brand-title-grad` paints its
+   gradient with `background-clip: text`, which is the BACKGROUND layer, and a text stroke
+   is painted after it — so `paint-order` has nothing to put behind, and the stroke ate a
+   2.9px bite out of every letter of "Face MoCap". Measured on a render, not reasoned
+   about: the gradient nearly vanished behind its own outline.
+   ⛔ SO THE STROKE LIVES ON ITS OWN LAYER, UNDER THE FILL: a `::before` carrying exactly
+   the same string (`data-ink` on the span, the same "Auto Face MoCap Pro"), the same font,
+   weight, size and `letter-spacing`, offset to the same box origin. It cannot drift from
+   the text it outlines, because it IS that text, drawn by the same shaper: no canvas
+   `measureText`, no font-bounding-box arithmetic, no film of a different rendering — the
+   three things that put the old video stroke a few pixels off "MoCap".
+   ⛔ AND IT COSTS ONE TEXT RUN. No blend, no filter, no mask, no video, no separate
+   surface, nothing per frame; it is painted when the wordmark is painted and cached with
+   it. `pointer-events: none` and the parent's existing `aria-hidden` keep it inert and out
+   of the accessibility tree. */
+/* WORDMARK RIM — replaced by the real extracted stroke (see .stroke-anim below).
+   The static -webkit-text-stroke copy that stood here is gone; the drawing itself is now
+   the scene's own projected geometry. */
+.brand-title-text {
+  /* ⛔ NO STROKE ON THE FILL LAYER — the `::before` above owns it. A stroke here would
+     paint over the gradient span's clipped background exactly as it did before. */
+  -webkit-text-stroke-width: 0;
+  /* ⛔ ONE SHORT ONE-TIME REVEAL, AND NOTHING ELSE. `brandInkIn` fades the letters in, in
+     the order the old film drew them, from the `data-finish` values already on each letter.
+     It is opacity only (composited, no layout, no paint), it runs ONCE per load, it is never
+     replayed, and it is sampled by the page's own 24Hz cap because its name is in
+     `CAP24_NAMES`. The base state is VISIBLE — a browser that never adds `.is-inking`, or a
+     visitor with `prefers-reduced-motion`, gets the finished wordmark immediately. */
+}
+/* THE REVEAL IS THE ORIGINAL ONE: hidden until the letter is finished, then visible.
+   The opacity fade that stood here is gone — the archived module never faded anything, it
+   toggled `.is-finished` and the stylesheet did `visibility`, and a fade also cost a
+   per-letter animation that the 24Hz cap had to own. `visibility` is not animatable, so
+   this is two style states and no per-frame work at all. The driver adds and removes the
+   class on the same tick as the stroke, so the two cannot drift, and a paused or hidden
+   stage freezes both together. Without JavaScript, under prefers-reduced-motion, and
+   between cycles the letters are simply visible: the resting wordmark is the text. */
+.brand-stroke-stage.is-inking .stroke-letter { visibility: hidden; }
+.brand-stroke-stage.is-inking .stroke-letter.is-finished { visibility: visible; }
+.brand-stroke-stage .stroke-letter.is-drawing { visibility: hidden; }
+@media (prefers-reduced-motion: reduce) {
+  .brand-stroke-stage .stroke-letter { animation: none !important; opacity: 1 !important; }
+}
 
 
 
@@ -11677,31 +12313,13 @@ header#header.site-header.card-fx .brand { position: relative; z-index: 5; }
    switch to now. */
 html { color-scheme: dark; }
 </style>
-<script id="brandStrokeSync">
-(function(){
- function initBrandStroke(stage){
- var v=stage.querySelector('video'); if(!v)return;
- v.playbackRate=3.4722223333; v.defaultPlaybackRate=3.4722223333;
- v.addEventListener('loadedmetadata',function(){if(isFinite(v.duration)&&v.duration>0){v.playbackRate=v.duration/3;v.defaultPlaybackRate=v.duration/3;}});
- var letters=stage.querySelectorAll('.stroke-letter'),visible=false,done=false,ticket=null,replay=false,waiting=false,replayTimer=null;
- var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
- function sync(){var active=-1;if(replay){for(var j=0;j<letters.length;j++){if(v.currentTime+0.001<Number(letters[j].dataset.finish)){active=j;break;}}}for(var i=0;i<letters.length;i++)letters[i].classList.toggle('is-finished',replay?i!==active:v.currentTime+0.001>=Number(letters[i].dataset.finish));}
- function alignClip(){var text=stage.querySelector('.brand-title-text'),style=getComputedStyle(text),r=text.getBoundingClientRect(),base=stage.getBoundingClientRect(),size=parseFloat(style.fontSize),ctx=document.createElement('canvas').getContext('2d');ctx.font=style.fontWeight+' '+style.fontSize+' '+style.fontFamily;var m=ctx.measureText('A'),fa=m.fontBoundingBoxAscent||size*.95,fd=m.fontBoundingBoxDescent||size*.25,baseline=(r.height-fa-fd)/2+fa,ink=m.actualBoundingBoxAscent||size*.72,scale=(ink/402)*0.975;v.style.width=(5738*scale)+'px';v.style.left=(r.left-base.left-(m.actualBoundingBoxLeft||0)-157*scale+size*.04)+'px';v.style.top=(r.top-base.top+baseline-ink-303*scale)+'px';v.style.transform='none';}
- alignClip();window.addEventListener('resize',alignClip,{passive:true});if(document.fonts)document.fonts.ready.then(alignClip);
- if(window.ResizeObserver){var titleSizeObserver=new ResizeObserver(alignClip);titleSizeObserver.observe(stage.querySelector('.brand-title-text'));}
- v.addEventListener('loadedmetadata',alignClip);
- function frames(){ticket=null;sync();if(!v.paused&&!done&&v.requestVideoFrameCallback)ticket=v.requestVideoFrameCallback(frames);}
- function stop(){v.pause();if(ticket!==null&&v.cancelVideoFrameCallback)v.cancelVideoFrameCallback(ticket);ticket=null;}
- function gate(){if(reduced||done)return;if(!visible||document.hidden){stop();if(replayTimer!==null){clearTimeout(replayTimer);replayTimer=null;}return;}if(waiting){if(replayTimer===null)replayTimer=setTimeout(function(){replayTimer=null;if(!visible||document.hidden)return;waiting=false;replay=true;v.playbackRate=(isFinite(v.duration)&&v.duration>0?v.duration:10.416667)/6;v.currentTime=0;sync();gate();},2000);return;}sync();stage.classList.add('is-drawing');v.play().then(function(){if(!visible||document.hidden){stop();return;}if(ticket===null&&v.requestVideoFrameCallback)ticket=v.requestVideoFrameCallback(frames);}).catch(function(){stage.classList.remove('is-drawing');});}
- v.addEventListener('timeupdate',sync);v.addEventListener('seeked',sync);
- v.addEventListener('ended',function(){stop();waiting=true;for(var i=0;i<letters.length;i++)letters[i].classList.add('is-finished');stage.classList.remove('is-drawing');gate();});
- v.addEventListener('error',function(){done=true;stop();stage.classList.remove('is-drawing');});
- document.addEventListener('visibilitychange',gate);
- if(!reduced&&window.AFMP&&window.AFMP.watch){window.AFMP.watch(stage,function(on){visible=on;gate();},false);}
-}
- document.querySelectorAll('.brand-stroke-stage').forEach(initBrandStroke);
-})();
-</script>
+<!-- REMOVED: the brandInk module (the one-time opacity reveal that stood in for the
+     stroke while the real geometry was being extracted). The stroke itself is now driven
+     from the owners blend frame by frame (see the strokeAnim block), and the letters are
+     inked in by THAT clock, so the old module had nothing left to do but fight it: its
+     1500ms timeout stripped .is-inking out from under the new per-letter delays.
+     (The tag is spelled out here in words rather than literally so that source scanners
+     looking for script blocks do not match this comment as one.) -->
 
 <!-- ============================================================================
      GLEAM EDGE — the ShinyButton effect, ported to native CSS/JS (owner, 2026-10-10)
@@ -12094,5 +12712,215 @@ html [data-gleam]::after { content: none !important; }
   }
 })();
 </script>
+
+<script id="strokeAnim">
+/* THE WORDMARK STROKE — the owner's own scene, frame by frame, on the cycle the old
+   video effect used. Every state is the geometry Blender's depsgraph evaluates for
+   Stroke.001 at that frame (both Build modifiers applied), projected through the scene
+   camera. The player swaps `d` to the sampled state — one visible path per stage, no dash
+   envelope, no reconstructed window, nothing interpolated between states.
+   144 states over 6s, then a 2s rest, then it runs again — while the stage is on screen
+   and the document is visible. There is no timer of its own: the cycle advances only when
+   the page clock ticks, so a paused stroke does not age and a hidden tab accumulates
+   nothing. */
+function strokePlayer(paths, every24, data, dur, rest, onCycle, onDraw, onTick){
+  var n = data.length, last = -1, t = 0, off = null, phase = 0, cDur = dur;
+  function show(i){
+    if (i < 0) i = 0; else if (i >= n) i = n - 1;
+    if (i === last) return;
+    last = i;
+    var s = data[i];
+    for (var k = 0; k < paths.length; k++){
+      if (paths[k].__d !== s){ paths[k].__d = s; paths[k].setAttribute('d', s); }
+      paths[k].style.opacity = s ? '1' : '0';
+    }
+  }
+  function apply(t2){ show(Math.round(t2 / cDur * (n - 1))); }
+  function step(dt){
+    t += dt / 1000;
+    if (phase === 0){
+      if (t >= cDur){
+        show(n - 1);
+        phase = 1; t = 0;
+        if (onCycle) onCycle();
+      } else { apply(t); }
+    } else if (t >= rest){
+      phase = 0; t = 0;
+      show(0);
+      if (onDraw) onDraw();
+    }
+    /* ONE CLOCK: the text reveal is advanced from this same step, so a paused or hidden
+       stage stops the stroke and the letters at the same instant, and nothing has to be
+       reconciled when it comes back. */
+    if (onTick) onTick(t, cDur, phase);
+    return true;
+  }
+  return {
+    apply: apply, show: show,
+    dur: function(){ return cDur; },
+    time: function(){ return t; },
+    /* the intro is the archived `duration/3`; every replay after it is `duration/6` */
+    setDur: function(d){ cDur = d; },
+    phase: function(){ return phase; },
+    running: function(){ return !!off; },
+    /* the gate drives these two: stopping is a cancelled subscription, never a flag that
+       keeps a loop awake, and resuming is guarded so a second watcher cannot start a
+       second loop */
+    pause: function(){ if (off){ off(); off = null; } },
+    resume: function(){ if (off) return; off = every24(step); },
+    start: function(){ this.resume(); }
+  };
+}
+var STROKE_DATA=["","M524 699l24 0l-150 -390l-84 1l-154 392","M439 624l26 74l83 1l-150 -390l-84 1l-154 392","M239 539l-64 157l71 1l27 -70l166 -3l26 74l83 1l-150 -390l-84 1l-154 392","M474 681l46 0l-130 -352l-67 1l-148 366l71 1l27 -70l166 -3l26 74l83 1l-150 -390l-84 1l-154 392","M216 679l13 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l71 1l27 -70l166 -3l26 74l83 1l-150 -390l-84 1l-154 392","M333 378l-9 0l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l71 1l27 -70l166 -3l26 74l83 1l-150 -390l-84 1l-154 392","M483 663l12 0l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l71 1l27 -70l166 -3l26 74l83 1l-150 -390l-84 1l-132 336","M336 408l-7 0l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l71 1l27 -70l166 -3l26 74l83 1l-150 -390l-84 1l-88 224","M583 522l3 107l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l71 1l27 -70l166 -3l26 74l83 1l-150 -390l-84 1l-44 112","M646 507l1 -64l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l71 1l27 -70l166 -3l26 74l83 1l-150 -390l-84 1l-22 56","M760 593l-27 40l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l71 1l27 -70l166 -3l26 74l83 1l-150 -390l-60 1","M816 601l6 -19l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l71 1l27 -70l166 -3l26 74l83 1l-150 -390l-24 0","M610 659l70 35l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l71 1l27 -70l166 -3l26 74l83 1l-107 -278","M617 460l-20 -1l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l71 1l27 -70l166 -3l26 74l83 1l-86 -223","M684 665l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l71 1l27 -70l166 -3l26 74l71 1","M792 518l-3 90l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l71 1l27 -70l166 -3l26 74l24 0","M869 461l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l71 1l27 -70l166 -3l15 42","M908 443l-45 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l71 1l27 -70l166 -3l4 11","M993 517l2 -191l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l71 1l27 -70l47 -1","M971 338l-36 -3l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l71 1l12 -30","M964 442l-15 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366l41 1","M1051 487l-1 -45l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1l-148 366","M1077 479l-19 -16l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352l-67 1","M1331 497l6 156l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l46 0l-130 -352","M1316 572l4 67l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l40 0","M1135 498l-1 -22l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1l25 78l6 0","M1515 670l-1 -39l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l29 -75l191 -1","M1554 638l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0l21 -54","M1582 694l-20 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-126 301l31 0","M1593 316l-74 1l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-60 3l-72 172","M1587 453l-2 -86l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-111 -288l-8 1","M1587 559l2 -20l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l17 -1l-25 -69","M1532 603l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l30 89l15 -1","M1666 356l82 1l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-67 169l186 -2l8 26","M1813 515l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-48 -145l-49 -2l-38 97","M1914 673l-20 20l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74l-41 -125","M1994 675l-3 10l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l5 187l-160 -74","M2069 554l-35 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l2 -149l-66 -1l1 27","M1947 482l6 7l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-61 -1l-27 -40l1 -43","M1863 530l-25 -34l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-31 46l-26 0","M1846 595l-18 -5l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-66 4l8 139l-13 20","M1973 651l-23 -17l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l20 -64l0 -138l-28 2","M2087 675l0 15l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l71 -9l51 -39l6 -18","M2246 698l-69 -41l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l82 40l10 -2","M2357 681l-15 11l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -125l-35 -2l1 195l12 5","M2230 600l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-48 -24l-5 -55l1 -107","M2222 517l-18 5l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-45 44l-60 13l-27 -14","M2376 461l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l-3 124l-6 7","M2323 458l22 -16l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l4 33l-114 -9l0 80","M2213 456l1 -7l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2l6 20l33 -1l2 19","M2155 573l25 -28l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-69 -2l-1 119l-62 -2","M2279 654l-5 -5l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l3 -367l-29 -1","M2317 651l-3 34l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 357l57 1l1 -264","M2558 697l-31 2l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l30 0l8 -340l-50 -4l0 153","M2576 649l43 -11l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52l-101 0l-2 237l21 0","M2516 574l-21 -4l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l43 -1l-2 -52","M2630 565l-8 -3l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-43 -36l-47 -3l-2 35l24 0","M2636 488l29 13l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l7 182l-229 -2l-7 -152l-31 -25","M2490 435l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l209 7l6 156","M2438 492l38 -16l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l9 155l-194 -1l-5 -174l59 2","M2441 599l7 -11l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-374 -3l-6 -152l177 8l2 44","M2512 666l-43 -7l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61l-19 2l-2 -68l-230 -2","M2843 695l-21 0l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-21 -2l2 61","M2895 642l1 54l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l5 74l-23 1l-8 -57l-9 -1","M3089 531l-47 70l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56l-260 3l-3 298l64 5l1 10","M3218 370l4 322l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-187 0l-2 -120l190 3l4 -56","M2852 321l18 1l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l185 0l0 -52l-107 0","M2825 658l-3 -4l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-5 271l51 5l6 -69l158 0","M2883 654l0 32l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -163l191 2l1 -25l-212 0l-2 116","M2845 465l-4 9l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-10 -136l-258 3l2 -140","M2877 356l-7 -16l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-19 -58l-52 16l-3 -39","M2893 414l-10 -1l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-46 -30l-21 72l-49 -38l-48 46l-11 -33","M2967 519l-2 -42l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l73 35l-49 1l24 88l-40 -25","M3027 569l-5 -4l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l5 -75l45 48l53 -36l4 66l11 5","M3081 491l-9 40l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-43 -60l65 20l2 -32","M3133 421l-15 47l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-53 18l-6 -44l-63 -18l53 -34l-18 -26","M3202 341l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-50 11l-11 -41l-49 -6l-27 -20l-30 10","M3192 500l10 -19l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-81 -48l-39 -52l-53 32l2 53l-28 6","M3209 649l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-26 20l-84 13l-46 -27","M3281 673l-115 3l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l34 14l16 41l86 -16l36 47l-15 12","M3493 677l26 -1l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-39 36l-41 10l15 37l-23 27l19 8","M3507 609l1 -146l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l31 -23l31 19l-46 50l-46 -35l-11 10","M3509 476l-155 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25l24 -48l38 39l4 -3","M3635 521l-40 -45l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l35 -39l-22 -50l46 5l10 -51l38 25","M3750 682l-22 10l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-40 -36l-64 12l8 -48l-73 -29l25 -28","M3944 653l-44 -11l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-98 11l-3 39l-12 -10","M3875 650l24 -40l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l33 29l-52 27l-73 5l-69 -24l-43 -40l-14 1","M3719 593l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-23 35l20 32l77 14l50 -13l24 21","M3656 442l-51 21l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-18 33l27 48l-52 -20l-55 23l-72 -15l-3 5","M3798 306l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l27 44l51 22l-11 19","M3887 341l-40 37l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-23 -39l53 -23l14 -41l40 21l57 -21l8 12","M4078 671l-70 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -23l-46 -10l24 -38l-45 -24l43 -26l-13 -22","M4020 601l-7 -143l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l-2 -28l-206 -2l-84 4l-61 -10l1 -20","M4032 496l-1 -26l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-5 253l-74 -1l0 -4","M4231 648l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-65 1l-4 -256l-111 164l-41 1l-100 -159l-4 142","M4123 635l-71 1l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3l154 225l142 -226l51 -5l5 376l-56 1","M4342 439l-22 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 55l-29 -32l-7 30l-25 -30l5 -335l43 3","M4330 817l-10 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-52 63l51 41l0 47","M4347 668l-4 0l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l0 -46l-13 -27l-27 27l23 48l-25 59l43 53l-22 27","M4398 462l-2 -11l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l-2 -49l-32 -17l-15 -42l-35 -5l-4 -53","M4586 525l7 -8l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6l-3 42l-19 -14l-28 5l1 -44l-28 0l0 -7","M4475 674l16 -37l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-34 7l-12 56l-28 6","M4407 637l3 -19l52 84l29 -65l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38l-1 -61l-30 -2l-2 72l-26 -25l-26 82l-10 2","M4358 723l0 98l38 -1l2 -136l12 -66l52 84l29 -65l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-35 -45l32 -29l-29 -49l25 -45l-23 -41l24 -38","M4495 470l-4 -17l-108 36l0 195l-25 0l0 137l38 -1l2 -136l12 -66l52 84l29 -65l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -225l-195 1l2 220l-160 4l43 -27l-20 -26","M4544 618l-21 -43l37 -50l-56 -12l-13 -60l-108 36l0 195l-25 0l0 137l38 -1l2 -136l12 -66l52 84l29 -65l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-169 -2l1 218l179 -3l0 -64","M4471 652l18 -31l63 15l-29 -61l37 -50l-56 -12l-13 -60l-108 36l0 195l-25 0l0 137l38 -1l2 -136l12 -66l52 84l29 -65l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52l-241 -1l1 193l151 -1l2 -204l-96 -1","M4938 307l-191 0l-3 390l-298 -2l43 -74l63 15l-29 -61l37 -50l-56 -12l-13 -60l-108 36l0 195l-25 0l0 137l38 -1l2 -136l12 -66l52 84l29 -65l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-53 -47l-78 34l-34 -76l-72 -8l20 -80l-47 -52","M5008 447l-22 -23l42 -64l-76 -3l-14 -50l-191 0l-3 390l-298 -2l43 -74l63 15l-29 -61l37 -50l-56 -12l-13 -60l-108 36l0 195l-25 0l0 137l38 -1l2 -136l12 -66l52 84l29 -65l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l68 -34l53 46l41 -69l52 45l-51 -13l-41 63l-23 -20","M4926 516l51 26l3 -50l57 -15l-51 -53l42 -64l-76 -3l-14 -50l-191 0l-3 390l-298 -2l43 -74l63 15l-29 -61l37 -50l-56 -12l-13 -60l-108 36l0 195l-25 0l0 137l38 -1l2 -136l12 -66l52 84l29 -65l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-39 82l78 -1l18 74l59 -29","M4839 521l33 34l45 -44l60 31l3 -50l57 -15l-51 -53l42 -64l-76 -3l-14 -50l-191 0l-3 390l-298 -2l43 -74l63 15l-29 -61l37 -50l-56 -12l-13 -60l-108 36l0 195l-25 0l0 137l38 -1l2 -136l12 -66l52 84l29 -65l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-57 81l-71 -36l24 75l-89 37l75 49l-33 70","M4779 319l-23 0l-2 379l72 2l0 -193l46 48l45 -44l60 31l3 -50l57 -15l-51 -53l42 -64l-76 -3l-14 -50l-191 0l-3 390l-298 -2l43 -74l63 15l-29 -61l37 -50l-56 -12l-13 -60l-108 36l0 195l-25 0l0 137l38 -1l2 -136l12 -66l52 84l29 -65l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-247 0l-12 -187l-107 -82l14 -76l-56 52l-49 -72l-9 11","M4983 401l25 -33l-70 0l-18 -47l-164 -2l-2 379l72 2l0 -193l46 48l45 -44l60 31l3 -50l57 -15l-51 -53l42 -64l-76 -3l-14 -50l-191 0l-3 390l-298 -2l43 -74l63 15l-29 -61l37 -50l-56 -12l-13 -60l-108 36l0 195l-25 0l0 137l38 -1l2 -136l12 -66l52 84l29 -65l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l208 -4l5 193l-222 0l-9 -201l243 -7l-1 220l-106 0","M4956 516l7 4l-16 -48l67 0l-50 -47l44 -57l-70 0l-18 -47l-164 -2l-2 379l72 2l0 -193l46 48l45 -44l60 31l3 -50l57 -15l-51 -53l42 -64l-76 -3l-14 -50l-191 0l-3 390l-298 -2l43 -74l63 15l-29 -61l37 -50l-56 -12l-13 -60l-108 36l0 195l-25 0l0 137l38 -1l2 -136l12 -66l52 84l29 -65l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l9 168l-192 1l-8 -179l119 -2","M4875 529l36 -37l52 28l-16 -48l67 0l-50 -47l44 -57l-70 0l-18 -47l-164 -2l-2 379l72 2l0 -193l46 48l45 -44l60 31l3 -50l57 -15l-51 -53l42 -64l-76 -3l-14 -50l-191 0l-3 390l-298 -2l43 -74l63 15l-29 -61l37 -50l-56 -12l-13 -60l-108 36l0 195l-25 0l0 137l38 -1l2 -136l12 -66l52 84l29 -65l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-25 0l4 197l-272 0l-6 -152l176 -4l5 96","M4768 587l0 101l47 1l-2 -209l56 55l42 -43l52 28l-16 -48l67 0l-50 -47l44 -57l-70 0l-18 -47l-164 -2l-2 379l72 2l0 -193l46 48l45 -44l60 31l3 -50l57 -15l-51 -53l42 -64l-76 -3l-14 -50l-191 0l-3 390l-298 -2l43 -74l63 15l-29 -61l37 -50l-56 -12l-13 -60l-108 36l0 195l-25 0l0 137l38 -1l2 -136l12 -66l52 84l29 -65l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-28 2l2 149l-25 0l-1 -162l23 0l3 -216l-17 0","M4797 361l108 -1l-2 -29l-136 1l1 356l47 1l-2 -209l56 55l42 -43l52 28l-16 -48l67 0l-50 -47l44 -57l-70 0l-18 -47l-164 -2l-2 379l72 2l0 -193l46 48l45 -44l60 31l3 -50l57 -15l-51 -53l42 -64l-76 -3l-14 -50l-191 0l-3 390l-298 -2l43 -74l63 15l-29 -61l37 -50l-56 -12l-13 -60l-108 36l0 195l-25 0l0 137l38 -1l2 -136l12 -66l52 84l29 -65l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-3 -20l-30 0l5 215l-20 1","M4803 395l-25 2l1 -35l126 -2l-2 -29l-136 1l1 356l47 1l-2 -209l56 55l42 -43l52 28l-16 -48l67 0l-50 -47l44 -57l-70 0l-18 -47l-164 -2l-2 379l72 2l0 -193l46 48l45 -44l60 31l3 -50l57 -15l-51 -53l42 -64l-76 -3l-14 -50l-191 0l-3 390l-298 -2l43 -74l63 15l-29 -61l37 -50l-56 -12l-13 -60l-108 36l0 195l-25 0l0 137l38 -1l2 -136l12 -66l52 84l29 -65l85 19l-29 -80l46 -59l-72 -17l-11 -70l-111 41l-2 -14","M4782 473l-5 -41l51 20l-6 -60l-44 5l1 -35l126 -2l-2 -29l-136 1l1 356l47 1l-2 -209l56 55l42 -43l52 28l-16 -48l67 0l-50 -47l44 -57l-70 0l-18 -47l-164 -2l-2 379l72 2l0 -193l46 48l45 -44l60 31l3 -50l57 -15l-51 -53l42 -64l-76 -3l-14 -50l-191 0l-3 390l-298 -2l43 -74l63 15l-29 -61l37 -50l-56 -12l-13 -60l-108 36l0 195l-25 0l0 137l38 -1l2 -136l12 -66l52 84l29 -65l49 11","M5136 696l-43 0l-5 -198l-228 2l-78 -27l-5 -41l51 20l-6 -60l-44 5l1 -35l126 -2l-2 -29l-136 1l1 356l47 1l-2 -209l56 55l42 -43l52 28l-16 -48l67 0l-50 -47l44 -57l-70 0l-18 -47l-164 -2l-2 379l72 2l0 -193l46 48l45 -44l60 31l3 -50l57 -15l-51 -53l42 -64l-76 -3l-14 -50l-191 0l-3 390l-298 -2l43 -74l63 15l-29 -61l37 -50l-56 -12l-13 -60l-108 36l0 195l-25 0l0 59","M5108 527l26 152l33 -161l1 178l-75 0l-5 -198l-228 2l-78 -27l-5 -41l51 20l-6 -60l-44 5l1 -35l126 -2l-2 -29l-136 1l1 356l47 1l-2 -209l56 55l42 -43l52 28l-16 -48l67 0l-50 -47l44 -57l-70 0l-18 -47l-164 -2l-2 379l72 2l0 -193l46 48l45 -44l60 31l3 -50l57 -15l-51 -53l42 -64l-76 -3l-14 -50l-191 0l-3 390l-298 -2l43 -74l63 15l-29 -61l5 -7","M5125 445l-34 25l17 57l26 152l33 -161l1 178l-75 0l-5 -198l-228 2l-78 -27l-5 -41l51 20l-6 -60l-44 5l1 -35l126 -2l-2 -29l-136 1l1 356l47 1l-2 -209l56 55l42 -43l52 28l-16 -48l67 0l-50 -47l44 -57l-70 0l-18 -47l-164 -2l-2 379l72 2l0 -193l46 48l45 -44l60 31l3 -50l57 -15l-51 -53l42 -64l-76 -3l-14 -50l-191 0l-3 390l-298 -2l6 -11","M5220 487l-8 9l-40 -47l-39 150l6 -164l-48 35l17 57l26 152l33 -161l1 178l-75 0l-5 -198l-228 2l-78 -27l-5 -41l51 20l-6 -60l-44 5l1 -35l126 -2l-2 -29l-136 1l1 356l47 1l-2 -209l56 55l42 -43l52 28l-16 -48l67 0l-50 -47l44 -57l-70 0l-18 -47l-164 -2l-2 379l72 2l0 -193l46 48l45 -44l60 31l3 -50l57 -15l-44 -46","M5332 602l10 -138l-87 44l11 -76l-54 64l-40 -47l-39 150l6 -164l-48 35l17 57l26 152l33 -161l1 178l-75 0l-5 -198l-228 2l-78 -27l-5 -41l51 20l-6 -60l-44 5l1 -35l126 -2l-2 -29l-136 1l1 356l47 1l-2 -209l56 55l42 -43l52 28l-16 -48l67 0l-50 -47l44 -57l-70 0l-18 -47l-164 -2l-2 379l72 2l0 -83","M5360 484l2 -27l189 7l5 199l-228 -6l14 -193l-87 44l11 -76l-54 64l-40 -47l-39 150l6 -164l-48 35l17 57l26 152l33 -161l1 178l-75 0l-5 -198l-228 2l-78 -27l-5 -41l51 20l-6 -60l-44 5l1 -35l126 -2l-2 -29l-136 1l1 356l47 1l-2 -209l56 55l42 -43l52 28l-16 -48l67 0l-50 -47","M5511 650l-166 -6l17 -187l189 7l5 199l-228 -6l14 -193l-87 44l11 -76l-54 64l-40 -47l-39 150l6 -164l-48 35l17 57l26 152l33 -161l1 178l-75 0l-5 -198l-228 2l-78 -27l-5 -41l51 20l-6 -60l-44 5l1 -35l126 -2l-2 -29l-136 1l1 356l47 1l-2 -209l56 55l42 -43l45 24","M5433 637l-71 -1l8 -167l166 4l3 178l-194 -7l17 -187l189 7l5 199l-228 -6l14 -193l-87 44l11 -76l-54 64l-40 -47l-39 150l6 -164l-48 35l17 57l26 152l33 -161l1 178l-75 0l-5 -198l-228 2l-78 -27l-5 -41l51 20l-6 -60l-44 5l1 -35l126 -2l-2 -29l-38 0","M5380 607l4 -123l142 -1l2 156l-166 -3l8 -167l166 4l3 178l-194 -7l17 -187l189 7l5 199l-228 -6l14 -193l-87 44l11 -76l-54 64l-40 -47l-39 150l6 -164l-48 35l17 57l26 152l33 -161l1 178l-75 0l-5 -198l-228 2l-78 -27l-4 -29","M5604 494l-16 -11l-79 18l4 128l-134 -2l5 -143l142 -1l2 156l-166 -3l8 -167l166 4l3 178l-194 -7l17 -187l189 7l5 199l-228 -6l14 -193l-87 44l11 -76l-54 64l-40 -47l-39 150l6 -164l-48 35l17 57l26 152l5 -23","M5665 472l-4 -14l-20 63l-53 -38l-79 18l4 128l-134 -2l5 -143l142 -1l2 156l-166 -3l8 -167l166 4l3 178l-194 -7l17 -187l189 7l5 199l-228 -6l14 -193l-87 44l11 -76l-54 64l-40 -47l-39 150l4 -117","M5681 569l66 -6l-3 -59l-53 51l-30 -97l-20 63l-53 -38l-79 18l4 128l-134 -2l5 -143l142 -1l2 156l-166 -3l8 -167l166 4l3 178l-194 -7l17 -187l189 7l5 199l-228 -6","M5783 652l-77 -16l-75 -63l116 -10l-3 -59l-53 51l-30 -97l-20 63l-53 -38l-79 18l4 128l-134 -2l5 -143l142 -1l2 156l-166 -3l8 -167l166 4l0 25","M5783 652l-77 -16l-75 -63l116 -10l-3 -59l-53 51l-30 -97l-20 63l-53 -38l-79 18l4 128l-134 -2l5 -143l142 -1l2 112","M5783 652l-77 -16l-75 -63l116 -10l-3 -59l-53 51l-30 -97l-20 63l-53 -38l-79 18l4 128l-134 -2l5 -143","M5783 652l-77 -16l-75 -63l116 -10l-3 -59l-53 51l-30 -97l-20 63l-53 -38l-34 7","M5783 652l-77 -16l-75 -63l116 -10l-3 -59l-53 51","M5783 652l-77 -16l-42 -36","","","","","",""];
+
+(function () {
+  "use strict";
+  if (!window.AFMP || typeof window.AFMP.every24 !== "function") return;
+  var DUR = 6.0, SRC = 10.4166667;
+  function arm(stage) {
+    if (stage.__strokeArmed) return;
+    stage.__strokeArmed = true;
+    var letters = stage.querySelectorAll(".stroke-letter");
+    for (var i = 0; i < letters.length; i++) {
+      var f = Number(letters[i].getAttribute("data-finish"));
+      if (isFinite(f)) letters[i].style.setProperty("--ink-d", (f / SRC * DUR).toFixed(3) + "s");
+    }
+    stage.classList.add("is-inking");
+    var p = stage.querySelector(".stroke-anim path");
+    var svg = p && p.ownerSVGElement;
+    if (!p || !svg) return;
+    var VB = (svg.getAttribute("viewBox") || "").split(/\s+/).map(Number);
+    var GX0 = VB[0], GY0 = VB[1], GW = VB[2], GH = VB[3];
+    var letters = stage.querySelectorAll(".stroke-letter");
+
+    /* ---------------- THE FIT, SOLVED FROM TWO ANCHORS ----------------
+       Left anchor: the FIRST letter span's own left edge. Right anchor: the LAST letter
+       span's right edge. Both are read off the live DOM after the webfont has loaded, not
+       from canvas metrics and not from the whole string's bounding box — a whole-string box
+       is what let the left drift while the right looked right, because every measurement
+       error lands on the far end from whatever was pinned. Two anchors give exactly one
+       scale and one translation and there is no freedom left to break the other side.
+       Vertical anchor: the baseline, measured with a zero-height inline-block whose bottom
+       edge sits on it. "Auto Face MoCap Pro" has no descenders, so the text's ink bottom IS
+       the baseline, and the geometry's ink bottom is placed on it.
+       ONE uniform scale — the height follows the width, so nothing is stretched, and the
+       hand-drawn letters keep whatever proportions they were drawn with. */
+    function fit(){
+      if (letters.length < 2) return;
+      var f = letters[0].getBoundingClientRect();
+      var l = letters[letters.length - 1].getBoundingClientRect();
+      var textLeft = f.left, textRight = l.right;
+      var text = stage.querySelector(".brand-title-text");
+      var probe = document.createElement("span");
+      probe.setAttribute("aria-hidden", "true");
+      probe.style.cssText = "display:inline-block;width:0;height:0;padding:0;margin:0;border:0;vertical-align:baseline;";
+      text.appendChild(probe);
+      var pr = probe.getBoundingClientRect();
+      var baseline = pr.bottom;
+      text.removeChild(probe);
+      var scale = (textRight - textLeft) / GW;
+      if (!isFinite(scale) || scale <= 0) return;
+      var sr = stage.getBoundingClientRect();
+      /* NO GX0 TERM: the viewBox min-x IS the ink left, so the box edge already lands on
+         the anchor. Subtracting it again shifted the whole drawing one side-bearing
+         left — measured as a uniform -4.81px on both anchors before this changed. */
+      svg.style.left = (textLeft - sr.left) + "px";
+      // Fit the existing drawing behind the font's actual visible ink, not its line box.
+      var fontStyle = getComputedStyle(text);
+      var measure = document.createElement("canvas").getContext("2d");
+      measure.font = fontStyle.fontWeight + " " + fontStyle.fontSize + " " + fontStyle.fontFamily;
+      var ink = measure.measureText("Auto Face MoCap Pro");
+      var ascent = ink.actualBoundingBoxAscent || GH * scale;
+      var descent = ink.actualBoundingBoxDescent || 0;
+      var textBox = text.getBoundingClientRect();
+      var originalHeight = (ascent + descent) * 0.82;
+      var strokeHeight = (ascent + descent) * 0.88;
+      var strokeCenter = textBox.bottom - sr.top - originalHeight / 2;
+      svg.style.top = (strokeCenter - strokeHeight / 2) + "px";
+      // Keep the approved left anchor; compensate for the drawing's tighter right-side spacing.
+      svg.style.width = (GW * scale * 1.035) + "px";
+      svg.style.height = strokeHeight + "px";
+      svg.setAttribute("preserveAspectRatio", "none");
+      stage.__fit = { scale: scale, textLeft: textLeft, textRight: textRight,
+                      svgLeft: svg.getBoundingClientRect().left, svgRight: svg.getBoundingClientRect().right };
+    }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit, fit); else fit();
+    var rt = 0;
+    window.addEventListener("resize", function(){ if (rt) clearTimeout(rt); rt = setTimeout(fit, 120); }, { passive: true });
+
+    /* ---------------- THE REVEAL, AS THE ORIGINAL MODULE HAD IT ----------------
+       A letter is hidden until its threshold passes, then shown. That is all: the archived
+       module toggled `.is-finished` and the stylesheet did `visibility`, and there was no
+       fade anywhere in it. The thresholds are the scene's own `data-finish` values rescaled
+       to the length of the pass being played (3s intro, 6s replays), and they are
+       advanced from the player's own tick — one clock for the stroke and the text. */
+    var SRC = 10.4166667;
+    var marks = [];
+    for (var m = 0; m < letters.length; m++) {
+      var fv = Number(letters[m].getAttribute("data-finish"));
+      marks.push(isFinite(fv) ? (fv / SRC) : 0);
+    }
+    function setMarks(t, dur){
+      for (var k = 0; k < letters.length; k++) {
+        var done = t >= marks[k] * dur;
+        if (letters[k].__fin !== done) {
+          letters[k].__fin = done;
+          letters[k].classList.toggle("is-finished", done);
+        }
+      }
+    }
+    function resetMarks(){
+      for (var k = 0; k < letters.length; k++) { letters[k].__fin = false; letters[k].classList.remove("is-finished"); }
+    }
+    resetMarks();
+
+    var INTRO = 3.0;          // playbackRate = source duration / 3 gives a 3-second first pass
+    var REPLAY = 6.0;         // ...and duration/6, after a 2000ms wait, on every pass after it
+    var replaying = false;
+    function setDrawingLetter(t, dur) {
+      var active = -1;
+      for (var i = 0; i < marks.length; i++) {
+        if (t < marks[i] * dur) { active = i; break; }
+      }
+      for (var i = 0; i < letters.length; i++) {
+        letters[i].classList.toggle("is-drawing", i === active);
+      }
+    }
+    var player = strokePlayer([p], window.AFMP.every24, STROKE_DATA, INTRO, 2.0,
+      function () {
+        setMarks(SRC, SRC);
+        stage.classList.remove("is-inking"); // After the intro, repeat the stroke without hiding the title.
+        for (var i = 0; i < letters.length; i++) letters[i].classList.remove("is-drawing");
+      },
+      function () { /* the NEXT DRAW begins: the reveal resets here, and only here */
+        // Preserve every filled letter on replays, including the letters to the right.
+        replaying = true;
+        player.setDur(REPLAY);
+      },
+      function (t, dur, phase) {
+        if (phase !== 0) return;      // during the rest the wordmark stays fully readable
+        if (replaying) setDrawingLetter(t, dur);
+        else setMarks(t, dur);
+      });
+    if (window.AFMP.watch) {
+      var stop = window.AFMP.watch(stage, function (on) { if (on) player.resume(); else player.pause(); }, false);
+      if (window.AFMP.isOnScreen && stage.__afmpSawIO && window.AFMP.isOnScreen(stage)) player.resume();
+    } else {
+      player.resume();
+    }
+  }
+  function all() {
+    var stages;
+    try { stages = document.querySelectorAll(".brand-stroke-stage"); } catch (e) { return; }
+    for (var i = 0; i < stages.length; i++) arm(stages[i]);   /* arm() subscribes its own gate */
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", all);
+  else all();
+})();
+</script>
+
+
+
+
 </body>
 </html>
