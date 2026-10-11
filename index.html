@@ -12785,7 +12785,7 @@ var STROKE_DATA=["","M524 699l24 0l-150 -390l-84 1l-154 392","M439 624l26 74l83 
       var f = Number(letters[i].getAttribute("data-finish"));
       if (isFinite(f)) letters[i].style.setProperty("--ink-d", (f / SRC * DUR).toFixed(3) + "s");
     }
-    stage.classList.add("is-inking");
+    stage.classList.add("is-inking"); // Hide the title during the initial one-second wait.
     var p = stage.querySelector(".stroke-anim path");
     var svg = p && p.ownerSVGElement;
     if (!p || !svg) return;
@@ -12902,12 +12902,24 @@ var STROKE_DATA=["","M524 699l24 0l-150 -390l-84 1l-154 392","M439 624l26 74l83 
         if (replaying) setDrawingLetter(t, dur);
         else setMarks(t, dur);
       });
-    if (window.AFMP.watch) {
-      var stop = window.AFMP.watch(stage, function (on) { if (on) player.resume(); else player.pause(); }, false);
-      if (window.AFMP.isOnScreen && stage.__afmpSawIO && window.AFMP.isOnScreen(stage)) player.resume();
-    } else {
-      player.resume();
+    var startReady = false;
+    var stageVisible = !window.AFMP.watch;
+    function syncStart() {
+      if (startReady && stageVisible) player.resume();
+      else player.pause();
     }
+    if (window.AFMP.watch) {
+      window.AFMP.watch(stage, function (on) { stageVisible = on; syncStart(); }, false);
+    }
+    function delayStart() {
+      setTimeout(function () {
+        stage.classList.add("is-inking");
+        startReady = true;
+        syncStart();
+      }, 1000);
+    }
+    if (document.readyState === "complete") delayStart();
+    else window.addEventListener("load", delayStart, { once: true });
   }
   function all() {
     var stages;
