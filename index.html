@@ -5939,7 +5939,7 @@ html.dark .hero-copy-card:hover {
         </div>
 
         <div class="hero-cta">
-          <a class="btn btn-primary" href="#pricing">
+          <a class="btn btn-primary" id="get-now-pricing" href="#pricing">
             Get Now
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           </a>
@@ -13018,6 +13018,7 @@ var STROKE_DATA=["","M524 699l24 0l-150 -390l-84 1l-154 392","M439 624l26 74l83 
 
 
 <style>
+.pricing-grid {scroll-margin-top:157px;}
 .support-card[href="https://discord.gg/4PhVBGSqef"] .support-icon svg { color:#5865f2; }
 #email-support-copy .support-icon,
 .support-card[href="https://discord.gg/4PhVBGSqef"] .support-icon { background:#000; }
@@ -13042,6 +13043,15 @@ html .support-card .support-link::before,html .support-card .support-link::after
 </style>
 <script>
 (function () {
+  var getNow = document.getElementById('get-now-pricing');
+  if (getNow) getNow.addEventListener('click', function (event) {
+    var cards = document.querySelector('#pricing .pricing-grid');
+    if (!cards) return;
+    event.preventDefault();
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    cards.scrollIntoView({behavior:reduced ? 'auto' : 'smooth',block:'start'});
+    try { history.replaceState(null,'','#pricing'); } catch (_) {}
+  });
   var card = document.getElementById('email-support-copy');
   if (!card) return;
   function fallback() {
