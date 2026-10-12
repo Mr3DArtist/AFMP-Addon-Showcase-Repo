@@ -2689,9 +2689,9 @@ h1,h2,h3,h4,.site-header .brand,.section-title,.g-title,.g-name,.acc-head,.vb-ve
 /* Mouse glow — 🗑 REMOVED, see the note on the first copy of this rule. The gobos block
    it sat in is otherwise intact (the reveal rules below are untouched). */
 /* Reveal on scroll */
-.reveal{opacity:0;transform:translateY(30px);transition:opacity .8s ease,transform .8s ease}
-.reveal.visible{opacity:1;transform:none}
-@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+.reveal{opacity:0;filter:none;transform:translateY(10px) scale(.97);transition:opacity .8s ease-out .2s,transform .8s cubic-bezier(.16,1,.3,1) .2s}
+.reveal.visible{opacity:1;filter:none;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;filter:none;transform:none;transition:none}}
 /* Primary button — AFMP deep azure + moving sheen */
 .btn-primary{
   position:relative;overflow:hidden;
@@ -3803,6 +3803,12 @@ html.dark .price-card::after {
    brief is explicit that the website content stays fully clickable.
    ⛔ z-index -2: above the canvas background (the body gradient ramp), below
    body::before (ambient glows) and body::after (film grain), both at -1. */
+@keyframes particlePopIn {
+  from { opacity:0;transform:scale(.97); }
+  to { opacity:1;transform:none; }
+}
+#interactiveBg { animation:particlePopIn .8s steps(19,end) .2s both;transform-origin:center; }
+@media(prefers-reduced-motion:reduce){#interactiveBg{animation:none;}}
 #interactiveBg {
   /* ⛔ NOT inset:0. The particle module sizes AND places this box (see measure()):
      in a normal window it is 0,0 x innerWidth x innerHeight — identical to inset:0 —
@@ -5526,7 +5532,7 @@ html.dark .hero-copy-card:hover {
      cursor spotlight that sat here, between the particle canvas and the noscript block.
      Owner, 2026-10-11: *"remove mouse-hover/mouse-follow glow from BACKGROUND only"*.
      The canvas above it is the particle field and is NOT part of that removal. -->
-<noscript><style>.g-card{opacity:1;transform:none}.reveal{opacity:1;transform:none}</style></noscript>
+<noscript><style>.g-card{opacity:1;transform:none}.reveal{opacity:1;filter:none;transform:none}</style></noscript>
 <!-- ⛔ DARK IS THE ONLY THEME (owner, 2026-10-11: *"remove light theme and topbar theme
      switch … make dark mode the sole supported active theme"*). The `<html>` tag carries
      `class="dark"` as a literal, so the dark state is already true at parse time and there
@@ -6873,8 +6879,8 @@ html.dark .hero-copy-card:hover {
         <div class="acc-body">
           <div class="acc-inner">
             <table class="spec-table">
-              <tr><td>Blender compatibility</td><td>5 &amp; Above</td></tr>
-              <tr><td>Supported Character</td><td>52 ARkit ShapeKeys</td></tr>
+              <tr><td>Blender compatibility</td><td>5.2 &amp; Above</td></tr>
+              <tr><td>Supported Character</td><td>AR-kit Shape Keys</td></tr>
               <tr><td>Mocap</td><td>Runs locally &amp; offline, no cloud upload</td></tr>
               <tr><td>Update policy</td><td>Support Period</td></tr>
             </table>
@@ -6891,7 +6897,7 @@ html.dark .hero-copy-card:hover {
         <div class="acc-body">
           <div class="acc-inner">
             <ul>
-              <li>OS: Windows 11</li>
+              <li>OS: Windows 11 (Linux is in Testing &amp; then MacOS)</li>
               <li>CPU: 64 bit dual core 2 GHz with SSE2 support</li>
               <li>RAM: 4 GB minimum</li>
               <li>Disk: 1 GB free space</li>
@@ -7017,9 +7023,10 @@ html.dark .hero-copy-card:hover {
         <h3>👤 Individual</h3>
         <div class="price"><sup>$</sup><span data-price-src="regular">99</span></div>
         <ul class="plan-list">
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Auto Face MoCap Pro (FULL)</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Full Addon</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Personal Projects</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Individual</li>
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Customer Support (12 Months)</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Support (12 Months)</li>
         </ul>
         <!-- ⛔ A REAL ANCHOR, OPENING IN A NEW TAB (owner, 2026-10-10). These CTAs were
              `<span class="btn …">` labels; the owner supplied the five purchase URLs, so
@@ -7043,9 +7050,10 @@ html.dark .hero-copy-card:hover {
         <h3>👤 Individual</h3>
         <div class="price"><sup>$</sup>129</div>
         <ul class="plan-list">
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Auto Face MoCap Pro (FULL)</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Full Addon</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Commercial Projects</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Individual</li>
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Customer Support (12 Months)</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Support (12 Months)</li>
         </ul>
         <a class="btn btn-ghost" href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473&amp;variant=23322" target="_blank" rel="noopener noreferrer">Get Commercial</a>
       </div>
@@ -7056,8 +7064,12 @@ html.dark .hero-copy-card:hover {
         <h3>👥 Team</h3>
         <div class="price"><sup>$</sup>449</div>
         <ul class="plan-list">
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Full Addon For Commercial Projects For 5 Team Members</li>
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Priority Support &amp; Custom Feature Request</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Full Addon</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Commercial Projects</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>5 Seats</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Priority Support</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Custom Feature Request</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Support (12 Months)</li>
         </ul>
         <!-- ⛔ THE ICON IS `aria-hidden` AND THE LABEL CARRIES THE NAME. "Get Team" is
              already the whole accessible name, so the glyph must not repeat it into the
@@ -7075,9 +7087,12 @@ html.dark .hero-copy-card:hover {
         <h3>🏘️ Studio</h3>
         <div class="price"><sup>$</sup>800</div>
         <ul class="plan-list">
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Full Addon For Commercial Projects</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Full Addon</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Commercial Projects</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>12 Seats</li>
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Priority Support &amp; Custom Feature Request</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Priority Support</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Custom Feature Request</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Support (12 Months)</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>For Studio</li>
         </ul>
         <a class="btn btn-ghost tier-btn" href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473&amp;variant=23748" target="_blank" rel="noopener noreferrer">
@@ -7092,9 +7107,12 @@ html.dark .hero-copy-card:hover {
         <h3>🏢 Bigger Studio</h3>
         <div class="price"><sup>$</sup>1,299</div>
         <ul class="plan-list">
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Full Addon For Commercial Projects</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Full Addon</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Commercial Projects</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>24 Seats</li>
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Priority Support &amp; Custom Feature Request</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Priority Support</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Custom Feature Request</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Support (12 Months)</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>For Studio</li>
         </ul>
         <a class="btn btn-ghost tier-btn" href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473&amp;variant=23749" target="_blank" rel="noopener noreferrer">
@@ -7109,10 +7127,13 @@ html.dark .hero-copy-card:hover {
         <h3>Seats (Above 24)</h3>
         <div class="price small">Contact Us</div>
         <ul class="plan-list">
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Auto Face MoCap Pro (FULL)</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Full Addon</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Commercial Projects</li>
           <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Seats (Above 24)</li>
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Can Request Custom Features</li>
-          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Customer Support (12 Months)</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Priority Support</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Custom Feature Request</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Updates &amp; Support (12 Months)</li>
+          <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>For Studio</li>
         </ul>
         <span class="btn btn-ghost">Contact Sales</span>
       </div>
@@ -7529,12 +7550,12 @@ html.dark .hero-copy-card:hover {
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
+        if (entry.isIntersecting && entry.intersectionRect.width > 0 && entry.intersectionRect.height > 0) {
           entry.target.classList.add('visible');
           io.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    }, { root:null, threshold:0, rootMargin:'0px' });
     revealEls.forEach(function (el) { io.observe(el); });
   } else {
     // Fallback: reveal everything immediately
@@ -8917,8 +8938,8 @@ html.dark .hero-copy-card:hover {
   var reveals = document.querySelectorAll('.reveal');
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('visible'); io.unobserve(en.target); } });
-    }, { threshold: 0.12 });
+      entries.forEach(function (en) { if (en.isIntersecting && en.intersectionRect.width > 0 && en.intersectionRect.height > 0) { en.target.classList.add('visible'); io.unobserve(en.target); } });
+    }, { root:null, threshold:0, rootMargin:'0px' });
     reveals.forEach(function (el) { io.observe(el); });
   } else {
     reveals.forEach(function (el) { el.classList.add('visible'); });
@@ -11485,6 +11506,11 @@ mask-image:var(--clip-outer-fade),linear-gradient(90deg,transparent,#000 16px,#0
 
 /* Expanded information panels follow the navy/cyan page palette. */
 #specs .acc-inner,#changelog .acc-inner {background:linear-gradient(135deg,#0a2339,#061321);color:#e0f2ff;border:1px solid rgba(55,201,255,.24);}
+#specs .acc-inner {background:linear-gradient(135deg,#183b58,#102b43);}
+#specs :is(.accordion,.acc-item,.acc-head,.acc-panel,.acc-inner):hover {
+  outline:none!important;outline-offset:0!important;animation:none!important;box-shadow:none!important;
+}
+#specs .acc-head:focus-visible {outline:2px solid #65d8ff!important;outline-offset:3px!important;}
 #specs .acc-inner .spec-table td {color:#e0f2ff;border-bottom-color:rgba(85,192,235,.22);}
 #specs .acc-inner .spec-table td:first-child {color:#91cde9;}
 #specs .acc-inner li::before,#changelog .acc-inner li::before {background:#37c9ff;}
@@ -12995,6 +13021,24 @@ var STROKE_DATA=["","M524 699l24 0l-150 -390l-84 1l-154 392","M439 624l26 74l83 
 .support-card[href="https://discord.gg/4PhVBGSqef"] .support-icon svg { color:#5865f2; }
 #email-support-copy .support-icon,
 .support-card[href="https://discord.gg/4PhVBGSqef"] .support-icon { background:#000; }
+.support-card:hover,.support-card .support-link:hover {
+  outline:none!important;outline-offset:0!important;animation:none!important;transform:none!important;box-shadow:none!important;
+}
+.support-card .support-link svg {transform:none!important;animation:none!important;}
+html .support-card .support-link,
+html .support-card .support-link:is(:hover,:focus,:active) {
+  outline:0!important;outline-offset:0!important;border:0!important;box-shadow:none!important;animation:none!important;background:none!important;
+}
+html .support-card .support-link::before,html .support-card .support-link::after {display:none!important;content:none!important;}
+.support-card::before,.support-card::after,.support-card > .gleam-sheen {display:none!important;}
+.support-card > .fx-pool {display:none!important;}
+.support-card:focus-visible {outline:2px solid #65d8ff!important;outline-offset:3px!important;}
+#changelog .acc-head,#changelog .acc-head > span:first-child {background-image:none!important;animation:none!important;}
+#changelog .acc-head::before,#changelog .acc-head::after,
+#changelog .acc-head > span:first-child::before,#changelog .acc-head > span:first-child::after,
+#changelog .gleam-sheen {display:none!important;}
+#changelog .acc-item::after,#changelog .acc-item::before {display:none!important;content:none!important;animation:none!important;}
+#changelog .ver-date,#changelog .acc-item:hover {animation:none!important;background-image:none!important;outline:none!important;box-shadow:none!important;}
 </style>
 <script>
 (function () {
