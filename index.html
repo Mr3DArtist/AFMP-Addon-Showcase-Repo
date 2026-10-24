@@ -922,6 +922,11 @@ header.site-header {
   border: 1px solid var(--border-strong);
 }
 .hero-video-card .yt-frame.yt-ready { cursor: pointer; }
+.hero-video-card .yt-frame > .play-btn,
+.hero-video-card .yt-frame > .play-btn:hover {
+  position:absolute!important;left:50%!important;top:50%!important;right:auto!important;bottom:auto!important;
+  margin:0!important;transform:translate(-50%,-50%)!important;translate:none!important;z-index:3;
+}
 .hero-video-card .yt-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .hero-video-card .yt-label {
   position: absolute; z-index: 2; top: 12px; left: 50%; transform: translateX(-50%);
@@ -5776,8 +5781,8 @@ html.dark .hero-copy-card:hover {
     <div class="ob-copy">
       <div class="so-title">Limited Time Discount</div>
       <div class="so-prices">
-        <span class="so-old" data-price="regular" data-fmt="usd2">$99.00</span>
-        <span class="so-new" data-price="offer" data-fmt="usd2">$69.99</span>
+        <span class="so-old" data-price="regular" data-fmt="usd">$99</span>
+        <span class="so-new" data-price="offer" data-fmt="usd">$69.3</span>
       </div>
     </div>
 
@@ -5793,16 +5798,16 @@ html.dark .hero-copy-card:hover {
              synchronous copy succeeds, so this navigation rides the same click. -->
         <a class="coupon-btn" id="couponBtnBand"
            href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473"
-           data-href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473"
+           data-href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473&amp;variant=23321"
            target="_top" rel="noopener"
            aria-label="Copy the discount coupon code and open the store">
           <span class="coupon-label">Coupon</span>
-          <span class="coupon-code">afmp</span>
+          <span class="coupon-code">afmp30</span>
           <span class="coupon-copy">Copy</span>
         </a>
         <p class="coupon-hint">Click to copy the code.</p>
       </div>
-      <div class="so-valid" data-text="offer-expiry">Valid until October 18th 2026</div>
+      <div class="so-valid" data-text="offer-expiry">Valid until October 31st 2026</div>
     </div>
 
     <!-- Right cell — the demo clip. This cell was deliberately EMPTY until now
@@ -5929,13 +5934,12 @@ html.dark .hero-copy-card:hover {
         <!-- placeholder and nothing is fetched from YouTube.          -->
         <!-- ======================================================== -->
         <div class="quickfog-outer hero-video-card">
-          <div class="yt-frame" data-yt="" role="img" aria-label="Demo video coming soon">
+          <div class="yt-frame" data-yt="q7EHeK54vN8" aria-label="Auto Face MoCap Pro official demo">
             <span class="yt-label">Official Demo</span>
             <button class="play-btn" type="button" aria-label="Play the demo video">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg>
             </button>
           </div>
-          <p class="yt-caption">Demo video coming soon</p>
         </div>
 
         <div class="hero-cta">
@@ -7179,8 +7183,8 @@ html.dark .hero-copy-card:hover {
       <div class="ob-copy">
         <div class="so-title">Limited Time Discount</div>
         <div class="so-prices">
-          <span class="so-old" data-price="regular" data-fmt="usd2">$99.00</span>
-          <span class="so-new" data-price-src="offer" data-fmt="usd2">$69.99</span>
+          <span class="so-old" data-price="regular" data-fmt="usd">$99</span>
+          <span class="so-new" data-price-src="offer" data-fmt="usd">$69.3</span>
         </div>
       </div>
 
@@ -7188,16 +7192,16 @@ html.dark .hero-copy-card:hover {
         <div class="coupon-wrap">
           <a class="coupon-btn" id="couponBtnPricing"
              href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473"
-             data-href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473"
+             data-href="https://superhivemarket.com/products/auto-face-mocap-pro?ref=473&amp;variant=23321"
              target="_top" rel="noopener"
              aria-label="Copy the discount coupon code and open the store">
             <span class="coupon-label">Coupon</span>
-            <span class="coupon-code">afmp</span>
+            <span class="coupon-code">afmp30</span>
             <span class="coupon-copy">Copy</span>
           </a>
           <p class="coupon-hint">Click to copy the code.</p>
         </div>
-        <div class="so-valid" data-text-src="offer-expiry">Valid until October 18th 2026</div>
+        <div class="so-valid" data-text-src="offer-expiry">Valid until October 31st 2026</div>
       </div>
 
       <div class="ob-media">
@@ -7232,6 +7236,14 @@ html.dark .hero-copy-card:hover {
           <span class="support-tag">Coming soon</span>
         </div>
         <h3>Full tutorials &amp; workflow guides are in the making</h3>
+        <iframe
+          src="https://www.youtube-nocookie.com/embed/q7EHeK54vN8?rel=0&amp;enablejsapi=1"
+          title="Auto Face MoCap Pro video — How To"
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          style="display:block;width:100%;aspect-ratio:16/9;height:auto;border:0;border-radius:12px;margin-top:1.25rem;"
+        ></iframe>
       </div>
     </div>
     <div class="support-grid" hidden style="display:none!important;">
@@ -8727,6 +8739,7 @@ html.dark .hero-copy-card:hover {
      Nothing runs until the source holds a number, so a typo leaves the existing
      text in place instead of blanking it. */
   var PRICE_FMT = {
+    usd: function (n) { return '$' + String(n); },
     usd2: function (n) { return '$' + n.toFixed(2); },
     plain: function (n) { return String(n); }
   };
@@ -12351,10 +12364,25 @@ mask-image:linear-gradient(90deg,rgba(0,0,0,.6),#000 12%,#000 88%,rgba(0,0,0,.6)
    the id whatever order the two rules are in.
    ⛔ `#header` IS THE ELEMENT'S REAL ID (the markup is `id="header"`), not a guess, and
    it is already depended on by the sticky-header script (`getElementById('header')`). */
-header#header.site-header.card-fx > .header-inner { z-index: auto; }
+header#header.site-header.card-fx > .header-inner { position:relative;z-index:0;isolation:isolate; }
 header#header.site-header.card-fx > .fx-dots,
-header#header.site-header.card-fx > .fx-pool { z-index: 4; }
+header#header.site-header.card-fx > .fx-pool { z-index: 20; pointer-events:none; }
+header#header.site-header.card-fx > .fx-dots { z-index:20;pointer-events:none; }
 header#header.site-header.card-fx .brand { position: relative; z-index: 5; }
+/* Header overlay: cover the entire shallow bar, above its isolated controls. */
+header#header.site-header.card-fx > .fx-dots {
+  inset:0 auto 0 0; width:var(--header-pattern-end,360px); height:100%; clip-path:none;
+  -webkit-mask-image:linear-gradient(90deg,#000 0%,#000 65%,rgba(0,0,0,.7) 78%,rgba(0,0,0,.25) 90%,transparent 100%),repeating-linear-gradient(90deg,rgba(0,0,0,.35) 0px,#000 80px,rgba(0,0,0,.35) 160px);
+  mask-image:linear-gradient(90deg,#000 0%,#000 65%,rgba(0,0,0,.7) 78%,rgba(0,0,0,.25) 90%,transparent 100%),repeating-linear-gradient(90deg,rgba(0,0,0,.35) 0px,#000 80px,rgba(0,0,0,.35) 160px);
+  -webkit-mask-composite:source-in;mask-composite:intersect;
+}
+html.dark header#header.site-header.card-fx > .fx-pool {
+  display:block;inset:0 auto 0 0;width:var(--header-pattern-end,360px);height:100%;clip-path:none;pointer-events:none;
+  -webkit-mask-image:radial-gradient(140px circle at var(--mx,0px) var(--my,0px),#000,transparent 75%),linear-gradient(90deg,#000 0%,#000 65%,rgba(0,0,0,.7) 78%,rgba(0,0,0,.25) 90%,transparent 100%);
+  mask-image:radial-gradient(140px circle at var(--mx,0px) var(--my,0px),#000,transparent 75%),linear-gradient(90deg,#000 0%,#000 65%,rgba(0,0,0,.7) 78%,rgba(0,0,0,.25) 90%,transparent 100%);
+  -webkit-mask-composite:source-in;mask-composite:intersect;transition:opacity .25s ease;
+}
+header#header.site-header.card-fx > .fx-ring {z-index:21;pointer-events:none;}
 
 /* ============================================================ THREE FEATURE ROWS HIDDEN
    Owner, 2026-10-11: hide the last three clips in `#workflow` — "Real time viewport
@@ -13070,6 +13098,22 @@ html .support-card .support-link::before,html .support-card .support-link::after
     label.firstChild.textContent = copied ? 'Email copied ' : 'Copy unavailable — linkedmr3d@gmail.com ';
   });
   card.addEventListener('keydown', function (event) { if (event.key === ' ') { event.preventDefault();card.click(); } });
+})();
+</script>
+<script>
+(function () {
+  var header=document.getElementById('header');
+  var brand=header && header.querySelector('.brand');
+  if(!brand)return;
+  function fitHeaderPattern(){
+    var edge=brand.getBoundingClientRect().right-header.getBoundingClientRect().left;
+    header.style.setProperty('--header-pattern-end',Math.max(0,edge)+'px');
+  }
+  fitHeaderPattern();
+  if(document.fonts)document.fonts.ready.then(fitHeaderPattern);
+  window.addEventListener('load',fitHeaderPattern,{once:true});
+  window.addEventListener('resize',fitHeaderPattern,{passive:true});
+  if(window.ResizeObserver){var observer=new ResizeObserver(fitHeaderPattern);observer.observe(brand);observer.observe(header);}
 })();
 </script>
 </body>
