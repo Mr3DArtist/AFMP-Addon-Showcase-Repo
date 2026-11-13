@@ -2536,14 +2536,17 @@ html.dark .offer-band .so-kicker { color: #fff; }
 .latest-dot{width:6px;height:6px;border-radius:50%;background:rgb(0,150,255);animation:latestBlink 1.2s ease-in-out infinite}
 @keyframes latestBlink{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,150,255,.6)}50%{opacity:.4;box-shadow:0 0 0 6px rgba(0,150,255,0)}}
 .vb-version{font-family:'Outfit',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.02em;color:var(--ink)}
+.vb-updated{position:absolute;top:calc(100% + 3px);left:50%;transform:translateX(-50%);font-size:.55rem;font-weight:500;line-height:1.1;color:var(--muted);white-space:nowrap}
 @keyframes badgeSpin{to{--badge-angle:360deg}}
 @property --badge-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
 .vb-changelog{position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:.4rem;font-weight:600;letter-spacing:.01em;color:var(--muted);white-space:nowrap;text-decoration:none;background:var(--card-bg);border:1px solid var(--border-strong);padding:3px 7px;border-radius:6px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,visibility .2s ease;z-index:5}
 .header-version:hover .vb-changelog,.version-badge:hover + .vb-changelog{opacity:1;visibility:visible;pointer-events:auto}
+.header-version .vb-changelog{top:calc(100% + .605rem + 3px)}
 .faq-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.24rem .6rem;border-radius:999px;background:var(--card-bg);border:1px solid var(--border-strong);color:var(--ink);font-size:.8rem;font-weight:700;text-decoration:none;white-space:nowrap;transition:transform .2s ease,border-color .2s ease}
 .faq-btn:hover{transform:translateY(-1px);border-color:var(--color-tertiary)}
 .must-read{display:inline-flex;align-items:center;font-size:.6rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:.14rem .4rem;border-radius:999px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff}
 @media (max-width:620px){.version-badge{display:none}.vb-changelog{display:none}}
+@media (max-width:620px){.vb-updated{display:none}}
 
 /* Top bar — dark theme. ⛔ THIS RULE IS WHY THE FIRST 50% ATTEMPT DID NOTHING: it is
    `!important`, so the plain `.site-header` rule above loses to it whatever order they
@@ -5599,7 +5602,7 @@ html.dark .hero-copy-card:hover {
     </div>
 
     <div class="header-version">
-      <!-- ⛔ THE v1.0.0 PILL NO LONGER POINTS AT THE IN-PAGE `#changelog` SECTION. Owner,
+           <!-- ⛔ THE v1.0.1 PILL NO LONGER POINTS AT THE IN-PAGE `#changelog` SECTION. Owner,
            2026-10-11: set its destination to the EXACT URL below. `target="_blank"` and
            `rel="noopener"` are the ones that were already on the element and are unchanged,
            as are both labels and the badge's own markup.
@@ -5613,9 +5616,10 @@ html.dark .hero-copy-card:hover {
            was a URL fix on one affordance, not a site-wide slug rename. -->
       <a class="version-badge" href="https://superhivemarket.com/products/auto-face-mocap-pro/versions?ref=473" target="_blank" rel="noopener" title="Open changelog">
         <span class="latest-tag"><span class="latest-dot"></span><span>Latest</span></span>
-        <span class="vb-version">v1.0.0</span>
+        <span class="vb-version">v1.0.1</span>
       </a>
       <a class="vb-changelog" href="https://superhivemarket.com/products/auto-face-mocap-pro/versions?ref=473" target="_blank" rel="noopener">Click for Changelog</a>
+      <time class="vb-updated" datetime="2026-11-13">Updated Nov 13, 2026</time>
     </div>
 
     <div class="header-actions">
@@ -5807,7 +5811,7 @@ html.dark .hero-copy-card:hover {
         </a>
         <p class="coupon-hint">Click to copy the code.</p>
       </div>
-      <div class="so-valid" data-text="offer-expiry">Valid until October 31st 2026</div>
+      <div class="so-valid" data-text="offer-expiry">Valid until November 15th 2026</div>
     </div>
 
     <!-- Right cell — the demo clip. This cell was deliberately EMPTY until now
@@ -5925,6 +5929,7 @@ html.dark .hero-copy-card:hover {
           <p class="hero-sub">
             Auto Face MoCap Pro Allows you to Apply Facial MoCap from videos Recorded with any webcam, phone, on to your (ARKit Shapekeys) Animation Ready Character!
           </p>
+          <p class="hero-compatibility" style="margin-top:.65rem;font-size:clamp(1.35rem,2.5vw,2rem);line-height:1.15;"><strong>Blender 5.3 Ready</strong></p>
         </div>
 
         <!-- ======================================================== -->
@@ -7201,7 +7206,7 @@ html.dark .hero-copy-card:hover {
           </a>
           <p class="coupon-hint">Click to copy the code.</p>
         </div>
-        <div class="so-valid" data-text-src="offer-expiry">Valid until October 31st 2026</div>
+        <div class="so-valid" data-text-src="offer-expiry">Valid until November 15th 2026</div>
       </div>
 
       <div class="ob-media">
@@ -7298,15 +7303,35 @@ html.dark .hero-copy-card:hover {
     <div class="accordion reveal">
       <div class="acc-item open">
         <button class="acc-head" aria-expanded="true">
-          <span>v1.0.0<span class="ver-date">Latest</span></span>
+          <span>v1.0.1<span class="ver-date">Latest · <time datetime="2026-11-13">13 November 2026</time></span></span>
           <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
         </button>
         <div class="acc-body">
           <div class="acc-inner">
             <ul>
-              <li>Initial public release of Auto Face MoCap Pro</li>
-              <li>Record from webcam / phone inside the addon</li>
-              <li>Auto map onto Rigify, ARP and custom face rigs</li>
+              <li>Added compatibility with Blender 5.3.</li>
+              <li>Removed several unnecessary sliders from Adjust Expressions.</li>
+              <li>Fixed animation glitches when dragging adjustment sliders.</li>
+              <li>Fixed an issue where applying a second mocap take could reset the first take’s slider settings.</li>
+              <li>Fixed several minor UI issues.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="acc-item">
+        <button class="acc-head" aria-expanded="false">
+          <span>v1.0.0<span class="ver-date">10 October 2026</span></span>
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        </button>
+        <div class="acc-body">
+          <div class="acc-inner">
+            <ul>
+              <li>Initial public release of Auto Face MoCap Pro.</li>
+              <li>Record from webcam or phone/video input, analyze facial motion, cache analysis tracks, and apply the result as ARKit/MediaPipe shape-key animation in Blender.</li>
+              <li>Supports character setup through an active mesh target, with strength, keyframe-step, facial-expression smoothing, lipsync smoothing, and eye-look smoothing controls.</li>
+              <li>Includes live post-bake adjustment from the stored raw analysis base, so strength and smoothing changes can be re-derived without cumulative drift.</li>
+              <li>Adds editable mouth-shift ease curves and robust submodule reload handling for Blender auto-reload scenarios.</li>
+              <li>Ships as a Blender extension/legacy add-on package with bundled Windows dependencies, Blender 5.1+ compatibility, offline analysis/live capture/baking, and separate licence activation for the processing engine.</li>
             </ul>
           </div>
         </div>
@@ -12364,12 +12389,13 @@ mask-image:linear-gradient(90deg,rgba(0,0,0,.6),#000 12%,#000 88%,rgba(0,0,0,.6)
    the id whatever order the two rules are in.
    ⛔ `#header` IS THE ELEMENT'S REAL ID (the markup is `id="header"`), not a guess, and
    it is already depended on by the sticky-header script (`getElementById('header')`). */
-header#header.site-header.card-fx > .header-inner { position:relative;z-index:0;isolation:isolate; }
+/* Keep the header content above the decorative dots, glow, and ring. */
+header#header.site-header.card-fx > .header-inner { position:relative;z-index:22;isolation:isolate; }
 header#header.site-header.card-fx > .fx-dots,
 header#header.site-header.card-fx > .fx-pool { z-index: 20; pointer-events:none; }
 header#header.site-header.card-fx > .fx-dots { z-index:20;pointer-events:none; }
 header#header.site-header.card-fx .brand { position: relative; z-index: 5; }
-/* Header overlay: cover the entire shallow bar, above its isolated controls. */
+/* Header overlay: cover the shallow bar behind its controls. */
 header#header.site-header.card-fx > .fx-dots {
   inset:0 auto 0 0; width:var(--header-pattern-end,360px); height:100%; clip-path:none;
   -webkit-mask-image:linear-gradient(90deg,#000 0%,#000 65%,rgba(0,0,0,.7) 78%,rgba(0,0,0,.25) 90%,transparent 100%),repeating-linear-gradient(90deg,rgba(0,0,0,.35) 0px,#000 80px,rgba(0,0,0,.35) 160px);
