@@ -12395,6 +12395,8 @@ header#header.site-header.card-fx > .fx-dots,
 header#header.site-header.card-fx > .fx-pool { z-index: 20; pointer-events:none; }
 header#header.site-header.card-fx > .fx-dots { z-index:20;pointer-events:none; }
 header#header.site-header.card-fx .brand { position: relative; z-index: 5; }
+/* The PNG has transparent pixels. Give it an opaque backing so dots cannot show through. */
+header#header.site-header .brand-mark { background:#0b1018 !important; border-radius:50%; }
 /* Header overlay: cover the shallow bar behind its controls. */
 header#header.site-header.card-fx > .fx-dots {
   inset:0 auto 0 0; width:var(--header-pattern-end,360px); height:100%; clip-path:none;
